@@ -1,4 +1,8 @@
-# Folder structure
+# Happy Diwali e-card
+
+Live at: https://wish-diwali.tanay.tech/
+
+## Folder structure
 
 - `src` - source code for the [pixi.js](https://pixijs.com) app
 - `public` - static assets (sprites)
