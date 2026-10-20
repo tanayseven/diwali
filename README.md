@@ -6,6 +6,13 @@
 
 ## Development
 
+Tool versions are managed with [mise](https://mise.jdx.dev) (see `mise.toml`):
+
+```sh
+$ mise install
+$ npm install
+```
+
 ```sh
 $ npm run dev
 ```
