@@ -1,7 +1,8 @@
 # Folder structure
 
-- `src` - source code for your kaplay project
-- `www` - distribution folder, contains your index.html, built js bundle and static assets
+- `src` - source code for the [pixi.js](https://pixijs.com) app
+- `public` - static assets (sprites)
+- `dist` - build output, contains index.html, the bundled js and static assets
 
 
 ## Development
@@ -25,7 +26,7 @@ will start a dev server at http://localhost:8000
 $ npm run build
 ```
 
-will build your js files into `www/main.js`
+will build the app into `dist/`
 
 ```sh
 $ npm run bundle

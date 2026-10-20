@@ -1,37 +1,40 @@
-import {k} from "./game";
+import {AnimatedSprite, Application, Assets, Container, Rectangle, Texture} from "pixi.js"
 
-k.loadSprite("diya-1", "sprites/diya-1.png", {
-  sliceX: 4,
-  anims: {
-    idle: {
-      from: 0,
-      to: 3,
-      speed: 5,
-      loop: true,
-    },
-  },
-});
+const frameSize = 16
+const frameCount = 4
+const diyaScale = 5
+const bottomOffset = 200
 
-const diyaScale = 5;
-
-const diyaDimensions = [(k.width() / 70) * 7, 200]
-
-let diyaLocations = []
-
-for (let x = 0; x < k.width(); x += diyaDimensions[0]) {
-  const y = 10
-  diyaLocations.push([x, y])
+const loadDiyaFrames = async (): Promise<Texture[]> => {
+  const sheet = await Assets.load<Texture>("sprites/diya-1.png")
+  sheet.source.scaleMode = "nearest"
+  return Array.from({length: frameCount}, (_, i) => new Texture({
+    source: sheet.source,
+    frame: new Rectangle(i * frameSize, 0, frameSize, frameSize),
+  }))
 }
 
-for (let x = 0; x < k.width(); x += diyaDimensions[0]) {
-  const y = k.height() - diyaDimensions[1]
-  diyaLocations.push([x, y])
+const createDiyas = async (app: Application) => {
+  const frames = await loadDiyaFrames()
+  const container = new Container()
+
+  const layout = () => {
+    container.removeChildren().forEach(child => child.destroy())
+    const step = app.screen.width / 10
+    for (const y of [10, app.screen.height - bottomOffset]) {
+      for (let x = 0; x < app.screen.width; x += step) {
+        const diya = new AnimatedSprite(frames)
+        diya.animationSpeed = 5 / 60
+        diya.scale.set(diyaScale)
+        diya.position.set(x, y)
+        diya.play()
+        container.addChild(diya)
+      }
+    }
+  }
+
+  layout()
+  return {container, layout}
 }
 
-diyaLocations.map(
-  ([x, y]) => k.add([
-    k.pos(x, y),
-    k.sprite("diya-1", {anim: "idle"}),
-    k.scale(diyaScale),
-  ])
-)
+export {createDiyas}
