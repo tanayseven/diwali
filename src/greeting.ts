@@ -13,7 +13,9 @@ const createGreeting = (app: Application, message: string) => {
     container.removeChildren().forEach(child => child.destroy())
     const fontSize = app.screen.width / 20
     let x = 0
-    chars = [...message].map(ch => {
+    // Split on grapheme clusters so combining marks (e.g. Devanagari matras) stay attached
+    const graphemes = Array.from(new Intl.Segmenter().segment(message), s => s.segment)
+    chars = graphemes.map(ch => {
       const text = new Text({
         text: ch,
         style: {fontFamily: "monospace", fontSize, fill: 0xffffff},

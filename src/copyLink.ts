@@ -1,4 +1,5 @@
 import {Application, Text} from "pixi.js"
+import {encodeName} from "./stringUtils"
 
 const label = "Copy link"
 
@@ -17,7 +18,7 @@ const createCopyLinkButton = (app: Application, recipient: string) => {
   }
 
   button.on("pointertap", async () => {
-    const link = `${location.origin}${location.pathname}?name=${encodeURIComponent(btoa(recipient))}`
+    const link = `${location.origin}${location.pathname}?name=${encodeURIComponent(encodeName(recipient))}`
     try {
       await navigator.clipboard.writeText(link)
       flash("Copied!")

@@ -3,7 +3,7 @@ import {createCopyLinkButton} from "./copyLink"
 import {createDiyas} from "./diya"
 import {createGreeting} from "./greeting"
 import {createInputBox} from "./inputBox"
-import {toTitleCase} from "./stringUtils"
+import {decodeName, toTitleCase} from "./stringUtils"
 
 type Layoutable = { layout: () => void }
 
@@ -11,7 +11,8 @@ const fetchNameFromUrl = (): string => {
   try {
     const rawName = new URLSearchParams(window.location.search).get("name")
     if (rawName) {
-      return atob(rawName)
+      // URLSearchParams turns an unescaped "+" into a space; restore it
+      return decodeName(rawName.replace(/ /g, "+"))
     }
   } catch (e) {
     return ""
