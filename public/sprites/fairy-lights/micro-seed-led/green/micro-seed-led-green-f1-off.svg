@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="0 0 240 300">
+<title>Micro Seed LED / Green / F1 Off</title>
+<defs><radialGradient id="g1" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(120 168.34) rotate(0) scale(15 24.5)"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.451"/><stop offset="0.3" stop-color="#C6F6D7" stop-opacity="0.302"/><stop offset="0.7" stop-color="#8EECAF" stop-opacity="0.349"/><stop offset="1" stop-color="#097633" stop-opacity="0.549"/></radialGradient><radialGradient id="g2" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1" gradientTransform="translate(118.6 128.9) rotate(0) scale(7 7)"><stop offset="0" stop-color="#FFD9B8"/><stop offset="0.4" stop-color="#D9824C"/><stop offset="1" stop-color="#8A4320"/></radialGradient></defs>
+<path d="M120 136c8 12 15 22 15 34a15 15 0 0 1-30 0c0-12 7-22 15-34z" fill="url(#g1)" stroke="#097633" stroke-opacity="0.533" stroke-width="0.8" data-name="Epoxy Drop"/>
+<rect x="116" y="164" width="8" height="6" rx="1" fill="#3D7F53" data-name="Chip"/>
+<path d="M110 168q0-10 6-19" fill="none" stroke="#FFFFFF" stroke-opacity="0.667" stroke-width="1.6" stroke-linecap="round" data-name="Highlight"/>
+<ellipse cx="120" cy="131" rx="7" ry="7" fill="url(#g2)" data-name="Copper Bead"/>
+</svg>

@@ -21,6 +21,8 @@ const diyaBaseline = 345 / 380
 // Share of the SVG's width that's empty space either side of the lamp
 const diyaSidePadding = 0.1
 const diyaGap = 12
+// Least space between whatever is kept clear at the top of the screen and the diyas
+const topGap = 32
 
 // The diya SVG animates with SMIL, which stops once Pixi rasterises it,
 // so it sits over the canvas as an <img> instead
@@ -40,7 +42,13 @@ type Button = {
   label: Text
 }
 
-const createMenu = (app: Application, title: string, options: MenuOption[]): Screen => {
+// clearTop is how much of the top of the screen to leave free, e.g. for decorations hung there
+const createMenu = (
+  app: Application,
+  title: string,
+  options: MenuOption[],
+  clearTop: () => number = () => 0,
+): Screen => {
   const container = new Container()
   const heading = new Text({
     text: title,
@@ -112,11 +120,14 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
     const centerX = app.screen.width / 2
     buttonWidth = Math.min(maxButtonWidth, app.screen.width - sideGutter * 2)
     const stackHeight = buttons.length * buttonHeight + (buttons.length - 1) * buttonGap
-    const top = app.screen.height / 2 - stackHeight / 2 + buttonHeight / 2
     // Leave room for a diya on each side of the title on narrow screens
     heading.style.fontSize = Math.min(48, app.screen.width / 18)
-    heading.position.set(centerX, top - buttonHeight / 2 - titleGap - heading.height / 2)
     const diyaHeight = heading.height * 1.8
+    let top = app.screen.height / 2 - stackHeight / 2 + buttonHeight / 2
+    // Move the whole menu down if the diyas would come too close to the top's clear space
+    const naturalDiyaTop = top - buttonHeight / 2 - titleGap - diyaHeight * diyaBaseline
+    top += Math.max(0, clearTop() + topGap - naturalDiyaTop)
+    heading.position.set(centerX, top - buttonHeight / 2 - titleGap - heading.height / 2)
     const diyaWidth = diyaHeight * diyaAspect
     // Sit each diya's bowl on the title's baseline
     const diyaTop = heading.y + heading.height / 2 - diyaHeight * diyaBaseline

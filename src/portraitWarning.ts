@@ -2,6 +2,23 @@
 // with a notice asking to rotate the device, which clears once rotated
 const portrait = window.matchMedia("(orientation: portrait)")
 
+// The icon is drawn in black, so it's used as a mask over a gold fill
+// to show up on the black background
+const createCautionIcon = (size: number, url = "sprites/caution-mark.svg") => {
+  const icon = document.createElement("div")
+  icon.setAttribute("aria-hidden", "true")
+  const iconMask = `url(${url}) center / contain no-repeat`
+  Object.assign(icon.style, {
+    width: `${size}px`,
+    height: `${size}px`,
+    flexShrink: "0",
+    background: "#ffd700",
+    mask: iconMask,
+    webkitMask: iconMask,
+  })
+  return icon
+}
+
 const createPortraitWarning = () => {
   const overlay = document.createElement("div")
   overlay.setAttribute("role", "alert")
@@ -22,19 +39,7 @@ const createPortraitWarning = () => {
     textAlign: "center",
   })
 
-  // The icon is drawn in black, so it's used as a mask over a gold fill
-  // to show up on the black background
-  const icon = document.createElement("div")
-  icon.setAttribute("aria-hidden", "true")
-  const iconMask = "url(sprites/caution-mark.svg) center / contain no-repeat"
-  Object.assign(icon.style, {
-    width: "72px",
-    height: "72px",
-    flexShrink: "0",
-    background: "#ffd700",
-    mask: iconMask,
-    webkitMask: iconMask,
-  })
+  const icon = createCautionIcon(72)
 
   const heading = document.createElement("p")
   heading.textContent = "Portrait mode isn't supported"
@@ -56,4 +61,4 @@ const createPortraitWarning = () => {
   return {isShown: () => portrait.matches}
 }
 
-export {createPortraitWarning}
+export {createCautionIcon, createPortraitWarning}

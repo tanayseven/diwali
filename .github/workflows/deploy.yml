@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup tools with mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v5
 
       - name: Install dependencies
         run: npm install
@@ -27,7 +27,7 @@ jobs:
         run: npm run build
 
       - name: Configure AWS Credentials OIDC login
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: 'arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-for-diwali'
           aws-region: us-east-1
