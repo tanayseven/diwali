@@ -44,7 +44,14 @@ const createGreeting = (app: Application, message: string) => {
 
   layout()
   app.ticker.add(animate)
-  return {container, layout}
+  return {
+    container,
+    layout,
+    destroy() {
+      app.ticker.remove(animate)
+      container.destroy({children: true})
+    },
+  }
 }
 
 export {createGreeting}

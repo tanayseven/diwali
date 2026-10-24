@@ -20,7 +20,8 @@ const createDiyas = async (app: Application) => {
 
   const layout = () => {
     container.removeChildren().forEach(child => child.destroy())
-    const step = app.screen.width / 10
+    // On narrow screens space diyas by their own width so they don't overlap
+    const step = Math.max(app.screen.width / 10, frameSize * diyaScale + 16)
     for (const y of [10, app.screen.height - bottomOffset]) {
       for (let x = 0; x < app.screen.width; x += step) {
         const diya = new AnimatedSprite(frames)

@@ -14,7 +14,11 @@ const createCopyLinkButton = (app: Application, recipient: string) => {
 
   const flash = (message: string) => {
     button.text = message
-    setTimeout(() => button.text = label, 1500)
+    setTimeout(() => {
+      if (!button.destroyed) {
+        button.text = label
+      }
+    }, 1500)
   }
 
   button.on("pointertap", async () => {
@@ -28,7 +32,7 @@ const createCopyLinkButton = (app: Application, recipient: string) => {
   })
 
   const layout = () => {
-    button.position.set(app.screen.width / 2, app.screen.height * 0.7)
+    button.position.set(app.screen.width / 2, app.screen.height * 0.65)
   }
 
   layout()

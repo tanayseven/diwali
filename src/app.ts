@@ -1,6 +1,12 @@
-import {Application} from "pixi.js"
+import {Application, Container} from "pixi.js"
 
-type State = "input-from" | "input-to" | "ready"
+// A full-screen view that main.ts swaps in and out
+type Screen = {
+  container: Container
+  layout: () => void
+  destroy: () => void
+  onKeyDown?: (e: KeyboardEvent) => void
+}
 
 const createApp = async (): Promise<Application> => {
   const app = new Application()
@@ -13,4 +19,5 @@ const createApp = async (): Promise<Application> => {
   return app
 }
 
-export {createApp, State}
+export {createApp}
+export type {Screen}
