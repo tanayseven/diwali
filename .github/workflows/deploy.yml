@@ -29,9 +29,9 @@ jobs:
       - name: Configure AWS Credentials OIDC login
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: 'arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-for-diwali-ecard'
+          role-to-assume: 'arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-for-diwali'
           aws-region: us-east-1
 
       - name: Deploy to S3
         run: |
-          aws s3 cp dist/ s3://wish-diwali.tanay.tech/ --recursive
+          aws s3 cp dist/ s3://diwali.tanay.tech/ --recursive

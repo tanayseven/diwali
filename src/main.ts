@@ -1,5 +1,6 @@
 import {createApp} from "./app"
 import {createMenu} from "./menu"
+import {createPortraitWarning} from "./portraitWarning"
 
 const main = async () => {
   const app = await createApp()
@@ -10,8 +11,10 @@ const main = async () => {
     {label: "Fireworks", onSelect: () => {}},
     {label: "Craft Kandil", onSelect: () => {}},
     {label: "Decorate House", onSelect: () => {}},
+    {label: "Draw Rangoli", onSelect: () => {}},
   ])
   app.stage.addChild(menu.container)
+  const portraitWarning = createPortraitWarning()
 
   window.addEventListener("resize", () => {
     // resizeTo updates the renderer on the next frame, so lay out after it
@@ -19,7 +22,8 @@ const main = async () => {
   })
 
   window.addEventListener("keydown", e => {
-    if (e.ctrlKey || e.metaKey || e.altKey) {
+    // Don't let the keyboard drive the menu while it's hidden behind the warning
+    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown()) {
       return
     }
     menu.onKeyDown?.(e)

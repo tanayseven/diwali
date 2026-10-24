@@ -14,6 +14,9 @@ const createApp = async (): Promise<Application> => {
     background: 0x000000,
     resizeTo: window,
     antialias: true,
+    // Render at the screen's pixel density so text stays crisp on HiDPI displays
+    resolution: window.devicePixelRatio || 1,
+    autoDensity: true,
   })
   document.body.appendChild(app.canvas)
   return app

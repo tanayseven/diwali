@@ -11,6 +11,8 @@ const buttonHeight = 64
 const buttonGap = 16
 const maxButtonWidth = 420
 const sideGutter = 24
+// Space between the bottom of the title and the first button
+const titleGap = 48
 const highlight = 0xffd700
 // The SVG's own viewBox ratio (width / height)
 const diyaAspect = 460 / 380
@@ -45,6 +47,9 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
     style: {fontFamily: "monospace", fontSize: 48, fill: highlight},
   })
   heading.anchor.set(0.5)
+  // Snap centred text to whole pixels so it doesn't land on half pixels and blur.
+  // Only text: on Graphics it would also snap the rounded corners' curves
+  heading.roundPixels = true
   container.addChild(heading)
   const titleDiyas = [createTitleDiya(), createTitleDiya()]
 
@@ -65,6 +70,7 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
       style: {fontFamily: "monospace", fontSize: 26},
     })
     label.anchor.set(0.5)
+    label.roundPixels = true
     button.addChild(background, label)
     button.eventMode = "static"
     button.cursor = "pointer"
@@ -109,7 +115,7 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
     const top = app.screen.height / 2 - stackHeight / 2 + buttonHeight / 2
     // Leave room for a diya on each side of the title on narrow screens
     heading.style.fontSize = Math.min(48, app.screen.width / 18)
-    heading.position.set(centerX, top - buttonHeight / 2 - heading.height)
+    heading.position.set(centerX, top - buttonHeight / 2 - titleGap - heading.height / 2)
     const diyaHeight = heading.height * 1.8
     const diyaWidth = diyaHeight * diyaAspect
     // Sit each diya's bowl on the title's baseline
