@@ -9,6 +9,12 @@ const fairyLightAssets = colors.flatMap(color => frameNames.map(frame => frameUr
 // Each bulb fades on then back off again: off, 25, 50, 75, on, 75, 50, 25
 const pingPong = [0, 1, 2, 3, 4, 3, 2, 1]
 const frameDuration = 160
+// Per frame from off to on: the bulb is tinted darker towards off, and a copy of it
+// added on top glows brighter towards on, pushing both ends past what the SVGs draw
+const bulbTints = [0x2a2a2a, 0x8c8c8c, 0xffffff, 0xffffff, 0xffffff]
+const bloomAlphas = [0, 0, 0.3, 0.65, 1]
+// The added copy is a little larger so its light spreads beyond the bulb
+const bloomScale = 1.25
 
 // The SVG's copper bead, which the wire runs through, sits at (120, 131) of 240 x 300
 const beadAnchor = {x: 120 / 240, y: 131 / 300}
@@ -29,6 +35,7 @@ const fairyLightsHeight = (screenHeight: number) => hangY + sagFor(screenHeight)
 
 type Bulb = {
   sprite: Sprite
+  bloom: Sprite
   frames: Texture[]
   phase: number
 }
@@ -41,15 +48,22 @@ const createFairyLights = (app: Application) => {
   const container = new Container()
   const wire = new Graphics()
   const bulbLayer = new Container()
-  container.addChild(wire, bulbLayer)
+  // Above every bulb, so a bright bulb's light also falls on the wire and its neighbours
+  const bloomLayer = new Container()
+  container.addChild(wire, bulbLayer, bloomLayer)
   let bulbs: Bulb[] = []
   let elapsed = 0
 
   const tick = () => {
     elapsed += app.ticker.deltaMS
     const step = Math.floor(elapsed / frameDuration)
-    bulbs.forEach(({sprite, frames, phase}) => {
-      sprite.texture = frames[pingPong[(step + phase) % pingPong.length]]
+    bulbs.forEach(({sprite, bloom, frames, phase}) => {
+      const level = pingPong[(step + phase) % pingPong.length]
+      sprite.texture = frames[level]
+      sprite.tint = bulbTints[level]
+      bloom.texture = frames[level]
+      bloom.alpha = bloomAlphas[level]
+      bloom.visible = bloom.alpha > 0
     })
   }
   app.ticker.add(tick)
@@ -63,6 +77,7 @@ const createFairyLights = (app: Application) => {
 
     wire.clear()
     bulbLayer.removeChildren().forEach(child => child.destroy())
+    bloomLayer.removeChildren().forEach(child => child.destroy())
     bulbs = []
     for (let swag = 0; swag < swags; swag++) {
       const x0 = swag * span
@@ -82,8 +97,13 @@ const createFairyLights = (app: Application) => {
           (1 - t) ** 2 * hangY + 2 * (1 - t) * t * control.y + t ** 2 * hangY,
         )
         bulbLayer.addChild(sprite)
+        const bloom = new Sprite({texture: frames[0], blendMode: "add"})
+        bloom.anchor.copyFrom(sprite.anchor)
+        bloom.scale.set(bulbScale * bloomScale)
+        bloom.position.copyFrom(sprite.position)
+        bloomLayer.addChild(bloom)
         // Each bulb lags its neighbour by a frame so the brightness ripples along the string
-        bulbs.push({sprite, frames, phase: pingPong.length - (idx % pingPong.length)})
+        bulbs.push({sprite, bloom, frames, phase: pingPong.length - (idx % pingPong.length)})
       }
     }
     wire.stroke({width: 1.5, color: wireColor})
