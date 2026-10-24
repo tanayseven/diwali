@@ -1,5 +1,5 @@
 {
-	"name": "diwali-this-year",
+	"name": "diwali",
 	"type": "module",
 	"scripts": {
 		"build": "vite build",
