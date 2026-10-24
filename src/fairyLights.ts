@@ -4,6 +4,8 @@ const colors = ["red", "orange", "yellow", "green", "blue", "white"]
 const frameNames = ["f1-off", "f2-25", "f3-50", "f4-75", "f5-on"]
 const frameUrl = (color: string, frame: string) =>
   `sprites/fairy-lights/micro-seed-led/${color}/micro-seed-led-${color}-${frame}.svg`
+// Every frame of every colour, to be loaded before the lights are created
+const fairyLightAssets = colors.flatMap(color => frameNames.map(frame => frameUrl(color, frame)))
 // Each bulb fades on then back off again: off, 25, 50, 75, on, 75, 50, 25
 const pingPong = [0, 1, 2, 3, 4, 3, 2, 1]
 const frameDuration = 160
@@ -31,12 +33,10 @@ type Bulb = {
   phase: number
 }
 
-// Strings of fairy lights draped across the top of the screen in swags
-const createFairyLights = async (app: Application) => {
-  const textures: Record<string, Texture> = await Assets.load(
-    colors.flatMap(color => frameNames.map(frame => frameUrl(color, frame))),
-  )
-  const framesByColor = colors.map(color => frameNames.map(frame => textures[frameUrl(color, frame)]))
+// Strings of fairy lights draped across the top of the screen in swags.
+// Expects fairyLightAssets to have been loaded already
+const createFairyLights = (app: Application) => {
+  const framesByColor = colors.map(color => frameNames.map(frame => Assets.get<Texture>(frameUrl(color, frame))))
 
   const container = new Container()
   const wire = new Graphics()
@@ -102,4 +102,4 @@ const createFairyLights = async (app: Application) => {
   }
 }
 
-export {createFairyLights, fairyLightsHeight}
+export {createFairyLights, fairyLightAssets, fairyLightsHeight}
