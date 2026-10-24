@@ -1,8 +1,6 @@
 # Diwali this year
 
-A small [PixiJS](https://pixijs.com) web app about celebrating Diwali. It opens on a menu with five sections (Diyas, Fireworks, Craft Kandil, Decorate House and Draw Rangoli), which don't do anything yet.
-
-The app is landscape only: in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
+A small [PixiJS](https://pixijs.com) web app about celebrating Diwali.
 
 Live at: https://diwali.tanay.tech/
 
@@ -17,18 +15,16 @@ Live at: https://diwali.tanay.tech/
 [![Website](https://img.shields.io/website?style=for-the-badge&url=https%3A%2F%2Fdiwali.tanay.tech&up_message=online&down_message=offline)](https://diwali.tanay.tech)
 [![Deploy to S3](https://github.com/tanayseven/diwali/actions/workflows/deploy.yml/badge.svg)](https://github.com/tanayseven/diwali/actions/workflows/deploy.yml)
 
-## Folder structure
+## What's in it
 
-- `src` - source code for the [pixi.js](https://pixijs.com) app
-  - `main.ts` - entry point, sets up the menu and the portrait warning
-  - `menu.ts` - the touch and keyboard friendly menu, with an animated diya on each side of the title
-  - `portraitWarning.ts` - the full screen "rotate to landscape" notice shown in portrait mode
-  - `app.ts` - creates the Pixi application, rendering at the screen's pixel density so text stays sharp
-- `public` - static files copied as is into the build
-  - `favicon.svg` - the diya, cropped square for the browser tab
-  - `sprites/diwali-diya-animated.svg` - the animated diya beside the menu title
-  - `sprites/caution-mark.svg` - the warning icon on the portrait notice
-- `dist` - build output, contains index.html, the bundled js and static assets
+- **Loading screen:** a progress bar while the images and the start of the music load.
+- **Photosensitivity warning:** the app has flashing and twinkling lights, so it opens with a warning for people with photosensitive epilepsy. It fades out after a few seconds, or straight away on a tap or key press.
+- **Night scene:** a house under a starry sky, with strings of twinkling fairy lights hung across the top of the screen.
+- **Diyas:** the camera zooms in on the house's porch. Drag diyas from the inventory bar at the bottom to place them, pick them up again to move them, or drop them back on the bar. A back button (or Escape) returns at any point.
+- **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
+- **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
+
+All text is set in [Jaini](https://fonts.google.com/specimen/Jaini), loaded from Google Fonts.
 
 ## Development
 
