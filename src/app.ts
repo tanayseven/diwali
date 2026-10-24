@@ -8,6 +8,15 @@ type Screen = {
   onKeyDown?: (e: KeyboardEvent) => void
 }
 
+// Jaini comes from Google Fonts (linked in index.html); the fallback covers it failing to load
+const fontFamily = "Jaini, sans-serif"
+
+// Pixi draws text once and won't redraw it when a web font arrives later,
+// so wait for the font before anything draws text. If it fails, text uses the fallback
+const loadFont = () => document.fonts.load(`16px ${fontFamily}`).catch(err => {
+  console.error("Couldn't load the font", err)
+})
+
 const createApp = async (): Promise<Application> => {
   const app = new Application()
   await app.init({
@@ -22,5 +31,5 @@ const createApp = async (): Promise<Application> => {
   return app
 }
 
-export {createApp}
+export {createApp, fontFamily, loadFont}
 export type {Screen}

@@ -1,3 +1,5 @@
+import {fontFamily} from "./app"
+
 // The app is laid out for landscape screens, so in portrait it's covered
 // with a notice asking to rotate the device, which clears once rotated
 const portrait = window.matchMedia("(orientation: portrait)")
@@ -35,7 +37,7 @@ const createPortraitWarning = () => {
     boxSizing: "border-box",
     background: "#000000",
     color: "#ffffff",
-    fontFamily: "monospace",
+    fontFamily,
     textAlign: "center",
   })
 
@@ -43,11 +45,11 @@ const createPortraitWarning = () => {
 
   const heading = document.createElement("p")
   heading.textContent = "Portrait mode isn't supported"
-  Object.assign(heading.style, {margin: "0", fontSize: "24px", color: "#ffd700"})
+  Object.assign(heading.style, {margin: "0", fontSize: "32px", lineHeight: "1.1", color: "#ffd700"})
 
   const message = document.createElement("p")
   message.textContent = "This app can't be shown in portrait mode. Please rotate your device to landscape mode to continue."
-  Object.assign(message.style, {margin: "0", fontSize: "18px", lineHeight: "1.5", maxWidth: "420px"})
+  Object.assign(message.style, {margin: "0", fontSize: "22px", lineHeight: "1.4", maxWidth: "480px"})
 
   overlay.append(icon, heading, message)
   document.body.appendChild(overlay)
