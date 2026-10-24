@@ -1,4 +1,5 @@
 import {createApp} from "./app"
+import {createFairyLights, fairyLightsHeight} from "./fairyLights"
 import {createMenu} from "./menu"
 import {createPortraitWarning} from "./portraitWarning"
 
@@ -12,13 +13,25 @@ const main = async () => {
     {label: "Craft Kandil", onSelect: () => {}},
     {label: "Decorate House", onSelect: () => {}},
     {label: "Draw Rangoli", onSelect: () => {}},
-  ])
+  ], () => fairyLightsHeight(app.screen.height))
   app.stage.addChild(menu.container)
+  // The bulbs load in the background so the menu never waits on them
+  let fairyLights: Awaited<ReturnType<typeof createFairyLights>> | undefined
+  createFairyLights(app)
+    .then(lights => {
+      fairyLights = lights
+      // Hung behind the menu so the bulbs' glow never covers the buttons
+      app.stage.addChildAt(lights.container, 0)
+    })
+    .catch(err => console.error("Couldn't load the fairy lights", err))
   const portraitWarning = createPortraitWarning()
 
   window.addEventListener("resize", () => {
     // resizeTo updates the renderer on the next frame, so lay out after it
-    requestAnimationFrame(() => menu.layout())
+    requestAnimationFrame(() => {
+      fairyLights?.layout()
+      menu.layout()
+    })
   })
 
   window.addEventListener("keydown", e => {
