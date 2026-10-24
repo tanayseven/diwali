@@ -34,9 +34,8 @@ const main = async () => {
   screens = [loader]
   addBackgroundAssets()
   const failed = await loadAssets({
-    textures: [...backgroundAssets, ...fairyLightAssets],
-    // The diya is the same image the menu's title uses, so it's only listed once
-    images: [...diyaAssets, "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
+    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets],
+    images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
