@@ -1,13 +1,19 @@
-import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Sprite, Texture} from "pixi.js"
+import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, Sprite, Text, Texture} from "pixi.js"
+import {fontFamily} from "./app"
 import {createBackground} from "./background"
 
 type Background = ReturnType<typeof createBackground>
 
 const diyaUrl = "sprites/diwali-diya-animated.svg"
-// Every asset the inventory needs, to be loaded before it's created
+// Every image the inventory needs, to be preloaded (as an image, not a texture) first
 const diyaAssets = [diyaUrl]
+// The diya SVG's own size
+const diyaWidth = 460
+const diyaHeight = 380
 
 const slotCount = 5
+// How many diyas there are to place, all stacked in the first slot
+const diyaCount = 5
 // Big enough to be comfortable touch targets
 const slotSize = 76
 const slotGap = 12
@@ -22,26 +28,71 @@ const diyaAnchor = {x: 0.5, y: 345 / 380}
 const diyaSceneWidth = 36
 // Share of a slot's width the diya icon fills
 const iconFill = 0.85
-
-type Slot = {
-  container: Container
-  box: Graphics
-  icon: Sprite
-  filled: boolean
-}
+// The count badge in the slot's top-right corner
+const badgeRadius = 13
+const badgeInset = 6
 
 type Drag = {
   sprite: Sprite
-  // Where it came from, so it can go back if the drag is cancelled or dropped on a full slot
-  fromSlot?: Slot
+  // Where it came from, so it can go back if the drag is cancelled: the stack, or a spot
+  fromStack?: boolean
   fromScene?: PointData
 }
 
-// A bar of inventory slots along the bottom of the screen, each holding a diya to drag
-// into the scene. Placed diyas can be picked up again, moved, or dropped back in a slot.
-// Expects diyaAssets to have been loaded already
+// The diya SVG animates its flame with SMIL, which only runs while it's shown as an
+// image; turned straight into a texture it would freeze. So a hidden copy of it keeps
+// playing, and is drawn onto a canvas every frame for all the diyas to share. Where a
+// browser only draws an animated SVG's first frame, the diyas simply stay still
+const createLiveDiyaTexture = (app: Application) => {
+  const image = document.createElement("img")
+  image.src = diyaUrl
+  image.alt = ""
+  image.setAttribute("aria-hidden", "true")
+  // Browsers stop animating images that are off screen or visibility: hidden, so it
+  // stays on screen as a single transparent pixel instead. It's still drawn full size
+  Object.assign(image.style, {
+    position: "fixed",
+    left: "0",
+    top: "0",
+    width: "1px",
+    height: "1px",
+    opacity: "0",
+    pointerEvents: "none",
+  })
+  document.body.appendChild(image)
+  const canvas = document.createElement("canvas")
+  canvas.width = diyaWidth
+  canvas.height = diyaHeight
+  const context = canvas.getContext("2d")!
+  const texture = Texture.from(canvas)
+  const draw = () => {
+    if (!image.complete || image.naturalWidth === 0) {
+      return
+    }
+    context.clearRect(0, 0, diyaWidth, diyaHeight)
+    context.drawImage(image, 0, 0, diyaWidth, diyaHeight)
+    texture.source.update()
+  }
+  app.ticker.add(draw)
+  draw()
+  return {
+    texture,
+    destroy() {
+      app.ticker.remove(draw)
+      image.remove()
+      texture.destroy(true)
+    },
+  }
+}
+
+// A bar of inventory slots along the bottom of the screen. The first holds a stack of
+// diyas, with a badge counting how many are left, to drag one at a time into the scene;
+// the rest are empty for now. Placed diyas can be picked up again and moved, or dropped
+// anywhere on the bar to go back on the stack.
+// Expects diyaAssets to have been preloaded already
 const createDiyaInventory = (app: Application, background: Background) => {
-  const texture = Assets.get<Texture>(diyaUrl)
+  const liveDiya = createLiveDiyaTexture(app)
+  const {texture} = liveDiya
   const container = new Container()
   const hud = new Container()
   const panel = new Graphics()
@@ -52,53 +103,63 @@ const createDiyaInventory = (app: Application, background: Background) => {
   // Lower diyas are nearer, so they're drawn in front
   background.decorations.sortableChildren = true
   let drag: Drag | undefined
-  let hoveredSlot: Slot | undefined
+  let count = diyaCount
+  // Whether a dragged diya is over the bar, where letting go puts it back on the stack
+  let overBar = false
 
   const panelWidth = slotCount * slotSize + (slotCount - 1) * slotGap + panelPadding * 2
   const panelHeight = slotSize + panelPadding * 2
 
-  const renderSlot = (slot: Slot) => {
-    const active = slot === hoveredSlot
-    slot.box.clear()
-      .roundRect(-slotSize / 2, -slotSize / 2, slotSize, slotSize, 12)
-      .fill(0x1a1a1a)
-      .stroke({width: 3, color: active ? highlight : 0x555555})
-    slot.icon.visible = slot.filled
-    slot.container.cursor = slot.filled ? "grab" : "default"
-  }
-
-  const slots: Slot[] = Array.from({length: slotCount}, (_, idx) => {
-    const slotContainer = new Container()
+  const boxes = Array.from({length: slotCount}, (_, idx) => {
     const box = new Graphics()
-    const icon = new Sprite(texture)
-    icon.anchor.set(0.5)
-    icon.scale.set(slotSize * iconFill / texture.width)
-    slotContainer.addChild(box, icon)
-    slotContainer.position.set(
+    box.position.set(
       panelPadding + slotSize / 2 + idx * (slotSize + slotGap) - panelWidth / 2,
       panelPadding + slotSize / 2 - panelHeight / 2,
     )
-    slotContainer.eventMode = "static"
-    const slot: Slot = {container: slotContainer, box, icon, filled: true}
-    slotContainer.on("pointerdown", e => {
-      if (!slot.filled) {
-        return
-      }
-      slot.filled = false
-      renderSlot(slot)
-      startDrag(e, new Sprite(texture), {fromSlot: slot})
-    })
-    hud.addChild(slotContainer)
-    renderSlot(slot)
-    return slot
+    hud.addChild(box)
+    return box
   })
+  const stackBox = boxes[0]
 
-  // Which slot, if any, a point on screen is over
-  const slotAt = (point: PointData) => {
-    const local = hud.toLocal(point)
-    return slots.find(({container: slotContainer}) =>
-      Math.abs(local.x - slotContainer.x) <= slotSize / 2 && Math.abs(local.y - slotContainer.y) <= slotSize / 2)
+  const stack = new Container()
+  stack.position.copyFrom(stackBox.position)
+  stack.eventMode = "static"
+  stack.hitArea = {contains: (x: number, y: number) => Math.abs(x) <= slotSize / 2 && Math.abs(y) <= slotSize / 2}
+  const icon = new Sprite(texture)
+  icon.anchor.set(0.5)
+  icon.scale.set(slotSize * iconFill / texture.width)
+  const badge = new Container()
+  badge.position.set(slotSize / 2 - badgeInset, -slotSize / 2 + badgeInset)
+  const badgeCircle = new Graphics()
+    .circle(0, 0, badgeRadius)
+    .fill(highlight)
+    .stroke({width: 2, color: 0x000000})
+  const badgeLabel = new Text({text: "", style: {fontFamily, fontSize: 20, fill: 0x000000}})
+  badgeLabel.anchor.set(0.5)
+  badgeLabel.roundPixels = true
+  badge.addChild(badgeCircle, badgeLabel)
+  stack.addChild(icon, badge)
+  hud.addChild(stack)
+
+  const render = () => {
+    boxes.forEach(box => box.clear()
+      .roundRect(-slotSize / 2, -slotSize / 2, slotSize, slotSize, 12)
+      .fill(0x1a1a1a)
+      .stroke({width: 3, color: box === stackBox && overBar ? highlight : 0x555555}))
+    // An empty stack stays visible, faded, so it's clear where diyas go back
+    icon.alpha = count > 0 ? 1 : 0.35
+    badgeLabel.text = String(count)
+    stack.cursor = count > 0 ? "grab" : "default"
   }
+
+  stack.on("pointerdown", e => {
+    if (count === 0) {
+      return
+    }
+    count -= 1
+    render()
+    startDrag(e, new Sprite(texture), {fromStack: true})
+  })
 
   const overPanel = (point: PointData) => {
     const local = hud.toLocal(point)
@@ -112,10 +173,10 @@ const createDiyaInventory = (app: Application, background: Background) => {
     background.decorations.addChild(sprite)
   }
 
-  const putInSlot = (slot: Slot, sprite: Sprite) => {
+  const putOnStack = (sprite: Sprite) => {
     sprite.destroy()
-    slot.filled = true
-    renderSlot(slot)
+    count += 1
+    render()
   }
 
   const startDrag = (e: FederatedPointerEvent, sprite: Sprite, from: Omit<Drag, "sprite">) => {
@@ -128,21 +189,17 @@ const createDiyaInventory = (app: Application, background: Background) => {
     drag = {sprite, ...from}
   }
 
-  const setHoveredSlot = (slot: Slot | undefined) => {
-    const previous = hoveredSlot
-    hoveredSlot = slot
-    if (previous) {
-      renderSlot(previous)
-    }
-    if (slot) {
-      renderSlot(slot)
+  const setOverBar = (value: boolean) => {
+    if (overBar !== value) {
+      overBar = value
+      render()
     }
   }
 
   // Sends the dragged diya back where it came from
-  const returnDrag = ({sprite, fromSlot, fromScene}: Drag) => {
-    if (fromSlot) {
-      putInSlot(fromSlot, sprite)
+  const returnDrag = ({sprite, fromStack, fromScene}: Drag) => {
+    if (fromStack) {
+      putOnStack(sprite)
     } else if (fromScene) {
       makePickable(sprite)
       placeInScene(sprite, fromScene)
@@ -155,20 +212,17 @@ const createDiyaInventory = (app: Application, background: Background) => {
     }
     const current = drag
     drag = undefined
-    setHoveredSlot(undefined)
+    setOverBar(false)
     current.sprite.removeFromParent()
-    const slot = slotAt(at)
-    if (slot && !slot.filled) {
-      putInSlot(slot, current.sprite)
-    } else if (overPanel(at)) {
-      returnDrag(current)
+    if (overPanel(at)) {
+      putOnStack(current.sprite)
     } else {
       makePickable(current.sprite)
       placeInScene(current.sprite, background.toScene(at))
     }
   }
 
-  // A placed diya can be picked up again to move it or put it back in a slot
+  // A placed diya can be picked up again to move it or put it back on the stack
   const makePickable = (sprite: Sprite) => {
     sprite.eventMode = "static"
     sprite.cursor = "grab"
@@ -194,8 +248,7 @@ const createDiyaInventory = (app: Application, background: Background) => {
     }
     const at = toStage(e)
     drag.sprite.position.copyFrom(at)
-    const slot = slotAt(at)
-    setHoveredSlot(slot && !slot.filled ? slot : undefined)
+    setOverBar(overPanel(at))
   }
   const onPointerUp = (e: PointerEvent) => endDrag(toStage(e))
   window.addEventListener("pointermove", onPointerMove)
@@ -214,6 +267,7 @@ const createDiyaInventory = (app: Application, background: Background) => {
   }
 
   layout()
+  render()
 
   return {
     container,
@@ -229,7 +283,7 @@ const createDiyaInventory = (app: Application, background: Background) => {
       if (!interactive && drag) {
         const current = drag
         drag = undefined
-        setHoveredSlot(undefined)
+        setOverBar(false)
         current.sprite.removeFromParent()
         returnDrag(current)
       }
@@ -239,6 +293,7 @@ const createDiyaInventory = (app: Application, background: Background) => {
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
       container.destroy({children: true})
+      liveDiya.destroy()
     },
   }
 }

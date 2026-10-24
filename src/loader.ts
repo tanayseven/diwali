@@ -64,12 +64,17 @@ const preloadImage = (url: string) => new Promise<void>((resolve, reject) => {
 })
 
 // Loads every asset, reporting progress from 0 to 1, and returns the URLs that failed
-// so the caller can go on without them instead of getting stuck on the loader
+// so the caller can go on without them instead of getting stuck on the loader.
+// Anything loaded elsewhere can be waited on too, as a URL and its loading promise
 const loadAssets = async (
-  {textures, images}: {textures: string[], images: string[]},
+  {textures, images, others = []}: {
+    textures: string[]
+    images: string[]
+    others?: {url: string, load: Promise<unknown>}[]
+  },
   onProgress: (progress: number) => void,
 ): Promise<Set<string>> => {
-  const total = textures.length + images.length
+  const total = textures.length + images.length + others.length
   let done = 0
   const failed = new Set<string>()
   const track = (url: string, load: Promise<unknown>) => load
@@ -81,6 +86,7 @@ const loadAssets = async (
   await Promise.all([
     ...textures.map(url => track(url, Assets.load(url))),
     ...images.map(url => track(url, preloadImage(url))),
+    ...others.map(({url, load}) => track(url, load)),
   ])
   return failed
 }
