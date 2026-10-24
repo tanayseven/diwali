@@ -3,6 +3,7 @@ import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLig
 import {createLoader, loadAssets} from "./loader"
 import {createMenu} from "./menu"
 import {createPortraitWarning} from "./portraitWarning"
+import {showSplashWarning} from "./splashWarning"
 
 const main = async () => {
   const app = await createApp()
@@ -20,9 +21,11 @@ const main = async () => {
   screens = [loader]
   const failed = await loadAssets({
     textures: fairyLightAssets,
-    images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg"],
+    images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
   }, progress => loader.setProgress(progress))
   loader.destroy()
+  screens = []
+  await showSplashWarning()
 
   // These options don't open anything yet; only the menu exists so far
   const menu = createMenu(app, "Diwali this year", [

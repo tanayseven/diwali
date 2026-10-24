@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- caution-mark.svg's triangle without its "!", with flasher.svg cut out of it instead.
+     Both are from SVG Repo, www.svgrepo.com -->
+<svg width="800px" height="800px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<defs>
+	<mask id="flasher-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+		<rect width="512" height="512" fill="#ffffff"/>
+		<!-- flasher.svg, scaled 1.5x and centred in the triangle -->
+		<g transform="translate(112 186) scale(1.5)" fill="none">
+			<path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="1" stroke-width="12" d="M96 155.548c33.137 0 60-26.66 60-59.548 0-32.888-26.863-59.548-60-59.548S36 63.112 36 96c0 32.888 26.863 59.548 60 59.548Z"/>
+			<path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="12" d="M85.108 22v74H55.645l51.246 74V96h29.463L85.108 22Z"/>
+		</g>
+	</mask>
+</defs>
+<path fill="#000000" mask="url(#flasher-cutout)" d="M505.095,407.125L300.77,53.208c-9.206-15.944-26.361-25.849-44.774-25.849
+	c-18.412,0-35.552,9.905-44.751,25.849L6.905,407.109c-9.206,15.944-9.206,35.746,0,51.69
+	c9.206,15.944,26.354,25.842,44.758,25.842h408.674c18.405,0,35.568-9.897,44.759-25.842
+	C514.302,442.855,514.302,423.053,505.095,407.125z"/>
+</svg>
