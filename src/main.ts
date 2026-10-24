@@ -104,6 +104,7 @@ const main = async () => {
     footer.setInteractive(target === 0)
     backButton.setInteractive(target === 1)
     inventory?.setInteractive(target === 1)
+    background?.setPannable(target === 1)
   }
   app.ticker.add(() => {
     if (progress === target) {

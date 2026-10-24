@@ -1,4 +1,4 @@
-import {Application, Assets, Container, Graphics, PointData, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, Graphics, Point, PointData, Sprite, Texture} from "pixi.js"
 
 const skyUrl = "sprites/backgrounds/background-night.svg"
 const houseUrl = "sprites/house.svg"
@@ -19,8 +19,9 @@ type View = {x: number, y: number, width: number, height: number}
 // but never zoomed out past covering it, and never shows beyond the scene's edges.
 // The menu frames the bottom half so wide screens crop the sky, not the ground
 const menuView: View = {x: 0, y: sceneHeight / 2, width: sceneWidth, height: sceneHeight / 2}
-// From just above the lower roof's eaves down to the porch floor
-const porchView: View = {x: 380, y: 455, width: 520, height: 235}
+// A close-up of the middle of the porch, by the door and the chairs. It's tighter than
+// the porch, so the scene can be panned around from there
+const porchView: View = {x: 477.5, y: 499, width: 325, height: 147}
 
 const coverScale = (width: number, height: number) => Math.max(width / sceneWidth, height / sceneHeight)
 const fitScale = (view: View, width: number, height: number) =>
@@ -46,7 +47,9 @@ const lerp = (from: number, to: number, t: number) => from + (to - from) * t
 
 // The night sky with the house in it, covering the screen, under a dimming layer.
 // setFocus moves the camera from the menu's view (0) to the porch (1), clearing the
-// dimming layer on the way. Expects backgroundAssets to have been loaded already
+// dimming layer on the way. Once there, setPannable lets the scene be dragged around,
+// or scrolled with a wheel or trackpad, within its edges.
+// Expects backgroundAssets to have been loaded already
 const createBackground = (app: Application) => {
   const container = new Container()
   const scene = new Container()
@@ -60,14 +63,38 @@ const createBackground = (app: Application) => {
   const decorations = new Container()
   scene.addChild(decorations)
   const dim = new Graphics()
-  container.addChild(scene, dim)
+  // Catches presses on the scenery for panning. It's underneath the scene, so anything
+  // placed in it (like diyas) is pressed first, and it's only there while pannable
+  const panSurface = new Container()
+  panSurface.hitArea = app.screen
+  panSurface.cursor = "grab"
+  panSurface.eventMode = "none"
+  container.addChild(panSurface, scene, dim)
   let focus = 0
+  // How far the porch view has been panned, in scene units. It eases in and out with
+  // the focus, so the menu's view is never panned
+  const pan = {x: 0, y: 0}
+  let pannable = false
+  let panFrom: Point | undefined
+
+  // Keeps the panned porch view inside the scene's edges on this screen
+  const clampPan = () => {
+    const {width, height} = app.screen
+    const scale = fitScale(porchView, width, height)
+    const clampAxis = (centre: number, half: number, size: number) =>
+      half * 2 >= size ? size / 2 : Math.min(size - half, Math.max(half, centre))
+    const centreX = porchView.x + porchView.width / 2
+    const centreY = porchView.y + porchView.height / 2
+    pan.x = clampAxis(centreX + pan.x, width / 2 / scale, sceneWidth) - centreX
+    pan.y = clampAxis(centreY + pan.y, height / 2 / scale, sceneHeight) - centreY
+  }
 
   const layout = () => {
     const {width, height} = app.screen
+    clampPan()
     const view: View = {
-      x: lerp(menuView.x, porchView.x, focus),
-      y: lerp(menuView.y, porchView.y, focus),
+      x: lerp(menuView.x, porchView.x + pan.x, focus),
+      y: lerp(menuView.y, porchView.y + pan.y, focus),
       width: lerp(menuView.width, porchView.width, focus),
       height: lerp(menuView.height, porchView.height, focus),
     }
@@ -82,6 +109,48 @@ const createBackground = (app: Application) => {
     )
     dim.clear().rect(0, 0, width, height).fill({color: 0x000000, alpha: dimAlpha * (1 - focus)})
   }
+
+  // Moves the view by a distance on screen, the way the scenery is dragged
+  const panBy = (dx: number, dy: number) => {
+    pan.x -= dx / scene.scale.x
+    pan.y -= dy / scene.scale.y
+    layout()
+  }
+
+  panSurface.on("pointerdown", e => {
+    panFrom = e.global.clone()
+    panSurface.cursor = "grabbing"
+  })
+  // Moves and releases are heard on the window, so a pan carries on off the canvas
+  const toStage = (e: PointerEvent) => {
+    const point = new Point()
+    app.renderer.events.mapPositionToPoint(point, e.clientX, e.clientY)
+    return point
+  }
+  const onPointerMove = (e: PointerEvent) => {
+    if (!panFrom) {
+      return
+    }
+    const at = toStage(e)
+    panBy(at.x - panFrom.x, at.y - panFrom.y)
+    panFrom = at
+  }
+  const endPan = () => {
+    panFrom = undefined
+    panSurface.cursor = "grab"
+  }
+  const onWheel = (e: WheelEvent) => {
+    if (!pannable || e.ctrlKey) {
+      return
+    }
+    // Wheels and trackpads scroll the scenery past, like scrolling a page
+    e.preventDefault()
+    panBy(-e.deltaX, -e.deltaY)
+  }
+  window.addEventListener("pointermove", onPointerMove)
+  window.addEventListener("pointerup", endPan)
+  window.addEventListener("pointercancel", endPan)
+  window.addEventListener("wheel", onWheel, {passive: false})
 
   layout()
 
@@ -101,7 +170,18 @@ const createBackground = (app: Application) => {
       focus = value
       layout()
     },
+    setPannable(value: boolean) {
+      pannable = value
+      panSurface.eventMode = value ? "static" : "none"
+      if (!value) {
+        endPan()
+      }
+    },
     destroy() {
+      window.removeEventListener("pointermove", onPointerMove)
+      window.removeEventListener("pointerup", endPan)
+      window.removeEventListener("pointercancel", endPan)
+      window.removeEventListener("wheel", onWheel)
       container.destroy({children: true})
     },
   }
