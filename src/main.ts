@@ -1,7 +1,10 @@
 import {Screen, createApp, loadFont} from "./app"
+import {createAudioControl} from "./audioControl"
 import {addBackgroundAssets, backgroundAssets, createBackground} from "./background"
 import {createBackButton} from "./backButton"
+import {createDiyaInventory, diyaAssets} from "./diyaInventory"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
+import {createFooter} from "./footer"
 import {createLoader, loadAssets} from "./loader"
 import {createMenu} from "./menu"
 import {createPortraitWarning} from "./portraitWarning"
@@ -16,6 +19,8 @@ const easeInOut = (t: number) => t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 
 const main = async () => {
   const [app] = await Promise.all([createApp(), loadFont()])
   const portraitWarning = createPortraitWarning()
+  // Available on every screen, from the loader on
+  createAudioControl()
   // Whatever is on screen right now, laid out again whenever the window changes size
   let screens: Pick<Screen, "layout">[] = []
 
@@ -29,7 +34,7 @@ const main = async () => {
   screens = [loader]
   addBackgroundAssets()
   const failed = await loadAssets({
-    textures: [...backgroundAssets, ...fairyLightAssets],
+    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets],
     images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
   }, progress => loader.setProgress(progress))
   loader.destroy()
@@ -44,6 +49,7 @@ const main = async () => {
     {label: "Decorate House", onSelect: () => {}},
     {label: "Draw Rangoli", onSelect: () => {}},
   ], () => fairyLightsHeight(app.screen.height))
+  const footer = createFooter()
   const backButton = createBackButton(app, () => goTo(0))
   app.stage.addChild(menu.container, backButton.container)
   screens = [menu, backButton]
@@ -62,6 +68,14 @@ const main = async () => {
     app.stage.addChildAt(background.container, 0)
     screens.unshift(background)
   }
+  // Diyas are placed in the scene, so they need the background to go anywhere
+  let inventory: ReturnType<typeof createDiyaInventory> | undefined
+  if (background && diyaAssets.every(url => !failed.has(url))) {
+    inventory = createDiyaInventory(app, background)
+    // On top of everything, so a dragged diya is never hidden
+    app.stage.addChild(inventory.container)
+    screens.push(inventory)
+  }
 
   // Everything about moving between the menu (0) and the diyas scene (1) follows one
   // progress value, so going back mid-way simply reverses from wherever it got to
@@ -72,16 +86,22 @@ const main = async () => {
     // The menu and lights fade out over the first part, the back button fades in at the end
     const menuAlpha = 1 - clamp(progress / 0.3)
     menu.setOpacity(menuAlpha)
+    footer.setOpacity(menuAlpha)
     if (fairyLights) {
       fairyLights.container.alpha = menuAlpha
       fairyLights.container.visible = menuAlpha > 0
     }
-    backButton.setOpacity(clamp((progress - 0.7) / 0.3))
+    // The scene's controls fade in at the end
+    const controlsAlpha = clamp((progress - 0.7) / 0.3)
+    backButton.setOpacity(controlsAlpha)
+    inventory?.setOpacity(controlsAlpha)
   }
   const goTo = (value: number) => {
     target = value
     menu.setInteractive(target === 0)
+    footer.setInteractive(target === 0)
     backButton.setInteractive(target === 1)
+    inventory?.setInteractive(target === 1)
   }
   app.ticker.add(() => {
     if (progress === target) {

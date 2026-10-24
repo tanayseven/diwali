@@ -27,7 +27,8 @@ const createPortraitWarning = () => {
   Object.assign(overlay.style, {
     position: "fixed",
     inset: "0",
-    zIndex: "1",
+    // Above everything, including the speaker button
+    zIndex: "3",
     display: "none",
     flexDirection: "column",
     alignItems: "center",

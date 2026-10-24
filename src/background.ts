@@ -1,4 +1,4 @@
-import {Application, Assets, Container, Graphics, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, Graphics, PointData, Sprite, Texture} from "pixi.js"
 
 const skyUrl = "sprites/backgrounds/background-night.svg"
 const houseUrl = "sprites/house.svg"
@@ -56,6 +56,9 @@ const createBackground = (app: Application) => {
   house.scale.set(houseHeight / house.texture.height)
   house.position.set(sceneWidth / 2, houseBottom)
   scene.addChild(house)
+  // Things placed in the scene, like diyas, so they move with the camera
+  const decorations = new Container()
+  scene.addChild(decorations)
   const dim = new Graphics()
   container.addChild(scene, dim)
   let focus = 0
@@ -84,7 +87,16 @@ const createBackground = (app: Application) => {
 
   return {
     container,
+    decorations,
     layout,
+    // Where a point on screen falls in the scene, in scene units
+    toScene(point: PointData) {
+      return scene.toLocal(point)
+    },
+    // How many screen pixels one scene unit currently spans
+    scale() {
+      return scene.scale.x
+    },
     setFocus(value: number) {
       focus = value
       layout()
