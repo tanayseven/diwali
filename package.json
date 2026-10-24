@@ -1,5 +1,5 @@
 {
-	"name": "happy-diwali",
+	"name": "diwali-this-year",
 	"type": "module",
 	"scripts": {
 		"build": "vite build",

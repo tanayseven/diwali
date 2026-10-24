@@ -12,6 +12,25 @@ const buttonGap = 16
 const maxButtonWidth = 420
 const sideGutter = 24
 const highlight = 0xffd700
+// The SVG's own viewBox ratio (width / height)
+const diyaAspect = 460 / 380
+// The lamp's bowl ends this far down the SVG, below that is only its shadow
+const diyaBaseline = 345 / 380
+// Share of the SVG's width that's empty space either side of the lamp
+const diyaSidePadding = 0.1
+const diyaGap = 12
+
+// The diya SVG animates with SMIL, which stops once Pixi rasterises it,
+// so it sits over the canvas as an <img> instead
+const createTitleDiya = () => {
+  const img = document.createElement("img")
+  img.src = "sprites/diwali-diya-animated.svg"
+  img.alt = ""
+  img.style.position = "absolute"
+  img.style.pointerEvents = "none"
+  document.body.appendChild(img)
+  return img
+}
 
 type Button = {
   container: Container
@@ -27,6 +46,7 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
   })
   heading.anchor.set(0.5)
   container.addChild(heading)
+  const titleDiyas = [createTitleDiya(), createTitleDiya()]
 
   let selected = 0
   let pressed = -1
@@ -87,8 +107,23 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
     buttonWidth = Math.min(maxButtonWidth, app.screen.width - sideGutter * 2)
     const stackHeight = buttons.length * buttonHeight + (buttons.length - 1) * buttonGap
     const top = app.screen.height / 2 - stackHeight / 2 + buttonHeight / 2
-    heading.style.fontSize = Math.min(48, app.screen.width / 10)
+    // Leave room for a diya on each side of the title on narrow screens
+    heading.style.fontSize = Math.min(48, app.screen.width / 18)
     heading.position.set(centerX, top - buttonHeight / 2 - heading.height)
+    const diyaHeight = heading.height * 1.8
+    const diyaWidth = diyaHeight * diyaAspect
+    // Sit each diya's bowl on the title's baseline
+    const diyaTop = heading.y + heading.height / 2 - diyaHeight * diyaBaseline
+    titleDiyas.forEach((img, idx) => {
+      const side = idx === 0 ? -1 : 1
+      const offset = heading.width / 2 + diyaGap + diyaWidth / 2 - diyaWidth * diyaSidePadding
+      img.style.width = `${diyaWidth}px`
+      img.style.height = `${diyaHeight}px`
+      img.style.left = `${centerX + side * offset - diyaWidth / 2}px`
+      img.style.top = `${diyaTop}px`
+      // Mirror the right diya so both spouts and flames point in at the title
+      img.style.transform = side > 0 ? "scaleX(-1)" : ""
+    })
     buttons.forEach(({container: button, label}, idx) => {
       label.style.fontSize = Math.min(26, buttonWidth / 13)
       button.position.set(centerX, top + idx * (buttonHeight + buttonGap))
@@ -101,7 +136,10 @@ const createMenu = (app: Application, title: string, options: MenuOption[]): Scr
   return {
     container,
     layout,
-    destroy: () => container.destroy({children: true}),
+    destroy() {
+      titleDiyas.forEach(img => img.remove())
+      container.destroy({children: true})
+    },
     onKeyDown(e) {
       if (e.key === "ArrowUp") {
         e.preventDefault()

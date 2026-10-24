@@ -1,4 +1,4 @@
-# Happy Diwali e-card
+# Diwali this year
 
 Live at: https://wish-diwali.tanay.tech/
 
