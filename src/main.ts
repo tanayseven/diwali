@@ -1,10 +1,17 @@
 import {Screen, createApp, loadFont} from "./app"
 import {addBackgroundAssets, backgroundAssets, createBackground} from "./background"
+import {createBackButton} from "./backButton"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
 import {createLoader, loadAssets} from "./loader"
 import {createMenu} from "./menu"
 import {createPortraitWarning} from "./portraitWarning"
 import {showSplashWarning} from "./splashWarning"
+
+// How long the camera takes to move between the menu and a scene
+const transitionDuration = 1400
+
+const clamp = (value: number) => Math.min(1, Math.max(0, value))
+const easeInOut = (t: number) => t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
 
 const main = async () => {
   const [app] = await Promise.all([createApp(), loadFont()])
@@ -29,36 +36,75 @@ const main = async () => {
   screens = []
   await showSplashWarning()
 
-  // These options don't open anything yet; only the menu exists so far
+  // Only "Diyas" opens anything so far: it zooms the camera onto the house's porch
   const menu = createMenu(app, "Diwali this year", [
-    {label: "Diyas", onSelect: () => {}},
+    {label: "Diyas", onSelect: () => goTo(1)},
     {label: "Fireworks", onSelect: () => {}},
     {label: "Craft Kandil", onSelect: () => {}},
     {label: "Decorate House", onSelect: () => {}},
     {label: "Draw Rangoli", onSelect: () => {}},
   ], () => fairyLightsHeight(app.screen.height))
-  app.stage.addChild(menu.container)
-  screens = [menu]
+  const backButton = createBackButton(app, () => goTo(0))
+  app.stage.addChild(menu.container, backButton.container)
+  screens = [menu, backButton]
   // Without every frame the lights can't twinkle, so leave them out rather than break the menu
+  let fairyLights: ReturnType<typeof createFairyLights> | undefined
   if (fairyLightAssets.every(url => !failed.has(url))) {
-    const fairyLights = createFairyLights(app)
+    fairyLights = createFairyLights(app)
     // Hung behind the menu so the bulbs' glow never covers the buttons
     app.stage.addChildAt(fairyLights.container, 0)
     screens.unshift(fairyLights)
   }
   // Below the lights and the menu, so its dimming layer only darkens the scene
+  let background: ReturnType<typeof createBackground> | undefined
   if (backgroundAssets.every(url => !failed.has(url))) {
-    const background = createBackground(app)
+    background = createBackground(app)
     app.stage.addChildAt(background.container, 0)
     screens.unshift(background)
   }
 
+  // Everything about moving between the menu (0) and the diyas scene (1) follows one
+  // progress value, so going back mid-way simply reverses from wherever it got to
+  let progress = 0
+  let target = 0
+  const apply = () => {
+    background?.setFocus(easeInOut(progress))
+    // The menu and lights fade out over the first part, the back button fades in at the end
+    const menuAlpha = 1 - clamp(progress / 0.3)
+    menu.setOpacity(menuAlpha)
+    if (fairyLights) {
+      fairyLights.container.alpha = menuAlpha
+      fairyLights.container.visible = menuAlpha > 0
+    }
+    backButton.setOpacity(clamp((progress - 0.7) / 0.3))
+  }
+  const goTo = (value: number) => {
+    target = value
+    menu.setInteractive(target === 0)
+    backButton.setInteractive(target === 1)
+  }
+  app.ticker.add(() => {
+    if (progress === target) {
+      return
+    }
+    const step = app.ticker.deltaMS / transitionDuration
+    progress = target > progress ? Math.min(target, progress + step) : Math.max(target, progress - step)
+    apply()
+  })
+  goTo(0)
+  apply()
+
   window.addEventListener("keydown", e => {
-    // Don't let the keyboard drive the menu while it's hidden behind the warning
+    // Don't let the keyboard drive anything while it's hidden behind the warning
     if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown()) {
       return
     }
-    menu.onKeyDown?.(e)
+    if (target === 0) {
+      menu.onKeyDown?.(e)
+    } else if (e.key === "Escape" || e.key === "Backspace") {
+      e.preventDefault()
+      goTo(0)
+    }
   })
 }
 

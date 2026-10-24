@@ -48,7 +48,7 @@ const createMenu = (
   title: string,
   options: MenuOption[],
   clearTop: () => number = () => 0,
-): Screen => {
+): Screen & {setOpacity: (alpha: number) => void, setInteractive: (interactive: boolean) => void} => {
   const container = new Container()
   const heading = new Text({
     text: title,
@@ -153,6 +153,18 @@ const createMenu = (
   return {
     container,
     layout,
+    // The title diyas are <img>s over the canvas, so they fade separately
+    setOpacity(alpha) {
+      container.alpha = alpha
+      container.visible = alpha > 0
+      titleDiyas.forEach(img => {
+        img.style.opacity = String(alpha)
+        img.style.visibility = alpha > 0 ? "visible" : "hidden"
+      })
+    },
+    setInteractive(interactive) {
+      container.eventMode = interactive ? "passive" : "none"
+    },
     destroy() {
       titleDiyas.forEach(img => img.remove())
       container.destroy({children: true})
