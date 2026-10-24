@@ -1,4 +1,4 @@
-import {Screen, createApp} from "./app"
+import {Screen, createApp, loadFont} from "./app"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
 import {createLoader, loadAssets} from "./loader"
 import {createMenu} from "./menu"
@@ -6,7 +6,7 @@ import {createPortraitWarning} from "./portraitWarning"
 import {showSplashWarning} from "./splashWarning"
 
 const main = async () => {
-  const app = await createApp()
+  const [app] = await Promise.all([createApp(), loadFont()])
   const portraitWarning = createPortraitWarning()
   // Whatever is on screen right now, laid out again whenever the window changes size
   let screens: Pick<Screen, "layout">[] = []

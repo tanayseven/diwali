@@ -1,5 +1,5 @@
 import {Application, Assets, Container, Graphics, Text} from "pixi.js"
-import {Screen} from "./app"
+import {Screen, fontFamily} from "./app"
 
 const highlight = 0xffd700
 const maxBarWidth = 320
@@ -12,7 +12,7 @@ const createLoader = (app: Application): Screen & {setProgress: (progress: numbe
   const container = new Container()
   const label = new Text({
     text: "Loading…",
-    style: {fontFamily: "monospace", fontSize: 26, fill: highlight},
+    style: {fontFamily, fontSize: 32, fill: highlight},
   })
   label.anchor.set(0.5)
   label.roundPixels = true

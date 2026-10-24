@@ -1,5 +1,5 @@
 import {Application, Container, Graphics, Text} from "pixi.js"
-import {Screen} from "./app"
+import {Screen, fontFamily} from "./app"
 
 type MenuOption = {
   label: string
@@ -52,7 +52,7 @@ const createMenu = (
   const container = new Container()
   const heading = new Text({
     text: title,
-    style: {fontFamily: "monospace", fontSize: 48, fill: highlight},
+    style: {fontFamily, fontSize: 60, fill: highlight},
   })
   heading.anchor.set(0.5)
   // Snap centred text to whole pixels so it doesn't land on half pixels and blur.
@@ -75,7 +75,7 @@ const createMenu = (
     const background = new Graphics()
     const label = new Text({
       text: option.label,
-      style: {fontFamily: "monospace", fontSize: 26},
+      style: {fontFamily, fontSize: 32},
     })
     label.anchor.set(0.5)
     label.roundPixels = true
@@ -121,7 +121,7 @@ const createMenu = (
     buttonWidth = Math.min(maxButtonWidth, app.screen.width - sideGutter * 2)
     const stackHeight = buttons.length * buttonHeight + (buttons.length - 1) * buttonGap
     // Leave room for a diya on each side of the title on narrow screens
-    heading.style.fontSize = Math.min(48, app.screen.width / 18)
+    heading.style.fontSize = Math.min(60, app.screen.width / 14)
     const diyaHeight = heading.height * 1.8
     let top = app.screen.height / 2 - stackHeight / 2 + buttonHeight / 2
     // Move the whole menu down if the diyas would come too close to the top's clear space
@@ -142,7 +142,7 @@ const createMenu = (
       img.style.transform = side > 0 ? "scaleX(-1)" : ""
     })
     buttons.forEach(({container: button, label}, idx) => {
-      label.style.fontSize = Math.min(26, buttonWidth / 13)
+      label.style.fontSize = Math.min(32, buttonWidth / 11)
       button.position.set(centerX, top + idx * (buttonHeight + buttonGap))
     })
     render()
