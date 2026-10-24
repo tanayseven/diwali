@@ -7,6 +7,9 @@ const defaultVolume = 0.5
 // How long a press has to last to open the slider instead of toggling mute
 const holdDuration = 400
 const storageKey = "diwali-audio"
+// Some browsers (notably iOS Safari) won't buffer audio before a tap, so the loader
+// stops waiting for the first track after this long rather than getting stuck
+const readyTimeout = 8000
 
 // The volume and mute setting are remembered between visits. Storage can be
 // unavailable (private windows, blocked site data), so it's only a convenience
@@ -44,22 +47,47 @@ const speakerIcon = (muted: boolean) => `
 // pressing and holding on touch screens, opens a volume slider beside it
 const createAudioControl = () => {
   const settings = loadSettings()
-  let trackIdx = 0
-  const audio = new Audio(tracks[trackIdx])
-  audio.preload = "auto"
-  audio.addEventListener("ended", () => {
-    trackIdx = (trackIdx + 1) % tracks.length
-    audio.src = tracks[trackIdx]
-    play()
+  // One player per track, so the next one is already buffered when the current ends.
+  // Only the first loads straight away; the rest wait until it's ready
+  const players = tracks.map((src, idx) => {
+    const player = new Audio()
+    player.preload = idx === 0 ? "auto" : "none"
+    player.src = src
+    return player
   })
+  let current = 0
+  players.forEach((player, idx) => player.addEventListener("ended", () => {
+    current = (idx + 1) % players.length
+    players[current].currentTime = 0
+    play()
+  }))
 
   const play = () => {
     if (settings.muted || document.hidden) {
       return
     }
     // Browsers refuse to play before the person has interacted with the page
-    audio.play().catch(() => {})
+    players[current].play().catch(() => {})
   }
+  const pause = () => players[current].pause()
+
+  // Settles once enough of the first track has buffered to play it through, so the
+  // music can start the moment it's allowed to. The rest of it keeps buffering after,
+  // and the other tracks start loading then, so they don't slow down the loader
+  const ready = new Promise<void>((resolve, reject) => {
+    const first = players[0]
+    if (first.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      resolve()
+    }
+    first.addEventListener("canplaythrough", () => resolve(), {once: true})
+    first.addEventListener("error", () => reject(new Error(`Couldn't load ${tracks[0]}`)), {once: true})
+    setTimeout(resolve, readyTimeout)
+  }).finally(() => {
+    players.slice(1).forEach(player => {
+      player.preload = "auto"
+      player.load()
+    })
+  })
 
   // Start on the first tap, click or key press, as browsers block audio until then
   const startOnGesture = () => {
@@ -73,7 +101,7 @@ const createAudioControl = () => {
   // Pause while the tab is hidden, and pick up again when it's back
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      audio.pause()
+      pause()
     } else {
       play()
     }
@@ -134,8 +162,10 @@ const createAudioControl = () => {
     button.innerHTML = speakerIcon(silent)
     button.setAttribute("aria-label", silent ? "Unmute music" : "Mute music")
     slider.value = String(settings.muted ? 0 : settings.volume)
-    audio.volume = settings.volume
-    audio.muted = settings.muted
+    players.forEach(player => {
+      player.volume = settings.volume
+      player.muted = settings.muted
+    })
   }
 
   const setSliderOpen = (open: boolean) => {
@@ -157,7 +187,7 @@ const createAudioControl = () => {
     saveSettings(settings)
     render()
     if (muted) {
-      audio.pause()
+      pause()
     } else {
       play()
     }
@@ -238,6 +268,8 @@ const createAudioControl = () => {
 
   render()
   setSliderOpen(false)
+
+  return {ready, firstTrack: tracks[0]}
 }
 
 export {createAudioControl}

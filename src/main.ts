@@ -20,7 +20,7 @@ const main = async () => {
   const [app] = await Promise.all([createApp(), loadFont()])
   const portraitWarning = createPortraitWarning()
   // Available on every screen, from the loader on
-  createAudioControl()
+  const audio = createAudioControl()
   // Whatever is on screen right now, laid out again whenever the window changes size
   let screens: Pick<Screen, "layout">[] = []
 
@@ -34,8 +34,11 @@ const main = async () => {
   screens = [loader]
   addBackgroundAssets()
   const failed = await loadAssets({
-    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets],
-    images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
+    textures: [...backgroundAssets, ...fairyLightAssets],
+    // The diya is the same image the menu's title uses, so it's only listed once
+    images: [...diyaAssets, "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
+    // Enough of the first track to start the music without a wait
+    others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
   loader.destroy()
   screens = []
