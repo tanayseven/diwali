@@ -1,4 +1,5 @@
 import {Screen, createApp, loadFont} from "./app"
+import {addBackgroundAssets, backgroundAssets, createBackground} from "./background"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
 import {createLoader, loadAssets} from "./loader"
 import {createMenu} from "./menu"
@@ -19,8 +20,9 @@ const main = async () => {
   const loader = createLoader(app)
   app.stage.addChild(loader.container)
   screens = [loader]
+  addBackgroundAssets()
   const failed = await loadAssets({
-    textures: fairyLightAssets,
+    textures: [...backgroundAssets, ...fairyLightAssets],
     images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
   }, progress => loader.setProgress(progress))
   loader.destroy()
@@ -43,6 +45,12 @@ const main = async () => {
     // Hung behind the menu so the bulbs' glow never covers the buttons
     app.stage.addChildAt(fairyLights.container, 0)
     screens.unshift(fairyLights)
+  }
+  // Below the lights and the menu, so its dimming layer only darkens the scene
+  if (backgroundAssets.every(url => !failed.has(url))) {
+    const background = createBackground(app)
+    app.stage.addChildAt(background.container, 0)
+    screens.unshift(background)
   }
 
   window.addEventListener("keydown", e => {
