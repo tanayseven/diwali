@@ -1,8 +1,10 @@
 import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Rectangle, Sprite, Text, Texture} from "pixi.js"
 import {fontFamily} from "./app"
+import type {createAudioControl} from "./audioControl"
 import {createBackground} from "./background"
 
 type Background = ReturnType<typeof createBackground>
+type AudioControl = ReturnType<typeof createAudioControl>
 
 // A diya's drawing for each combination of wick and oil, all framed the same way
 const diyaUrls = {
@@ -23,6 +25,8 @@ const matchFrameUrls = [
   "1-unlit", "2-strike", "3-flare", "4-catch", "5-lit",
   "6-burning-25", "7-burning-50", "8-burning-75", "9-ember", "10-burnt-out",
 ].map(frame => `sprites/diya/matchstick-${frame}.svg`)
+// Heard as a match is struck to light a diya
+const matchSoundUrl = "audio/effects/matchstick-lit.mp3"
 // Every texture the inventory needs, to be loaded before it's created. The animated
 // diya is preloaded separately, as an image
 const diyaAssets = [...Object.values(diyaUrls), wickUrl, oilBottleUrl, pouringBottleUrl, ...matchFrameUrls]
@@ -186,10 +190,11 @@ type Drag =
 // into the scene one at a time; placed ones can be picked up and moved, or dropped
 // anywhere on the bar to go back on their stack. A wick dragged onto a placed diya
 // goes into it, and the bottle dragged onto one pours oil into it, in either order.
-// The matchstick dragged onto a diya with both lights it.
+// The matchstick dragged onto a diya with both lights it, with the sound of it striking.
 // Expects diyaAssets to have been loaded already
-const createDiyaInventory = (app: Application, background: Background) => {
+const createDiyaInventory = (app: Application, background: Background, audio: AudioControl) => {
   const {emptyDiyas, wicks, oilBottle, matchstick, items} = createItems()
+  const playMatchSound = audio.createEffect(matchSoundUrl)
   const litDiya = createLiveDiyaTexture(app)
   const container = new Container()
   const hud = new Container()
@@ -396,6 +401,7 @@ const createDiyaInventory = (app: Application, background: Background) => {
     match.zIndex = diya.sprite.zIndex + 0.5
     match.eventMode = "none"
     background.decorations.addChild(match)
+    playMatchSound()
     // Striking runs from the strike frame up to lit, then burning from there to the end
     const strikeEnd = (matchLitFrame - 1) * matchStrikeFrame
     const burnEnd = strikeEnd + (matchFrameUrls.length - 1 - matchLitFrame) * matchBurnFrame

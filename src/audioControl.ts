@@ -267,10 +267,25 @@ const createAudioControl = () => {
     }
   })
 
+  // A sound effect, loaded now and played at the music's volume, unless it's muted.
+  // Each play is a fresh copy of it, so quick repeats overlap instead of cutting off
+  const createEffect = (src: string) => {
+    const effect = new Audio(src)
+    effect.preload = "auto"
+    return () => {
+      if (settings.muted) {
+        return
+      }
+      const copy = effect.cloneNode() as HTMLAudioElement
+      copy.volume = settings.volume
+      copy.play().catch(() => {})
+    }
+  }
+
   render()
   setSliderOpen(false)
 
-  return {ready, firstTrack: tracks[0]}
+  return {ready, firstTrack: tracks[0], createEffect}
 }
 
 export {createAudioControl}

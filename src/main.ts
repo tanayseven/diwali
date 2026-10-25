@@ -74,7 +74,7 @@ const main = async () => {
   // Diyas are placed in the scene, so they need the background to go anywhere
   let inventory: ReturnType<typeof createDiyaInventory> | undefined
   if (background && diyaAssets.every(url => !failed.has(url))) {
-    inventory = createDiyaInventory(app, background)
+    inventory = createDiyaInventory(app, background, audio)
     // On top of everything, so a dragged diya is never hidden
     app.stage.addChild(inventory.container)
     screens.push(inventory)
