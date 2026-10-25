@@ -1,3 +1,4 @@
+import {LL} from "./locale"
 const tracks = [
   "audio/background/diwali-vibes-1.mp3",
   "audio/background/diwali-vibes-2.mp3",
@@ -144,7 +145,7 @@ const createAudioControl = () => {
   slider.min = "0"
   slider.max = "1"
   slider.step = "0.01"
-  slider.setAttribute("aria-label", "Volume")
+  slider.setAttribute("aria-label", LL.audio.volume())
   Object.assign(slider.style, {
     width: "0",
     margin: "0",
@@ -160,7 +161,7 @@ const createAudioControl = () => {
   const render = () => {
     const silent = settings.muted || settings.volume === 0
     button.innerHTML = speakerIcon(silent)
-    button.setAttribute("aria-label", silent ? "Unmute music" : "Mute music")
+    button.setAttribute("aria-label", silent ? LL.audio.unmute() : LL.audio.mute())
     slider.value = String(settings.muted ? 0 : settings.volume)
     players.forEach(player => {
       player.volume = settings.volume

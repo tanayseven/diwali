@@ -1,5 +1,6 @@
 import {fontFamily} from "./app"
 import {createCautionIcon} from "./portraitWarning"
+import {LL} from "./locale"
 
 const fadeDuration = 800
 // Long enough to read the message at a comfortable pace
@@ -35,13 +36,11 @@ const showSplashWarning = () => new Promise<void>(resolve => {
   icon.style.width = icon.style.height = "min(96px, 18vh)"
 
   const heading = document.createElement("p")
-  heading.textContent = "Warning"
+  heading.textContent = LL.splashWarning.heading()
   Object.assign(heading.style, {margin: "0", fontSize: "min(80px, 16vh)", lineHeight: "1.1", color: "#ffd700"})
 
   const message = document.createElement("p")
-  message.textContent = "This app contains flashing and twinkling lights that may trigger seizures "
-    + "in people with photosensitive epilepsy. If you have epilepsy or have had seizures before, "
-    + "please take care while using it, and stop at once if you feel unwell."
+  message.textContent = LL.splashWarning.message()
   Object.assign(message.style, {margin: "0", fontSize: "22px", lineHeight: "1.4", maxWidth: "600px"})
 
   overlay.append(icon, heading, message)

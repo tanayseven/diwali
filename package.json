@@ -6,13 +6,15 @@
 		"dev": "vite",
 		"preview": "vite preview",
 		"zip": "npm run build && mkdir -p dist && zip -r dist/game.zip www -x \"**/.DS_Store\"",
-		"check": "tsc"
+		"check": "tsc",
+		"i18n": "typesafe-i18n"
 	},
 	"devDependencies": {
 		"typescript": "^5.6.3",
 		"vite": "^5.4.10"
 	},
 	"dependencies": {
-		"pixi.js": "^8.22.0"
+		"pixi.js": "^8.22.0",
+		"typesafe-i18n": "5.27.1"
 	}
 }

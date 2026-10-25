@@ -1,5 +1,6 @@
 import {Application, Assets, Container, Graphics, Text} from "pixi.js"
 import {Screen, fontFamily} from "./app"
+import {LL} from "./locale"
 
 const highlight = 0xffd700
 const maxBarWidth = 320
@@ -11,7 +12,7 @@ const labelGap = 24
 const createLoader = (app: Application): Screen & {setProgress: (progress: number) => void} => {
   const container = new Container()
   const label = new Text({
-    text: "Loading…",
+    text: LL.loading(),
     style: {fontFamily, fontSize: 32, fill: highlight},
   })
   label.anchor.set(0.5)

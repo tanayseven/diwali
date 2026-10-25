@@ -1,4 +1,5 @@
 import {fontFamily} from "./app"
+import {LL} from "./locale"
 
 // The app is laid out for landscape screens, so in portrait it's covered
 // with a notice asking to rotate the device, which clears once rotated
@@ -45,11 +46,11 @@ const createPortraitWarning = () => {
   const icon = createCautionIcon(72)
 
   const heading = document.createElement("p")
-  heading.textContent = "Portrait mode isn't supported"
+  heading.textContent = LL.portraitWarning.heading()
   Object.assign(heading.style, {margin: "0", fontSize: "32px", lineHeight: "1.1", color: "#ffd700"})
 
   const message = document.createElement("p")
-  message.textContent = "This app can't be shown in portrait mode. Please rotate your device to landscape mode to continue."
+  message.textContent = LL.portraitWarning.message()
   Object.assign(message.style, {margin: "0", fontSize: "22px", lineHeight: "1.4", maxWidth: "480px"})
 
   overlay.append(icon, heading, message)

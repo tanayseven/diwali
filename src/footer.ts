@@ -1,4 +1,5 @@
 import {fontFamily} from "./app"
+import {LL} from "./locale"
 
 const highlight = "#ffd700"
 const footerHeight = 40
@@ -74,7 +75,17 @@ const createFooter = () => {
   link.textContent = "Tanay PrabhuDesai"
   Object.assign(link.style, {color: highlight, textDecoration: "none"})
 
-  footer.append("Made with", createTip("❤️", "Love"), "and", createTip("😓", "Sweat"), "by", link)
+  // The sentence is translated as a whole, with placeholders where the emoji and the
+  // link go, so each language can put them wherever its word order needs
+  const parts: Record<string, Node> = {
+    love: createTip("❤️", LL.footer.love()),
+    sweat: createTip("😓", LL.footer.sweat()),
+    author: link,
+  }
+  const credit = LL.footer.credit({love: "{love}", sweat: "{sweat}", author: "{author}"})
+  footer.append(...credit.split(/\{(love|sweat|author)\}/)
+    .filter(part => part.trim() !== "")
+    .map(part => parts[part] ?? part.trim()))
   document.body.appendChild(footer)
 
   return {

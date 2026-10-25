@@ -1,5 +1,6 @@
 import {Application, Container, Graphics, Text} from "pixi.js"
 import {fontFamily} from "./app"
+import {LL} from "./locale"
 
 // Matches the menu's buttons, and is tall enough to be a comfortable touch target
 const highlight = 0xffd700
@@ -12,7 +13,7 @@ const createBackButton = (app: Application, onBack: () => void) => {
   const container = new Container()
   const background = new Graphics()
   const label = new Text({
-    text: "← Back",
+    text: LL.back(),
     style: {fontFamily, fontSize: 30},
   })
   label.anchor.set(0.5)

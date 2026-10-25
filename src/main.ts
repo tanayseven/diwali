@@ -6,6 +6,7 @@ import {createDiyaInventory, diyaAssets} from "./diyaInventory"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
 import {createFooter} from "./footer"
 import {createLoader, loadAssets} from "./loader"
+import {LL, loadLocale} from "./locale"
 import {createMenu} from "./menu"
 import {createPortraitWarning} from "./portraitWarning"
 import {showSplashWarning} from "./splashWarning"
@@ -17,7 +18,7 @@ const clamp = (value: number) => Math.min(1, Math.max(0, value))
 const easeInOut = (t: number) => t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
 
 const main = async () => {
-  const [app] = await Promise.all([createApp(), loadFont()])
+  const [app] = await Promise.all([createApp(), loadFont(), loadLocale()])
   const portraitWarning = createPortraitWarning()
   // Available on every screen, from the loader on
   const audio = createAudioControl()
@@ -44,12 +45,12 @@ const main = async () => {
   await showSplashWarning()
 
   // Only "Diyas" opens anything so far: it zooms the camera onto the house's porch
-  const menu = createMenu(app, "Diwali this year", [
-    {label: "Diyas", onSelect: () => goTo(1)},
-    {label: "Fireworks", onSelect: () => {}},
-    {label: "Craft Kandil", onSelect: () => {}},
-    {label: "Decorate House", onSelect: () => {}},
-    {label: "Draw Rangoli", onSelect: () => {}},
+  const menu = createMenu(app, LL.title(), [
+    {label: LL.menu.diyas(), onSelect: () => goTo(1)},
+    {label: LL.menu.fireworks(), onSelect: () => {}},
+    {label: LL.menu.craftKandil(), onSelect: () => {}},
+    {label: LL.menu.decorateHouse(), onSelect: () => {}},
+    {label: LL.menu.drawRangoli(), onSelect: () => {}},
   ], () => fairyLightsHeight(app.screen.height))
   const footer = createFooter()
   const backButton = createBackButton(app, () => goTo(0))
