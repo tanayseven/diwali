@@ -21,7 +21,7 @@ Live at: https://diwali.tanay.tech/
 - **Photosensitivity warning:** the app has flashing and twinkling lights, so it opens with a warning for people with photosensitive epilepsy. It fades out after a few seconds, or straight away on a tap or key press.
 - **Night scene:** a house under a starry sky, with strings of twinkling fairy lights hung across the top of the screen.
 - **Diyas:** the camera zooms in on the house's porch. Drag diyas from the inventory bar at the bottom to place them, pick them up again to move them, or drop them back on the bar. A back button (or Escape) returns at any point.
-- **Fireworks:** the camera moves in on the house, not quite as close as for diyas. Its inventory bar is empty for now.
+- **Fireworks, Craft Kandil, Decorate House and Draw Rangoli:** each moves the camera in on the house, not quite as close as for diyas. Their inventory bars are empty for now.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 

@@ -45,14 +45,13 @@ const main = async () => {
   screens = []
   await showSplashWarning()
 
-  // "Diyas" zooms the camera onto the house's porch, and "Fireworks" a little less
-  // close; the rest don't open anything yet
+  // "Diyas" zooms the camera onto the house's porch, and the others a little less close
   const menu = createMenu(app, LL.title(), [
     {label: LL.menu.diyas(), onSelect: () => open("diyas")},
     {label: LL.menu.fireworks(), onSelect: () => open("fireworks")},
-    {label: LL.menu.craftKandil(), onSelect: () => {}},
-    {label: LL.menu.decorateHouse(), onSelect: () => {}},
-    {label: LL.menu.drawRangoli(), onSelect: () => {}},
+    {label: LL.menu.craftKandil(), onSelect: () => open("craftKandil")},
+    {label: LL.menu.decorateHouse(), onSelect: () => open("decorateHouse")},
+    {label: LL.menu.drawRangoli(), onSelect: () => open("drawRangoli")},
   ], () => fairyLightsHeight(app.screen.height))
   const footer = createFooter()
   const backButton = createBackButton(app, () => goTo(0))
@@ -81,10 +80,11 @@ const main = async () => {
     app.stage.addChild(inventory.container)
     screens.push(inventory)
   }
-  // Nothing to put in the fireworks' slots yet, so they're all empty
-  const fireworksHud = createHud(app)
-  app.stage.addChild(fireworksHud.container)
-  screens.push(fireworksHud)
+  // Only the diyas scene has anything to put in its slots yet, so the other scenes
+  // share one bar of empty slots
+  const emptyHud = createHud(app)
+  app.stage.addChild(emptyHud.container)
+  screens.push(emptyHud)
 
   // Everything about moving between the menu (0) and a scene (1) follows one progress
   // value, so going back mid-way simply reverses from wherever it got to
@@ -108,7 +108,7 @@ const main = async () => {
     const controlsAlpha = clamp((progress - 0.7) / 0.3)
     backButton.setOpacity(controlsAlpha)
     inventory?.setOpacity(scene === "diyas" ? controlsAlpha : 0)
-    fireworksHud.setOpacity(scene === "fireworks" ? controlsAlpha : 0)
+    emptyHud.setOpacity(scene !== "diyas" ? controlsAlpha : 0)
   }
   const goTo = (value: number) => {
     target = value
@@ -116,7 +116,7 @@ const main = async () => {
     footer.setInteractive(target === 0)
     backButton.setInteractive(target === 1)
     inventory?.setInteractive(target === 1 && scene === "diyas")
-    fireworksHud.setInteractive(target === 1 && scene === "fireworks")
+    emptyHud.setInteractive(target === 1 && scene !== "diyas")
     background?.setPannable(target === 1)
   }
   const open = (name: SceneName) => {

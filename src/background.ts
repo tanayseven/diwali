@@ -24,9 +24,15 @@ const menuView: View = {x: 0, y: sceneHeight / 2, width: sceneWidth, height: sce
 const porchView: View = {x: 477.5, y: 499, width: 325, height: 147}
 // A little further out than the porch, about the same middle and resting on the same
 // floor, so a bit more of the house and the sky above it are in view
-const fireworksView: View = {x: 440, y: 466, width: 400, height: 180}
+const houseView: View = {x: 440, y: 466, width: 400, height: 180}
 // The close-up each scene's camera moves in to
-const sceneViews = {diyas: porchView, fireworks: fireworksView}
+const sceneViews = {
+  diyas: porchView,
+  fireworks: houseView,
+  craftKandil: houseView,
+  decorateHouse: houseView,
+  drawRangoli: houseView,
+}
 type SceneName = keyof typeof sceneViews
 
 const coverScale = (width: number, height: number) => Math.max(width / sceneWidth, height / sceneHeight)
