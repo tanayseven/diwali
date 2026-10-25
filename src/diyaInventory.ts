@@ -2,6 +2,7 @@ import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, 
 import {fontFamily} from "./app"
 import type {createAudioControl} from "./audioControl"
 import {createBackground} from "./background"
+import {createHud, highlight, slotSize} from "./hud"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -57,14 +58,6 @@ const createItems = () => {
   return {emptyDiyas, wicks, oilBottle, matchstick, items: [emptyDiyas, wicks, oilBottle, matchstick]}
 }
 
-const slotCount = 5
-// Big enough to be comfortable touch targets
-const slotSize = 76
-const slotGap = 12
-const panelPadding = 12
-const bottomMargin = 20
-const sideGutter = 16
-const highlight = 0xffd700
 // Share of a slot an item's icon fills
 const iconFill = 0.8
 // The count badge in the slot's top-right corner
@@ -197,9 +190,8 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   const playMatchSound = audio.createEffect(matchSoundUrl)
   const litDiya = createLiveDiyaTexture(app)
   const container = new Container()
-  const hud = new Container()
-  const panel = new Graphics()
-  hud.addChild(panel)
+  const bar = createHud(app)
+  const hud = bar.container
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(hud, dragLayer)
@@ -224,22 +216,9 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     diya.sprite.anchor.set(anchor.x, anchor.y)
   }
 
-  const panelWidth = slotCount * slotSize + (slotCount - 1) * slotGap + panelPadding * 2
-  const panelHeight = slotSize + panelPadding * 2
-
-  const boxes = Array.from({length: slotCount}, (_, idx) => {
-    const box = new Graphics()
-    box.position.set(
-      panelPadding + slotSize / 2 + idx * (slotSize + slotGap) - panelWidth / 2,
-      panelPadding + slotSize / 2 - panelHeight / 2,
-    )
-    hud.addChild(box)
-    return box
-  })
-
   const slots = items.map((item, idx) => {
     const slot = new Container()
-    slot.position.copyFrom(boxes[idx].position)
+    slot.position.copyFrom(bar.boxes[idx].position)
     slot.eventMode = "static"
     slot.hitArea = new Rectangle(-slotSize / 2, -slotSize / 2, slotSize, slotSize)
     // The icon is the item's drawing cropped out of its canvas, fitted inside the slot
@@ -265,15 +244,12 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
       slot.addChild(badge)
     }
     hud.addChild(slot)
-    return {item, container: slot, box: boxes[idx], icon, label}
+    return {item, container: slot, box: bar.boxes[idx], icon, label}
   })
   const slotOf = (item: Item) => slots[items.indexOf(item)]
 
   const render = () => {
-    boxes.forEach(box => box.clear()
-      .roundRect(-slotSize / 2, -slotSize / 2, slotSize, slotSize, 12)
-      .fill(0x1a1a1a)
-      .stroke({width: 3, color: box === slotOf(emptyDiyas).box && overBar ? highlight : 0x555555}))
+    bar.drawBoxes(overBar ? slotOf(emptyDiyas).box : undefined)
     slots.forEach(({item, container: slot, icon, label}) => {
       // An empty stack, or a tool while it's in use, stays visible but faded
       const inUse = (item === oilBottle && drag?.kind === "oil") || (item === matchstick && drag?.kind === "match")
@@ -284,11 +260,6 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
         label.text = String(item.count)
       }
     })
-  }
-
-  const overPanel = (point: PointData) => {
-    const local = hud.toLocal(point)
-    return Math.abs(local.x) <= panelWidth / 2 && Math.abs(local.y) <= panelHeight / 2
   }
 
   const setOverBar = (value: boolean) => {
@@ -526,7 +497,7 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     setTarget(undefined)
     current.sprite.removeFromParent()
     if (current.kind === "diya") {
-      if (overPanel(at)) {
+      if (bar.isOver(at)) {
         placed.push(current.diya)
         returnDiya(current.diya)
       } else {
@@ -563,7 +534,7 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     const at = toStage(e)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
-      setOverBar(overPanel(at))
+      setOverBar(bar.isOver(at))
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(at, diya => !diya.wick))
     } else if (drag.kind === "oil") {
@@ -577,29 +548,14 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
 
-  const layout = () => {
-    // Shrink the bar to fit narrow screens
-    const scale = Math.min(1, (app.screen.width - sideGutter * 2) / panelWidth)
-    hud.scale.set(scale)
-    hud.position.set(app.screen.width / 2, app.screen.height - bottomMargin - panelHeight * scale / 2)
-    panel.clear()
-      .roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 18)
-      .fill({color: 0x000000, alpha: 0.55})
-      .stroke({width: 2, color: 0x555555})
-  }
-
-  layout()
   render()
 
   return {
     container,
-    layout,
-    setOpacity(alpha: number) {
-      hud.alpha = alpha
-      hud.visible = alpha > 0
-    },
+    layout: bar.layout,
+    setOpacity: bar.setOpacity,
     setInteractive(interactive: boolean) {
-      hud.eventMode = interactive ? "passive" : "none"
+      bar.setInteractive(interactive)
       background.decorations.eventMode = interactive ? "passive" : "none"
       // Leaving the scene mid-drag puts whatever was dragged back where it came from
       if (!interactive && drag) {

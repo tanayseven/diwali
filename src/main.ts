@@ -1,10 +1,11 @@
 import {Screen, createApp, loadFont} from "./app"
 import {createAudioControl} from "./audioControl"
-import {addBackgroundAssets, backgroundAssets, createBackground} from "./background"
+import {SceneName, addBackgroundAssets, backgroundAssets, createBackground} from "./background"
 import {createBackButton} from "./backButton"
 import {createDiyaInventory, diyaAssets} from "./diyaInventory"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
 import {createFooter} from "./footer"
+import {createHud} from "./hud"
 import {createLoader, loadAssets} from "./loader"
 import {LL, loadLocale} from "./locale"
 import {createMenu} from "./menu"
@@ -44,10 +45,11 @@ const main = async () => {
   screens = []
   await showSplashWarning()
 
-  // Only "Diyas" opens anything so far: it zooms the camera onto the house's porch
+  // "Diyas" zooms the camera onto the house's porch, and "Fireworks" a little less
+  // close; the rest don't open anything yet
   const menu = createMenu(app, LL.title(), [
-    {label: LL.menu.diyas(), onSelect: () => goTo(1)},
-    {label: LL.menu.fireworks(), onSelect: () => {}},
+    {label: LL.menu.diyas(), onSelect: () => open("diyas")},
+    {label: LL.menu.fireworks(), onSelect: () => open("fireworks")},
     {label: LL.menu.craftKandil(), onSelect: () => {}},
     {label: LL.menu.decorateHouse(), onSelect: () => {}},
     {label: LL.menu.drawRangoli(), onSelect: () => {}},
@@ -79,11 +81,19 @@ const main = async () => {
     app.stage.addChild(inventory.container)
     screens.push(inventory)
   }
+  // Nothing to put in the fireworks' slots yet, so they're all empty
+  const fireworksHud = createHud(app)
+  app.stage.addChild(fireworksHud.container)
+  screens.push(fireworksHud)
 
-  // Everything about moving between the menu (0) and the diyas scene (1) follows one
-  // progress value, so going back mid-way simply reverses from wherever it got to
+  // Everything about moving between the menu (0) and a scene (1) follows one progress
+  // value, so going back mid-way simply reverses from wherever it got to
   let progress = 0
   let target = 0
+  let scene: SceneName = "diyas"
+  // A different scene picked while the camera is still on its way back to the menu,
+  // opened once it gets there so the camera never jumps between close-ups
+  let nextScene: SceneName | undefined
   const apply = () => {
     background?.setFocus(easeInOut(progress))
     // The menu and lights fade out over the first part, the back button fades in at the end
@@ -97,17 +107,36 @@ const main = async () => {
     // The scene's controls fade in at the end
     const controlsAlpha = clamp((progress - 0.7) / 0.3)
     backButton.setOpacity(controlsAlpha)
-    inventory?.setOpacity(controlsAlpha)
+    inventory?.setOpacity(scene === "diyas" ? controlsAlpha : 0)
+    fireworksHud.setOpacity(scene === "fireworks" ? controlsAlpha : 0)
   }
   const goTo = (value: number) => {
     target = value
     menu.setInteractive(target === 0)
     footer.setInteractive(target === 0)
     backButton.setInteractive(target === 1)
-    inventory?.setInteractive(target === 1)
+    inventory?.setInteractive(target === 1 && scene === "diyas")
+    fireworksHud.setInteractive(target === 1 && scene === "fireworks")
     background?.setPannable(target === 1)
   }
+  const open = (name: SceneName) => {
+    if (name !== scene && progress > 0) {
+      nextScene = name
+      goTo(0)
+      return
+    }
+    if (name !== scene) {
+      scene = name
+      background?.setScene(name)
+    }
+    goTo(1)
+  }
   app.ticker.add(() => {
+    if (progress === 0 && nextScene) {
+      const name = nextScene
+      nextScene = undefined
+      open(name)
+    }
     if (progress === target) {
       return
     }

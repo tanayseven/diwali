@@ -22,6 +22,12 @@ const menuView: View = {x: 0, y: sceneHeight / 2, width: sceneWidth, height: sce
 // A close-up of the middle of the porch, by the door and the chairs. It's tighter than
 // the porch, so the scene can be panned around from there
 const porchView: View = {x: 477.5, y: 499, width: 325, height: 147}
+// A little further out than the porch, about the same middle and resting on the same
+// floor, so a bit more of the house and the sky above it are in view
+const fireworksView: View = {x: 440, y: 466, width: 400, height: 180}
+// The close-up each scene's camera moves in to
+const sceneViews = {diyas: porchView, fireworks: fireworksView}
+type SceneName = keyof typeof sceneViews
 
 const coverScale = (width: number, height: number) => Math.max(width / sceneWidth, height / sceneHeight)
 const fitScale = (view: View, width: number, height: number) =>
@@ -46,8 +52,8 @@ const addBackgroundAssets = () => {
 const lerp = (from: number, to: number, t: number) => from + (to - from) * t
 
 // The night sky with the house in it, covering the screen, under a dimming layer.
-// setFocus moves the camera from the menu's view (0) to the porch (1), clearing the
-// dimming layer on the way. Once there, setPannable lets the scene be dragged around,
+// setFocus moves the camera from the menu's view (0) to the current scene's close-up
+// (1), clearing the dimming layer on the way; setScene picks which close-up that is. Once there, setPannable lets the scene be dragged around,
 // or scrolled with a wheel or trackpad, within its edges.
 // Expects backgroundAssets to have been loaded already
 const createBackground = (app: Application) => {
@@ -71,20 +77,21 @@ const createBackground = (app: Application) => {
   panSurface.eventMode = "none"
   container.addChild(panSurface, scene, dim)
   let focus = 0
-  // How far the porch view has been panned, in scene units. It eases in and out with
+  let closeView = porchView
+  // How far the close-up has been panned, in scene units. It eases in and out with
   // the focus, so the menu's view is never panned
   const pan = {x: 0, y: 0}
   let pannable = false
   let panFrom: Point | undefined
 
-  // Keeps the panned porch view inside the scene's edges on this screen
+  // Keeps the panned close-up inside the scene's edges on this screen
   const clampPan = () => {
     const {width, height} = app.screen
-    const scale = fitScale(porchView, width, height)
+    const scale = fitScale(closeView, width, height)
     const clampAxis = (centre: number, half: number, size: number) =>
       half * 2 >= size ? size / 2 : Math.min(size - half, Math.max(half, centre))
-    const centreX = porchView.x + porchView.width / 2
-    const centreY = porchView.y + porchView.height / 2
+    const centreX = closeView.x + closeView.width / 2
+    const centreY = closeView.y + closeView.height / 2
     pan.x = clampAxis(centreX + pan.x, width / 2 / scale, sceneWidth) - centreX
     pan.y = clampAxis(centreY + pan.y, height / 2 / scale, sceneHeight) - centreY
   }
@@ -93,10 +100,10 @@ const createBackground = (app: Application) => {
     const {width, height} = app.screen
     clampPan()
     const view: View = {
-      x: lerp(menuView.x, porchView.x + pan.x, focus),
-      y: lerp(menuView.y, porchView.y + pan.y, focus),
-      width: lerp(menuView.width, porchView.width, focus),
-      height: lerp(menuView.height, porchView.height, focus),
+      x: lerp(menuView.x, closeView.x + pan.x, focus),
+      y: lerp(menuView.y, closeView.y + pan.y, focus),
+      width: lerp(menuView.width, closeView.width, focus),
+      height: lerp(menuView.height, closeView.height, focus),
     }
     const scale = fitScale(view, width, height)
     // Centre the view on screen, then pull it back inside the scene's edges
@@ -166,6 +173,14 @@ const createBackground = (app: Application) => {
     scale() {
       return scene.scale.x
     },
+    // Changes which close-up the camera moves to, starting it unpanned. It's only
+    // meant to change while on the menu, as the camera would jump otherwise
+    setScene(name: SceneName) {
+      closeView = sceneViews[name]
+      pan.x = 0
+      pan.y = 0
+      layout()
+    },
     setFocus(value: number) {
       focus = value
       layout()
@@ -188,3 +203,4 @@ const createBackground = (app: Application) => {
 }
 
 export {addBackgroundAssets, backgroundAssets, createBackground}
+export type {SceneName}
