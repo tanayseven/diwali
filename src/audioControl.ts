@@ -57,6 +57,8 @@ const createAudioControl = () => {
     return player
   })
   let current = 0
+  // Sound effects playing now, each with its level: the share of the volume it plays at
+  const effects = new Map<HTMLAudioElement, number>()
   players.forEach((player, idx) => player.addEventListener("ended", () => {
     current = (idx + 1) % players.length
     players[current].currentTime = 0
@@ -99,12 +101,15 @@ const createAudioControl = () => {
   window.addEventListener("pointerdown", startOnGesture, true)
   window.addEventListener("keydown", startOnGesture, true)
 
-  // Pause while the tab is hidden, and pick up again when it's back
+  // Pause while the tab is hidden, and pick up again when it's back. Effects pause too,
+  // as whatever they go with stops moving while the tab is hidden
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       pause()
+      effects.forEach((_, effect) => effect.pause())
     } else {
       play()
+      effects.forEach((_, effect) => effect.play().catch(() => {}))
     }
   })
 
@@ -167,6 +172,12 @@ const createAudioControl = () => {
       player.volume = settings.volume
       player.muted = settings.muted
     })
+    effects.forEach((_, effect) => renderEffect(effect))
+  }
+
+  const renderEffect = (effect: HTMLAudioElement) => {
+    effect.volume = Math.min(1, Math.max(0, settings.volume * (effects.get(effect) ?? 1)))
+    effect.muted = settings.muted
   }
 
   const setSliderOpen = (open: boolean) => {
@@ -267,18 +278,32 @@ const createAudioControl = () => {
     }
   })
 
-  // A sound effect, loaded now and played at the music's volume, unless it's muted.
-  // Each play is a fresh copy of it, so quick repeats overlap instead of cutting off
+  // A sound effect, loaded now and played at the music's volume, following the mute and
+  // volume setting while it plays. Each play is a fresh copy of it, so quick repeats
+  // overlap instead of cutting off, and can be made quieter or stopped early
   const createEffect = (src: string) => {
     const effect = new Audio(src)
     effect.preload = "auto"
     return () => {
-      if (settings.muted) {
-        return
-      }
       const copy = effect.cloneNode() as HTMLAudioElement
-      copy.volume = settings.volume
-      copy.play().catch(() => {})
+      const forget = () => effects.delete(copy)
+      effects.set(copy, 1)
+      copy.addEventListener("ended", forget)
+      renderEffect(copy)
+      copy.play().catch(forget)
+      return {
+        // Plays it at a share of the volume, from 0 to 1
+        setLevel(level: number) {
+          if (effects.has(copy)) {
+            effects.set(copy, level)
+            renderEffect(copy)
+          }
+        },
+        stop() {
+          copy.pause()
+          forget()
+        },
+      }
     }
   }
 

@@ -4,8 +4,10 @@ import {SceneName, addBackgroundAssets, backgroundAssets, createBackground} from
 import {createBackButton} from "./backButton"
 import {createDiyaInventory, diyaAssets} from "./diyaInventory"
 import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
+import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
 import {createHud} from "./hud"
+import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
 import {LL, loadLocale} from "./locale"
 import {createMenu} from "./menu"
@@ -36,7 +38,7 @@ const main = async () => {
   screens = [loader]
   addBackgroundAssets()
   const failed = await loadAssets({
-    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets],
+    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets],
     images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
@@ -72,16 +74,25 @@ const main = async () => {
     app.stage.addChildAt(background.container, 0)
     screens.unshift(background)
   }
+  // Night falls on the porch in the diyas and fireworks scenes, lit only by what's lit
+  const lighting = background && createLighting(app, background)
   // Diyas are placed in the scene, so they need the background to go anywhere
   let inventory: ReturnType<typeof createDiyaInventory> | undefined
-  if (background && diyaAssets.every(url => !failed.has(url))) {
-    inventory = createDiyaInventory(app, background, audio)
+  if (background && lighting && diyaAssets.every(url => !failed.has(url))) {
+    inventory = createDiyaInventory(app, background, lighting, audio)
     // On top of everything, so a dragged diya is never hidden
     app.stage.addChild(inventory.container)
     screens.push(inventory)
   }
-  // Only the diyas scene has anything to put in its slots yet, so the other scenes
-  // share one bar of empty slots
+  // Anars are set off on the porch too, so they need the background as well
+  let fireworks: ReturnType<typeof createFireworks> | undefined
+  if (background && lighting && fireworksAssets.every(url => !failed.has(url))) {
+    fireworks = createFireworks(app, background, lighting, audio)
+    app.stage.addChild(fireworks.container)
+    screens.push(fireworks)
+  }
+  // Only the diyas and fireworks scenes have anything to put in their slots yet, so
+  // the other scenes share one bar of empty slots
   const emptyHud = createHud(app)
   app.stage.addChild(emptyHud.container)
   screens.push(emptyHud)
@@ -108,7 +119,9 @@ const main = async () => {
     const controlsAlpha = clamp((progress - 0.7) / 0.3)
     backButton.setOpacity(controlsAlpha)
     inventory?.setOpacity(scene === "diyas" ? controlsAlpha : 0)
-    emptyHud.setOpacity(scene !== "diyas" ? controlsAlpha : 0)
+    fireworks?.setOpacity(scene === "fireworks" ? controlsAlpha : 0)
+    lighting?.setNight(scene === "diyas" || scene === "fireworks" ? easeInOut(progress) : 0)
+    emptyHud.setOpacity(scene !== "diyas" && scene !== "fireworks" ? controlsAlpha : 0)
   }
   const goTo = (value: number) => {
     target = value
@@ -116,7 +129,8 @@ const main = async () => {
     footer.setInteractive(target === 0)
     backButton.setInteractive(target === 1)
     inventory?.setInteractive(target === 1 && scene === "diyas")
-    emptyHud.setInteractive(target === 1 && scene !== "diyas")
+    fireworks?.setInteractive(target === 1 && scene === "fireworks")
+    emptyHud.setInteractive(target === 1 && scene !== "diyas" && scene !== "fireworks")
     background?.setPannable(target === 1)
   }
   const open = (name: SceneName) => {

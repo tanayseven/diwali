@@ -1,8 +1,9 @@
-import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Rectangle, Sprite, Text, Texture} from "pixi.js"
-import {fontFamily} from "./app"
+import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import type {createAudioControl} from "./audioControl"
 import {createBackground} from "./background"
-import {createHud, highlight, slotSize} from "./hud"
+import {Item, createHud, cropped} from "./hud"
+import {Light, Lighting} from "./lighting"
+import {createMatchstick, matchFrameUrls} from "./matchstick"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -21,13 +22,6 @@ const animatedDiyaOffset = {x: 5, y: -6}
 const wickUrl = "sprites/diya/long-wick.svg"
 const oilBottleUrl = "sprites/diya/oil-bottle.svg"
 const pouringBottleUrl = "sprites/diya/oil-bottle-pouring.svg"
-// A match from unlit, through striking and catching, to burning down and going out
-const matchFrameUrls = [
-  "1-unlit", "2-strike", "3-flare", "4-catch", "5-lit",
-  "6-burning-25", "7-burning-50", "8-burning-75", "9-ember", "10-burnt-out",
-].map(frame => `sprites/diya/matchstick-${frame}.svg`)
-// Heard as a match is struck to light a diya
-const matchSoundUrl = "audio/effects/matchstick-lit.mp3"
 // Every texture the inventory needs, to be loaded before it's created. The animated
 // diya is preloaded separately, as an image
 const diyaAssets = [...Object.values(diyaUrls), wickUrl, oilBottleUrl, pouringBottleUrl, ...matchFrameUrls]
@@ -37,32 +31,15 @@ const diyaCrop = new Rectangle(44, 200, 303, 154)
 const wickCrop = new Rectangle(111, 187, 220, 62)
 // The upright bottle's body only, leaving out the floor shadow around it
 const bottleCrop = new Rectangle(560, 265, 260, 775)
-const matchCrop = new Rectangle(88, 100, 24, 207)
 
-type Item = {
-  url: string
-  crop: Rectangle
-  // How many there are, shown on a badge; tools like the oil bottle have no count
-  count?: number
-  // Turns the icon, so long thin things lie across the slot's diagonal
-  rotation?: number
-}
-
-// The HUD's items, slot by slot, made afresh for each inventory as their counts change;
-// the remaining slots are empty
+// The HUD's items besides the matchstick, made afresh for each inventory as their
+// counts change
 const createItems = () => {
   const emptyDiyas: Item = {url: diyaUrls.empty, crop: diyaCrop, count: 5}
   const wicks: Item = {url: wickUrl, crop: wickCrop, count: 5}
   const oilBottle: Item = {url: oilBottleUrl, crop: bottleCrop}
-  const matchstick: Item = {url: matchFrameUrls[0], crop: matchCrop, rotation: Math.PI / 4}
-  return {emptyDiyas, wicks, oilBottle, matchstick, items: [emptyDiyas, wicks, oilBottle, matchstick]}
+  return {emptyDiyas, wicks, oilBottle}
 }
-
-// Share of a slot an item's icon fills
-const iconFill = 0.8
-// The count badge in the slot's top-right corner
-const badgeRadius = 13
-const badgeInset = 6
 
 // The diya SVGs are 460 x 380 and their bowls end 345 down; below that is only a
 // shadow, so a diya is held and placed by the middle of its bowl's base
@@ -80,6 +57,13 @@ const diyaScale = diyaSceneWidth / diyaCanvas.width
 const bowlMouth = {x: 165, y: 212}
 // Where the wick's tip is in a diya's canvas, which the match lights
 const wickTip = {x: 322, y: 196}
+// A lit diya's flame in its canvas, a little above the wick's tip
+const flameAt = {x: wickTip.x, y: wickTip.y - 20}
+// A lit diya lights up the porch around it, flickering a little with its flame, and
+// glows at the flame
+const diyaLightColour = 0xffb35c
+const diyaLightRadius = 110
+const diyaGlowRadius = 10
 // A diya's bowl in its canvas, padded a little, for dropping wicks and oil onto it
 const diyaTarget = new Rectangle(diyaCrop.x - 20, diyaCrop.y - 30, diyaCrop.width + 40, diyaCrop.height + 30)
 // A diya that can take a wick or oil grows this much while one is dragged over it
@@ -99,22 +83,6 @@ const pourFadeIn = 150
 const pourHold = 1000
 const pourFadeOut = 250
 const pourFillAt = 600
-
-// The match's head in its 200 x 320 canvas, by which it's held and put to the wick
-const matchCanvas = {width: 200, height: 320}
-const matchHead = {x: 100 / matchCanvas.width, y: 110 / matchCanvas.height}
-// The match's length in scene units, a little shorter than a diya is wide
-const matchSceneLength = diyaSceneWidth * 0.72
-const matchScale = matchSceneLength / matchCrop.height
-// Held tilted against the wick, with the stick leaning away from the diya
-const matchTilt = -0.45
-// How long each frame of the match shows while striking (unlit to lit), and then
-// while burning down to burnt out, before it fades away. The diya lights as the
-// match does
-const matchStrikeFrame = 140
-const matchBurnFrame = 220
-const matchLitFrame = 4
-const matchFadeOut = 250
 
 // The animated diya animates its flame with SMIL, which only runs while it's shown as
 // an image; turned straight into a texture it would freeze. So a hidden copy of it
@@ -169,6 +137,9 @@ type PlacedDiya = {
   lit: boolean
   // While oil is being poured in or it's being lit, it can't be picked up or used
   busy: boolean
+  // Its light on the scene and the glow at its flame, once it's lit
+  light?: Light
+  glow?: Sprite
 }
 
 type Drag =
@@ -185,9 +156,9 @@ type Drag =
 // goes into it, and the bottle dragged onto one pours oil into it, in either order.
 // The matchstick dragged onto a diya with both lights it, with the sound of it striking.
 // Expects diyaAssets to have been loaded already
-const createDiyaInventory = (app: Application, background: Background, audio: AudioControl) => {
-  const {emptyDiyas, wicks, oilBottle, matchstick, items} = createItems()
-  const playMatchSound = audio.createEffect(matchSoundUrl)
+const createDiyaInventory = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
+  const {emptyDiyas, wicks, oilBottle} = createItems()
+  const matchstick = createMatchstick(app, audio)
   const litDiya = createLiveDiyaTexture(app)
   const container = new Container()
   const bar = createHud(app)
@@ -197,6 +168,11 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   container.addChild(hud, dragLayer)
   // Lower diyas are nearer, so they're drawn in front
   background.decorations.sortableChildren = true
+  // The flames' glows shine through the night
+  const glowLayer = new Container()
+  glowLayer.eventMode = "none"
+  glowLayer.zIndex = lighting.aboveNight
+  background.decorations.addChild(glowLayer)
   const placed: PlacedDiya[] = []
   let drag: Drag | undefined
   // Whether a dragged diya is over the bar, where letting go puts it back on the stack
@@ -204,8 +180,6 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   // The placed diya a wick or the bottle would go into if let go now
   let target: PlacedDiya | undefined
 
-  const cropped = (url: string, crop: Rectangle) =>
-    new Texture({source: Assets.get<Texture>(url).source, frame: crop})
   // Shows a diya as it is now, held by the middle of its bowl's base either way
   const showDiya = (diya: PlacedDiya) => {
     const {wick, oil, lit} = diya
@@ -216,50 +190,18 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     diya.sprite.anchor.set(anchor.x, anchor.y)
   }
 
-  const slots = items.map((item, idx) => {
-    const slot = new Container()
-    slot.position.copyFrom(bar.boxes[idx].position)
-    slot.eventMode = "static"
-    slot.hitArea = new Rectangle(-slotSize / 2, -slotSize / 2, slotSize, slotSize)
-    // The icon is the item's drawing cropped out of its canvas, fitted inside the slot
-    const icon = new Sprite(cropped(item.url, item.crop))
-    icon.anchor.set(0.5)
-    icon.rotation = item.rotation ?? 0
-    // Turned onto the diagonal, a long thin icon has room to be longer
-    const room = item.rotation ? Math.SQRT2 : 1
-    icon.scale.set(slotSize * iconFill * room / Math.max(icon.texture.width, icon.texture.height))
-    slot.addChild(icon)
-    let label: Text | undefined
-    if (item.count !== undefined) {
-      const badge = new Container()
-      badge.position.set(slotSize / 2 - badgeInset, -slotSize / 2 + badgeInset)
-      const circle = new Graphics()
-        .circle(0, 0, badgeRadius)
-        .fill(highlight)
-        .stroke({width: 2, color: 0x000000})
-      label = new Text({text: "", style: {fontFamily, fontSize: 20, fill: 0x000000}})
-      label.anchor.set(0.5)
-      label.roundPixels = true
-      badge.addChild(circle, label)
-      slot.addChild(badge)
-    }
-    hud.addChild(slot)
-    return {item, container: slot, box: bar.boxes[idx], icon, label}
-  })
-  const slotOf = (item: Item) => slots[items.indexOf(item)]
+
+  const diyaSlot = bar.addItem(0, emptyDiyas)
+  const wickSlot = bar.addItem(1, wicks)
+  const bottleSlot = bar.addItem(2, oilBottle)
+  const matchSlot = bar.addItem(3, matchstick.item)
 
   const render = () => {
-    bar.drawBoxes(overBar ? slotOf(emptyDiyas).box : undefined)
-    slots.forEach(({item, container: slot, icon, label}) => {
-      // An empty stack, or a tool while it's in use, stays visible but faded
-      const inUse = (item === oilBottle && drag?.kind === "oil") || (item === matchstick && drag?.kind === "match")
-      const available = !inUse && item.count !== 0
-      icon.alpha = available ? 1 : 0.35
-      slot.cursor = available ? "grab" : "default"
-      if (label) {
-        label.text = String(item.count)
-      }
-    })
+    bar.drawBoxes(overBar ? diyaSlot.box : undefined)
+    diyaSlot.show()
+    wickSlot.show()
+    bottleSlot.show(drag?.kind === "oil")
+    matchSlot.show(drag?.kind === "match")
   }
 
   const setOverBar = (value: boolean) => {
@@ -307,6 +249,8 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   const returnDiya = (diya: PlacedDiya) => {
     placed.splice(placed.indexOf(diya), 1)
     diya.sprite.destroy()
+    diya.light?.destroy()
+    diya.glow?.destroy()
     emptyDiyas.count! += 1
     if (diya.wick && !diya.lit) {
       wicks.count! += 1
@@ -360,42 +304,25 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   const light = (diya: PlacedDiya) => {
     diya.busy = true
     makePickable(diya)
-    const match = new Sprite(Assets.get<Texture>(matchFrameUrls[1]))
-    match.anchor.set(matchHead.x, matchHead.y)
-    match.scale.set(matchScale)
-    match.rotation = matchTilt
-    match.position.set(
-      diya.sprite.x + (wickTip.x - diyaCanvas.width * diyaAnchor.x) * diyaScale,
-      diya.sprite.y + (wickTip.y - diyaCanvas.height * diyaAnchor.y) * diyaScale,
-    )
-    // In front of the diya it's lighting
-    match.zIndex = diya.sprite.zIndex + 0.5
-    match.eventMode = "none"
-    background.decorations.addChild(match)
-    playMatchSound()
-    // Striking runs from the strike frame up to lit, then burning from there to the end
-    const strikeEnd = (matchLitFrame - 1) * matchStrikeFrame
-    const burnEnd = strikeEnd + (matchFrameUrls.length - 1 - matchLitFrame) * matchBurnFrame
-    let elapsed = 0
-    const tick = () => {
-      elapsed += app.ticker.deltaMS
-      const frame = elapsed < strikeEnd
-        ? 1 + Math.floor(elapsed / matchStrikeFrame)
-        : Math.min(matchFrameUrls.length - 1, matchLitFrame + Math.floor((elapsed - strikeEnd) / matchBurnFrame))
-      match.texture = Assets.get<Texture>(matchFrameUrls[frame])
-      if (!diya.lit && frame >= matchLitFrame) {
-        diya.lit = true
-        showDiya(diya)
-      }
-      match.alpha = elapsed < burnEnd ? 1 : Math.max(0, 1 - (elapsed - burnEnd) / matchFadeOut)
-      if (elapsed >= burnEnd + matchFadeOut) {
-        app.ticker.remove(tick)
-        match.destroy()
-        diya.busy = false
-        makePickable(diya)
-      }
+    const at = {
+      x: diya.sprite.x + (wickTip.x - diyaCanvas.width * diyaAnchor.x) * diyaScale,
+      y: diya.sprite.y + (wickTip.y - diyaCanvas.height * diyaAnchor.y) * diyaScale,
     }
-    app.ticker.add(tick)
+    // In front of the diya it's lighting
+    matchstick.strike(background.decorations, at, diya.sprite.zIndex + 0.5, () => {
+      diya.lit = true
+      diya.light = lighting.addLight(diyaLightColour)
+      diya.glow = new Sprite(lighting.glowTexture)
+      diya.glow.anchor.set(0.5)
+      diya.glow.tint = 0xffd08a
+      diya.glow.blendMode = "add"
+      diya.glow.width = diya.glow.height = diyaGlowRadius * 2
+      glowLayer.addChild(diya.glow)
+      showDiya(diya)
+    }, () => {
+      diya.busy = false
+      makePickable(diya)
+    })
   }
 
   const startDrag = (e: FederatedPointerEvent, next: Drag, scale: number) => {
@@ -414,7 +341,7 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     startDrag(e, {kind: "diya", sprite: diya.sprite, diya, fromScene}, background.scale() * diyaScale)
   }
 
-  slotOf(emptyDiyas).container.on("pointerdown", e => {
+  diyaSlot.container.on("pointerdown", e => {
     if (emptyDiyas.count === 0) {
       return
     }
@@ -423,7 +350,7 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     startDiyaDrag(e, diya)
   })
 
-  slotOf(wicks).container.on("pointerdown", e => {
+  wickSlot.container.on("pointerdown", e => {
     if (wicks.count === 0) {
       return
     }
@@ -433,7 +360,7 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
     startDrag(e, {kind: "wick", sprite}, background.scale() * wickSceneLength / wickCrop.width)
   })
 
-  slotOf(oilBottle).container.on("pointerdown", e => {
+  bottleSlot.container.on("pointerdown", e => {
     if (drag) {
       return
     }
@@ -443,27 +370,31 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   })
 
   // The match is held by its head, so it's the head that's put to a wick
-  slotOf(matchstick).container.on("pointerdown", e => {
+  matchSlot.container.on("pointerdown", e => {
     if (drag) {
       return
     }
-    const sprite = new Sprite(Assets.get<Texture>(matchFrameUrls[0]))
-    sprite.anchor.set(matchHead.x, matchHead.y)
-    sprite.rotation = matchTilt
-    startDrag(e, {kind: "match", sprite}, background.scale() * matchScale)
+    startDrag(e, {kind: "match", sprite: matchstick.createSprite()}, background.scale() * matchstick.scale)
   })
 
+  // Whether the diyas scene is open, so its HUD and placed diyas can be used
+  let interactive = false
+
   // A placed diya can be picked up again to move it or put it back on the stack,
-  // except while it's busy being filled or lit
+  // except while it's busy being filled or lit, or while another scene is open
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
-    sprite.eventMode = diya.busy ? "none" : "static"
+    sprite.eventMode = interactive && !diya.busy ? "static" : "none"
     sprite.cursor = "grab"
     sprite.removeAllListeners("pointerdown")
     sprite.on("pointerdown", e => {
       const fromScene = {x: sprite.x, y: sprite.y}
       placed.splice(placed.indexOf(diya), 1)
       sprite.removeFromParent()
+      diya.light?.off()
+      if (diya.glow) {
+        diya.glow.visible = false
+      }
       startDiyaDrag(e, diya, fromScene)
     })
   }
@@ -548,15 +479,39 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
 
+  // Lit diyas shine where they're placed, but not while they're being carried
+  let time = 0
+  const shine = () => {
+    time += app.ticker.deltaMS / 1000
+    placed.forEach(diya => {
+      if (!diya.light || !diya.glow) {
+        return
+      }
+      const at = {
+        x: diya.sprite.x + (flameAt.x - diyaCanvas.width * diyaAnchor.x) * diyaScale,
+        y: diya.sprite.y + (flameAt.y - diyaCanvas.height * diyaAnchor.y) * diyaScale,
+      }
+      // Each flame flickers in its own time
+      const phase = diya.sprite.x
+      const flicker = 0.9 + 0.06 * Math.sin(time * 7 + phase) + 0.04 * Math.sin(time * 13 + phase * 1.7)
+      diya.light.shine(at, diyaLightRadius * (0.95 + 0.05 * flicker), flicker)
+      diya.glow.position.copyFrom(at)
+      diya.glow.alpha = 0.55 * flicker
+      diya.glow.visible = true
+    })
+  }
+  app.ticker.add(shine)
+
   render()
 
   return {
     container,
     layout: bar.layout,
     setOpacity: bar.setOpacity,
-    setInteractive(interactive: boolean) {
+    setInteractive(value: boolean) {
+      interactive = value
       bar.setInteractive(interactive)
-      background.decorations.eventMode = interactive ? "passive" : "none"
+      placed.forEach(makePickable)
       // Leaving the scene mid-drag puts whatever was dragged back where it came from
       if (!interactive && drag) {
         const current = drag
@@ -571,7 +526,9 @@ const createDiyaInventory = (app: Application, background: Background, audio: Au
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
+      app.ticker.remove(shine)
       container.destroy({children: true})
+      glowLayer.destroy({children: true})
       litDiya.destroy()
     },
   }

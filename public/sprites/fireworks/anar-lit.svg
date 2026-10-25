@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="416" height="288" viewBox="128 428 104 72">
+  <title>Anar — Lit</title>
+  <defs>
+    <linearGradient id="clay" gradientUnits="userSpaceOnUse" x1="360" y1="270" x2="0" y2="270">
+      <stop offset="0" stop-color="#1E0E07"/>
+      <stop offset="0.3" stop-color="#4A2414"/>
+      <stop offset="0.55" stop-color="#9A5532"/>
+      <stop offset="0.66" stop-color="#6A321A"/>
+      <stop offset="1" stop-color="#241109"/>
+    </linearGradient>
+    <linearGradient id="paper" gradientUnits="userSpaceOnUse" x1="360" y1="270" x2="0" y2="270">
+      <stop offset="0" stop-color="#2A0709"/>
+      <stop offset="0.3" stop-color="#6E1418"/>
+      <stop offset="0.55" stop-color="#B82E30"/>
+      <stop offset="1" stop-color="#420B0F"/>
+    </linearGradient>
+    <radialGradient id="tip-scorch" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.902"/>
+      <stop offset="0.5" stop-color="#0A0604" stop-opacity="0.627"/>
+      <stop offset="1" stop-color="#0A0604" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur-shadow" color-interpolation-filters="sRGB" x="-50%" y="-200%" width="200%" height="500%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+    <filter id="blur-tip" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="0.4"/>
+    </filter>
+  </defs>
+
+    <g id="flowerpot">
+      <ellipse id="cone-shadow" cx="180" cy="484" rx="33" ry="4.5" fill="#000000" fill-opacity="0.667" filter="url(#blur-shadow)"/>
+      <path id="cone" d="M158 484C160 474 172 452 177 447.5Q180 444.5 183 447.5C188 452 200 474 202 484Q180 488.5 158 484Z" fill="url(#clay)"/>
+      <path id="paper-band" d="M169.8 461Q180 463.5 190.2 461L194.8 470Q180 473.5 165.2 470Z" fill="url(#paper)"/>
+      <path id="gold-stripe" d="M167.5 465.5Q180 468.4 192.5 465.5" fill="none" stroke="#C9973A" stroke-width="1.1"/>
+      <path id="wick-stub" d="M180 446.2C179.5 444.4 180.7 443.1 180.4 441.2" fill="none" stroke="#17110E" stroke-width="1.4" stroke-linecap="round"/>
+      <ellipse id="tip-scorch" cx="180" cy="448" rx="6" ry="4.5" fill="url(#tip-scorch)" filter="url(#blur-tip)"/>
+      <circle id="wick-ash-tip" cx="180.4" cy="441.2" r="0.9" fill="#5E5650"/>
+    </g>
+
+    <path id="fallen-ash" d="M190.5 487.6c1.2-.6 2.6-.4 3.4.3M163 486.8c.9-.7 2.1-.8 2.9-.2" fill="none" stroke="#4A433E" stroke-width="0.7" stroke-linecap="round"/>
+</svg>

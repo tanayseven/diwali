@@ -20,8 +20,9 @@ Live at: https://diwali.tanay.tech/
 - **Loading screen:** a progress bar while the images and the start of the music load.
 - **Photosensitivity warning:** the app has flashing and twinkling lights, so it opens with a warning for people with photosensitive epilepsy. It fades out after a few seconds, or straight away on a tap or key press.
 - **Night scene:** a house under a starry sky, with strings of twinkling fairy lights hung across the top of the screen.
-- **Diyas:** the camera zooms in on the house's porch. Drag diyas from the inventory bar at the bottom to place them, pick them up again to move them, or drop them back on the bar. A back button (or Escape) returns at any point.
-- **Fireworks, Craft Kandil, Decorate House and Draw Rangoli:** each moves the camera in on the house, not quite as close as for diyas. Their inventory bars are empty for now.
+- **Diyas:** the camera zooms in on the house's porch, where night falls; it's lit only by the diyas once they're lit. Drag diyas from the inventory bar at the bottom to place them, pick them up again to move them, or drop them back on the bar. A back button (or Escape) returns at any point.
+- **Fireworks:** the camera moves in on the house, not quite as close as for diyas, and night falls on the porch as it does for them. Drag anars (flowerpot fireworks) from the inventory bar onto the porch, then drag the matchstick onto one to light its fuse. It throws up a fountain of crackling sparks with trailing embers and smoke, lights up the porch around it, and sputters out after about 20 seconds. Burnt-out anars can be cleared away by dropping them on the bar.
+- **Craft Kandil, Decorate House and Draw Rangoli:** each moves the camera in on the house like Fireworks. Their inventory bars are empty for now.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 

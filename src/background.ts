@@ -208,5 +208,5 @@ const createBackground = (app: Application) => {
   }
 }
 
-export {addBackgroundAssets, backgroundAssets, createBackground}
+export {addBackgroundAssets, backgroundAssets, createBackground, sceneHeight, sceneWidth}
 export type {SceneName}

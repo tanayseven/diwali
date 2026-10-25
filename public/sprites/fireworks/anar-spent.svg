@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="416" height="288" viewBox="128 428 104 72">
+  <title>Anar — Burnt out</title>
+  <defs>
+    <radialGradient id="ground-scorch" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.8"/>
+      <stop offset="0.55" stop-color="#0A0705" stop-opacity="0.667"/>
+      <stop offset="1" stop-color="#0A0705" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="clay" gradientUnits="userSpaceOnUse" x1="360" y1="270" x2="0" y2="270">
+      <stop offset="0" stop-color="#1E0E07"/>
+      <stop offset="0.3" stop-color="#4A2414"/>
+      <stop offset="0.55" stop-color="#9A5532"/>
+      <stop offset="0.66" stop-color="#6A321A"/>
+      <stop offset="1" stop-color="#241109"/>
+    </linearGradient>
+    <linearGradient id="paper" gradientUnits="userSpaceOnUse" x1="360" y1="270" x2="0" y2="270">
+      <stop offset="0" stop-color="#2A0709"/>
+      <stop offset="0.3" stop-color="#6E1418"/>
+      <stop offset="0.55" stop-color="#B82E30"/>
+      <stop offset="1" stop-color="#420B0F"/>
+    </linearGradient>
+    <linearGradient id="soot" gradientUnits="userSpaceOnUse" x1="0" y1="488.5" x2="0" y2="449.9">
+      <stop offset="0" stop-color="#0B0705" stop-opacity="0"/>
+      <stop offset="0.3" stop-color="#0B0705" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#140B07" stop-opacity="0.753"/>
+      <stop offset="0.8" stop-color="#080504" stop-opacity="0.961"/>
+      <stop offset="1" stop-color="#050302"/>
+    </linearGradient>
+    <radialGradient id="crater" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000"/>
+      <stop offset="0.7" stop-color="#120A06"/>
+      <stop offset="1" stop-color="#2A1A12"/>
+    </radialGradient>
+    <filter id="blur-scorch" color-interpolation-filters="sRGB" x="-50%" y="-100%" width="200%" height="300%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+    <filter id="blur-shadow" color-interpolation-filters="sRGB" x="-50%" y="-200%" width="200%" height="500%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+    <filter id="blur-drips" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="0.4"/>
+    </filter>
+  </defs>
+    <ellipse id="ground-scorch" cx="180" cy="485" rx="48" ry="11" fill="url(#ground-scorch)" filter="url(#blur-scorch)"/>
+
+    <g id="flowerpot">
+      <ellipse id="cone-shadow" cx="180" cy="484" rx="33" ry="4.5" fill="#000000" fill-opacity="0.667" filter="url(#blur-shadow)"/>
+      <path id="cone" d="M158 484C160 474 170.5 456.5 174.6 451.8L175.4 450.9L176.6 451.2L177.3 450.1L178.9 450.6L179.6 449.8L181.2 450.5L182.1 450.1L183.4 450.9L184.5 450.7L185.4 451.8C189.5 456.5 200 474 202 484Q180 488.5 158 484Z" fill="url(#clay)"/>
+      <path id="paper-band" d="M169.8 461Q180 463.5 190.2 461L194.8 470Q180 473.5 165.2 470Z" fill="url(#paper)"/>
+      <path id="gold-stripe" d="M167.5 465.5Q180 468.4 192.5 465.5" fill="none" stroke="#C9973A" stroke-width="1.1"/>
+      <path id="soot" d="M158 484C160 474 170.5 456.5 174.6 451.8L175.4 450.9L176.6 451.2L177.3 450.1L178.9 450.6L179.6 449.8L181.2 450.5L182.1 450.1L183.4 450.9L184.5 450.7L185.4 451.8C189.5 456.5 200 474 202 484Q180 488.5 158 484Z" fill="url(#soot)"/>
+      <path id="soot-drips" d="M174 452C173 456 171.5 459 172.5 462C173.5 459.5 175 457 175.5 453ZM179 451.5C178.5 456 178.6 460 180 464.5C181 460 181.4 456 181 451.5ZM184.6 452C186 455 187.8 457.5 187.3 460.5C189.2 458 188.6 455 186.5 452Z" fill="#0A0604" fill-opacity="0.8" filter="url(#blur-drips)"/>
+      <ellipse id="burnt-crater" cx="180" cy="451" rx="4.8" ry="1.4" fill="url(#crater)"/>
+      <path id="ash-rim" d="M174.6 451.8L175.4 450.9L176.6 451.2L177.3 450.1L178.9 450.6L179.6 449.8L181.2 450.5L182.1 450.1L183.4 450.9L184.5 450.7L185.4 451.8" fill="none" stroke="#3A322E" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <path id="ash-flecks" fill="#4E4844" fill-opacity="0.5" d="M167.2 486a0.8 0.8 0 1 0 1.6 0 0.8 0.8 0 1 0-1.6 0m25.2 1.5a0.6 0.6 0 1 0 1.2 0 0.6 0.6 0 1 0-1.2 0m-42.95-4.5a0.55 0.55 0 1 0 1.1 0 0.55 0.55 0 1 0-1.1 0m57.85 1.5a0.7 0.7 0 1 0 1.4 0 0.7 0.7 0 1 0-1.4 0m-31.8 5.5a0.5 0.5 0 1 0 1 0 0.5 0.5 0 1 0-1 0m-15-1a0.5 0.5 0 1 0 1 0 0.5 0.5 0 1 0-1 0m37.95 1.5a0.55 0.55 0 1 0 1.1 0 0.55 0.55 0 1 0-1.1 0"/>
+</svg>

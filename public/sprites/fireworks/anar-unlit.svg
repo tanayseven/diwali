@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="416" height="288" viewBox="128 428 104 72">
+  <title>Anar — Unlit</title>
+  <defs>
+    <linearGradient id="clay" gradientUnits="userSpaceOnUse" x1="360" y1="270" x2="0" y2="270">
+      <stop offset="0" stop-color="#1E0E07"/>
+      <stop offset="0.3" stop-color="#4A2414"/>
+      <stop offset="0.55" stop-color="#9A5532"/>
+      <stop offset="0.66" stop-color="#6A321A"/>
+      <stop offset="1" stop-color="#241109"/>
+    </linearGradient>
+    <linearGradient id="paper" gradientUnits="userSpaceOnUse" x1="360" y1="270" x2="0" y2="270">
+      <stop offset="0" stop-color="#2A0709"/>
+      <stop offset="0.3" stop-color="#6E1418"/>
+      <stop offset="0.55" stop-color="#B82E30"/>
+      <stop offset="1" stop-color="#420B0F"/>
+    </linearGradient>
+    <filter id="blur-shadow" color-interpolation-filters="sRGB" x="-50%" y="-200%" width="200%" height="500%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+  </defs>
+
+    <g id="flowerpot">
+      <ellipse id="cone-shadow" cx="180" cy="484" rx="33" ry="4.5" fill="#000000" fill-opacity="0.667" filter="url(#blur-shadow)"/>
+      <path id="cone" d="M158 484C160 474 172 452 177 447.5Q180 444.5 183 447.5C188 452 200 474 202 484Q180 488.5 158 484Z" fill="url(#clay)"/>
+      <path id="paper-band" d="M169.8 461Q180 463.5 190.2 461L194.8 470Q180 473.5 165.2 470Z" fill="url(#paper)"/>
+      <path id="gold-stripe" d="M167.5 465.5Q180 468.4 192.5 465.5" fill="none" stroke="#C9973A" stroke-width="1.1"/>
+      <path id="wick" d="M180 446C179 440 183 437 182 431" fill="none" stroke="#BFB59E" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+</svg>
