@@ -8,6 +8,15 @@ const defaultVolume = 0.5
 // How long a press has to last to open the slider instead of toggling mute
 const holdDuration = 400
 const storageKey = "diwali-audio"
+// While a sound effect plays at full level the music drops to this share of its volume,
+// so the effect stands out. Quieter effects dip it less
+const duckLevel = 0.3
+// How long the music takes to dip, and to come back up, across the full dip
+const duckFadeOut = 150
+const duckFadeIn = 800
+// Wait this long after the last effect before bringing the music back, so effects in
+// quick succession (a laddi's crackers) don't make it pump up and down between them
+const duckRelease = 400
 // Some browsers (notably iOS Safari) won't buffer audio before a tap, so the loader
 // stops waiting for the first track after this long rather than getting stuck
 const readyTimeout = 8000
@@ -59,6 +68,50 @@ const createAudioControl = () => {
   let current = 0
   // Sound effects playing now, each with its level: the share of the volume it plays at
   const effects = new Map<HTMLAudioElement, number>()
+  // The share of the volume the music plays at, lowered while effects play
+  let duck = 1
+  let duckTarget = 1
+  let duckFrame: number | undefined
+  let duckReleaseTimer: number | undefined
+
+  const renderMusicVolume = () => players.forEach(player => player.volume = settings.volume * duck)
+
+  // Eases the music's level towards the target a frame at a time
+  const fadeDuck = (last: number) => {
+    duckFrame = requestAnimationFrame(now => {
+      const span = 1 - duckLevel
+      const elapsed = now - last
+      duck = duckTarget < duck
+        ? Math.max(duckTarget, duck - span * elapsed / duckFadeOut)
+        : Math.min(duckTarget, duck + span * elapsed / duckFadeIn)
+      renderMusicVolume()
+      if (duck === duckTarget) {
+        duckFrame = undefined
+      } else {
+        fadeDuck(now)
+      }
+    })
+  }
+
+  const setDuckTarget = (target: number) => {
+    duckTarget = target
+    if (duckFrame === undefined && duck !== target) {
+      fadeDuck(performance.now())
+    }
+  }
+
+  // Dips the music by as much as the loudest effect playing calls for, or brings it
+  // back up a moment after the last one ends
+  const updateDuck = () => {
+    clearTimeout(duckReleaseTimer)
+    if (effects.size > 0) {
+      const loudest = Math.max(...effects.values())
+      setDuckTarget(1 - (1 - duckLevel) * Math.min(1, loudest))
+    } else {
+      duckReleaseTimer = window.setTimeout(() => setDuckTarget(1), duckRelease)
+    }
+  }
+
   players.forEach((player, idx) => player.addEventListener("ended", () => {
     current = (idx + 1) % players.length
     players[current].currentTime = 0
@@ -168,10 +221,8 @@ const createAudioControl = () => {
     button.innerHTML = speakerIcon(silent)
     button.setAttribute("aria-label", silent ? LL.audio.unmute() : LL.audio.mute())
     slider.value = String(settings.muted ? 0 : settings.volume)
-    players.forEach(player => {
-      player.volume = settings.volume
-      player.muted = settings.muted
-    })
+    renderMusicVolume()
+    players.forEach(player => player.muted = settings.muted)
     effects.forEach((_, effect) => renderEffect(effect))
   }
 
@@ -286,8 +337,12 @@ const createAudioControl = () => {
     effect.preload = "auto"
     return () => {
       const copy = effect.cloneNode() as HTMLAudioElement
-      const forget = () => effects.delete(copy)
+      const forget = () => {
+        effects.delete(copy)
+        updateDuck()
+      }
       effects.set(copy, 1)
+      updateDuck()
       copy.addEventListener("ended", forget)
       renderEffect(copy)
       copy.play().catch(forget)
@@ -297,6 +352,7 @@ const createAudioControl = () => {
           if (effects.has(copy)) {
             effects.set(copy, level)
             renderEffect(copy)
+            updateDuck()
           }
         },
         stop() {
