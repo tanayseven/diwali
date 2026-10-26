@@ -1,4 +1,4 @@
-import {Application, Assets, Container, Graphics, Point, PointData, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Sprite, Texture} from "pixi.js"
 
 const skyUrl = "sprites/backgrounds/background-night.svg"
 const houseUrl = "sprites/house.svg"
@@ -8,139 +8,224 @@ const sceneHeight = 720
 // The house stands with its bottom edge on the ground band, which starts at y 600
 const houseHeight = 420
 const houseBottom = 680
-// house.svg's own height, which it's scaled from to stand houseHeight tall
-const houseSvgHeight = 489.61
-// Darkens the scene so the menu stands out against it
-const dimAlpha = 0.5
+// house.svg's own size and where its viewBox starts, which it's scaled from to stand
+// houseHeight tall, centred on the scene
+const houseSvg = {x: 153.35, y: 52.83, width: 597.11, height: 489.61}
+const houseScale = houseHeight / houseSvg.height
+const houseLeft = sceneWidth / 2 - houseSvg.width * houseScale / 2
+const houseTop = houseBottom - houseHeight
+
+// Where a point of house.svg lands in the scene
+const fromHouseSvg = (x: number, y: number): PointData => ({
+  x: houseLeft + (x - houseSvg.x) * houseScale,
+  y: houseTop + (y - houseSvg.y) * houseScale,
+})
+
+// The porch's tiled floor, from the first path in house.svg: its back edge runs along
+// the foot of the wall and its front edge flares out to the steps
+const porchFloor: PointData[] = [
+  fromHouseSvg(201.225, 479.175),
+  fromHouseSvg(683.175, 479.175),
+  fromHouseSvg(743.55, 528.225),
+  fromHouseSvg(156.075, 527.55),
+]
 
 type View = {x: number, y: number, width: number, height: number}
 
-// What the camera frames, in scene units. Each view is fitted inside the screen,
-// but never zoomed out past covering it, and never shows beyond the scene's edges.
-// The menu frames the bottom half so wide screens crop the sky, not the ground
-const menuView: View = {x: 0, y: sceneHeight / 2, width: sceneWidth, height: sceneHeight / 2}
-// A close-up of the middle of the porch, by the door and the chairs. It's tighter than
-// the porch, so the scene can be panned around from there
-const porchView: View = {x: 477.5, y: 499, width: 325, height: 147}
-// A little further out than the porch, about the same middle and resting on the same
-// floor, so a bit more of the house and the sky above it are in view
-const houseView: View = {x: 440, y: 466, width: 400, height: 180}
-// The close-up each scene's camera moves in to
-const sceneViews = {
-  diyas: porchView,
-  fireworks: houseView,
-  craftKandil: houseView,
-  decorateHouse: houseView,
-  drawRangoli: houseView,
-}
-type SceneName = keyof typeof sceneViews
+// What the camera frames to begin with: the house from its porch floor, kept clear of
+// the bar along the bottom, up to the eaves
+const startView: View = {x: 440, y: 510, width: 400, height: 180}
+// The closest the camera gets: about a diya's width and a half across the screen's
+// shorter side on a phone, or a few diyas on a desktop
+const closestView = {width: 180, height: 80}
+// How much each press of a zoom button or key zooms by, and how long it takes
+const zoomStep = 1.5
+const zoomDuration = 200
 
 const coverScale = (width: number, height: number) => Math.max(width / sceneWidth, height / sceneHeight)
-const fitScale = (view: View, width: number, height: number) =>
+const fitScale = (view: {width: number, height: number}, width: number, height: number) =>
   Math.max(coverScale(width, height), Math.min(width / view.width, height / view.height))
 
 // Every asset the background needs, to be loaded before it's created
 const backgroundAssets = [skyUrl, houseUrl]
 
 // The SVGs are rasterised once at load, so draw them at the size they'll be shown
-// on this screen to keep them sharp. The house is drawn for the porch close-up;
-// the sky is capped to stay within texture limits, as little of it shows up close
+// on this screen to keep them sharp. The house is drawn for the closest zoom; the
+// sky is capped to stay within texture limits, as little of it shows up close
 const addBackgroundAssets = () => {
   const {width, height} = window.screen
   const density = window.devicePixelRatio || 1
   const skyResolution = Math.min(3, Math.ceil(density * coverScale(width, height)))
-  const houseZoom = fitScale(porchView, width, height) * houseHeight / houseSvgHeight
+  const houseZoom = fitScale(closestView, width, height) * houseScale
   const houseResolution = Math.min(4, Math.ceil(density * houseZoom))
   Assets.add({alias: skyUrl, src: skyUrl, data: {resolution: skyResolution}})
   Assets.add({alias: houseUrl, src: houseUrl, data: {resolution: houseResolution}})
 }
 
-const lerp = (from: number, to: number, t: number) => from + (to - from) * t
+const easeOut = (t: number) => 1 - (1 - t) ** 3
 
-// The night sky with the house in it, covering the screen, under a dimming layer.
-// setFocus moves the camera from the menu's view (0) to the current scene's close-up
-// (1), clearing the dimming layer on the way; setScene picks which close-up that is. Once there, setPannable lets the scene be dragged around,
-// or scrolled with a wheel or trackpad, within its edges.
-// Expects backgroundAssets to have been loaded already
+// Whether a point is inside a polygon, by counting the edges a ray from it crosses
+const isInside = (point: PointData, polygon: PointData[]) => {
+  let inside = false
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const a = polygon[i]
+    const b = polygon[j]
+    if ((a.y > point.y) !== (b.y > point.y)
+      && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x) {
+      inside = !inside
+    }
+  }
+  return inside
+}
+
+// A press on the scenery, given where it fell in the scene. Returning true claims it,
+// e.g. to draw, so it doesn't pan the scene
+type PressHandler = (at: PointData, e: FederatedPointerEvent) => boolean
+
+// The night sky with the house in it, under a camera that can be panned by dragging
+// the scenery or scrolling, and zoomed with zoomBy, a trackpad pinch (or Ctrl and the
+// wheel) or a two-finger pinch on touch screens, between seeing the whole scene and a
+// close-up of the porch. Expects backgroundAssets to have been loaded already
 const createBackground = (app: Application) => {
   const container = new Container()
   const scene = new Container()
   scene.addChild(new Sprite(Assets.get<Texture>(skyUrl)))
   const house = new Sprite(Assets.get<Texture>(houseUrl))
   house.anchor.set(0.5, 1)
-  house.scale.set(houseHeight / house.texture.height)
+  house.scale.set(houseScale)
   house.position.set(sceneWidth / 2, houseBottom)
   scene.addChild(house)
   // Things placed in the scene, like diyas, so they move with the camera
   const decorations = new Container()
   scene.addChild(decorations)
-  const dim = new Graphics()
   // Catches presses on the scenery for panning. It's underneath the scene, so anything
-  // placed in it (like diyas) is pressed first, and it's only there while pannable
+  // placed in it (like diyas) is pressed first
   const panSurface = new Container()
   panSurface.hitArea = app.screen
   panSurface.cursor = "grab"
-  panSurface.eventMode = "none"
-  container.addChild(panSurface, scene, dim)
-  let focus = 0
-  let closeView = porchView
-  // How far the close-up has been panned, in scene units. It eases in and out with
-  // the focus, so the menu's view is never panned
-  const pan = {x: 0, y: 0}
-  let pannable = false
-  let panFrom: Point | undefined
+  panSurface.eventMode = "static"
+  container.addChild(panSurface, scene)
 
-  // Keeps the panned close-up inside the scene's edges on this screen
-  const clampPan = () => {
+  // The house's outline as a mask, one byte per scene unit, so things can be hung on it
+  // and not on the sky around it
+  const houseMask = (() => {
+    const copy = new Sprite(house.texture)
+    copy.scale.set(houseScale)
+    const {pixels, width, height} = app.renderer.extract.pixels({target: copy, resolution: 1})
+    copy.destroy()
+    return {pixels, width, height}
+  })()
+
+  // The point in the scene at the middle of the screen, and how far in it's zoomed: 1
+  // just covers the screen with the whole scene
+  const centre = {x: startView.x + startView.width / 2, y: startView.y + startView.height / 2}
+  let zoom = fitScale(startView, app.screen.width, app.screen.height) / coverScale(app.screen.width, app.screen.height)
+  // A zoom eased in over a moment, about a point on screen, from a button or a key
+  let zoomAnimation: {from: number, to: number, about: PointData, elapsed: number} | undefined
+  let panFrom: Point | undefined
+  let onPress: PressHandler | undefined
+
+  const maxZoom = () => {
     const {width, height} = app.screen
-    const scale = fitScale(closeView, width, height)
-    const clampAxis = (centre: number, half: number, size: number) =>
-      half * 2 >= size ? size / 2 : Math.min(size - half, Math.max(half, centre))
-    const centreX = closeView.x + closeView.width / 2
-    const centreY = closeView.y + closeView.height / 2
-    pan.x = clampAxis(centreX + pan.x, width / 2 / scale, sceneWidth) - centreX
-    pan.y = clampAxis(centreY + pan.y, height / 2 / scale, sceneHeight) - centreY
+    return fitScale(closestView, width, height) / coverScale(width, height)
+  }
+
+  // Keeps the zoom within its range, and the view within the scene's edges
+  const clampView = () => {
+    const {width, height} = app.screen
+    zoom = Math.min(maxZoom(), Math.max(1, zoom))
+    const scale = coverScale(width, height) * zoom
+    const clampAxis = (value: number, half: number, size: number) =>
+      half * 2 >= size ? size / 2 : Math.min(size - half, Math.max(half, value))
+    centre.x = clampAxis(centre.x, width / 2 / scale, sceneWidth)
+    centre.y = clampAxis(centre.y, height / 2 / scale, sceneHeight)
   }
 
   const layout = () => {
     const {width, height} = app.screen
-    clampPan()
-    const view: View = {
-      x: lerp(menuView.x, closeView.x + pan.x, focus),
-      y: lerp(menuView.y, closeView.y + pan.y, focus),
-      width: lerp(menuView.width, closeView.width, focus),
-      height: lerp(menuView.height, closeView.height, focus),
-    }
-    const scale = fitScale(view, width, height)
-    // Centre the view on screen, then pull it back inside the scene's edges
-    const x = width / 2 - (view.x + view.width / 2) * scale
-    const y = height / 2 - (view.y + view.height / 2) * scale
+    clampView()
+    const scale = coverScale(width, height) * zoom
     scene.scale.set(scale)
-    scene.position.set(
-      Math.min(0, Math.max(width - sceneWidth * scale, x)),
-      Math.min(0, Math.max(height - sceneHeight * scale, y)),
-    )
-    dim.clear().rect(0, 0, width, height).fill({color: 0x000000, alpha: dimAlpha * (1 - focus)})
+    scene.position.set(width / 2 - centre.x * scale, height / 2 - centre.y * scale)
   }
 
   // Moves the view by a distance on screen, the way the scenery is dragged
   const panBy = (dx: number, dy: number) => {
-    pan.x -= dx / scene.scale.x
-    pan.y -= dy / scene.scale.y
+    centre.x -= dx / scene.scale.x
+    centre.y -= dy / scene.scale.y
     layout()
   }
 
-  panSurface.on("pointerdown", e => {
-    panFrom = e.global.clone()
-    panSurface.cursor = "grabbing"
+  // Zooms to a level, keeping the point of the scene under a point on screen there
+  const zoomTo = (level: number, about: PointData) => {
+    const anchor = scene.toLocal(about)
+    zoom = level
+    clampView()
+    const scale = coverScale(app.screen.width, app.screen.height) * zoom
+    centre.x = anchor.x - (about.x - app.screen.width / 2) / scale
+    centre.y = anchor.y - (about.y - app.screen.height / 2) / scale
+    layout()
+  }
+
+  const screenCentre = () => ({x: app.screen.width / 2, y: app.screen.height / 2})
+
+  app.ticker.add(() => {
+    if (!zoomAnimation) {
+      return
+    }
+    zoomAnimation.elapsed += app.ticker.deltaMS
+    const t = Math.min(1, zoomAnimation.elapsed / zoomDuration)
+    zoomTo(zoomAnimation.from + (zoomAnimation.to - zoomAnimation.from) * easeOut(t), zoomAnimation.about)
+    if (t === 1) {
+      zoomAnimation = undefined
+    }
   })
+
   // Moves and releases are heard on the window, so a pan carries on off the canvas
-  const toStage = (e: PointerEvent) => {
+  const toStage = (e: MouseEvent) => {
     const point = new Point()
     app.renderer.events.mapPositionToPoint(point, e.clientX, e.clientY)
     return point
   }
+
+  // Touches on the canvas, so two of them can pinch to zoom
+  const touches = new Map<number, Point>()
+  let pinch: {distance: number, middle: Point} | undefined
+  const pinchFrom = () => {
+    const [a, b] = [...touches.values()]
+    return {distance: Math.hypot(a.x - b.x, a.y - b.y), middle: new Point((a.x + b.x) / 2, (a.y + b.y) / 2)}
+  }
+
+  panSurface.on("pointerdown", e => {
+    if (pinch || onPress?.(scene.toLocal(e.global), e)) {
+      return
+    }
+    panFrom = e.global.clone()
+    panSurface.cursor = "grabbing"
+  })
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType !== "touch" || e.target !== app.canvas) {
+      return
+    }
+    touches.set(e.pointerId, toStage(e))
+    if (touches.size === 2) {
+      // A second finger turns a pan into a pinch
+      panFrom = undefined
+      zoomAnimation = undefined
+      pinch = pinchFrom()
+    }
+  }
   const onPointerMove = (e: PointerEvent) => {
+    if (touches.has(e.pointerId)) {
+      touches.set(e.pointerId, toStage(e))
+    }
+    if (pinch && touches.size === 2) {
+      const next = pinchFrom()
+      zoomTo(zoom * next.distance / pinch.distance, next.middle)
+      panBy(next.middle.x - pinch.middle.x, next.middle.y - pinch.middle.y)
+      pinch = next
+      return
+    }
     if (!panFrom) {
       return
     }
@@ -148,21 +233,32 @@ const createBackground = (app: Application) => {
     panBy(at.x - panFrom.x, at.y - panFrom.y)
     panFrom = at
   }
-  const endPan = () => {
+  const onPointerUp = (e: PointerEvent) => {
+    touches.delete(e.pointerId)
+    if (touches.size < 2) {
+      pinch = undefined
+    }
     panFrom = undefined
     panSurface.cursor = "grab"
   }
   const onWheel = (e: WheelEvent) => {
-    if (!pannable || e.ctrlKey) {
+    if (e.target !== app.canvas) {
       return
     }
-    // Wheels and trackpads scroll the scenery past, like scrolling a page
     e.preventDefault()
-    panBy(-e.deltaX, -e.deltaY)
+    zoomAnimation = undefined
+    // Trackpad pinches arrive as the wheel with Ctrl held, as does Ctrl and a mouse wheel
+    if (e.ctrlKey) {
+      zoomTo(zoom * Math.exp(-e.deltaY * 0.01), toStage(e))
+    } else {
+      // Otherwise wheels and trackpads scroll the scenery past, like scrolling a page
+      panBy(-e.deltaX, -e.deltaY)
+    }
   }
+  window.addEventListener("pointerdown", onPointerDown, true)
   window.addEventListener("pointermove", onPointerMove)
-  window.addEventListener("pointerup", endPan)
-  window.addEventListener("pointercancel", endPan)
+  window.addEventListener("pointerup", onPointerUp)
+  window.addEventListener("pointercancel", onPointerUp)
   window.addEventListener("wheel", onWheel, {passive: false})
 
   layout()
@@ -179,34 +275,45 @@ const createBackground = (app: Application) => {
     scale() {
       return scene.scale.x
     },
-    // Changes which close-up the camera moves to, starting it unpanned. It's only
-    // meant to change while on the menu, as the camera would jump otherwise
-    setScene(name: SceneName) {
-      closeView = sceneViews[name]
-      pan.x = 0
-      pan.y = 0
-      layout()
+    // Zooms in (above 1) or out (below 1) by a factor, eased over a moment, about a
+    // point on screen, or its middle
+    zoomBy(factor: number, about: PointData = screenCentre()) {
+      const from = zoomAnimation?.to ?? zoom
+      const to = Math.min(maxZoom(), Math.max(1, from * factor))
+      zoomAnimation = {from: zoom, to, about, elapsed: 0}
     },
-    setFocus(value: number) {
-      focus = value
-      layout()
+    zoomStep,
+    canZoomIn: () => zoom < maxZoom() - 1e-3,
+    canZoomOut: () => zoom > 1 + 1e-3,
+    // Lets a tool claim presses on the scenery, e.g. to draw, instead of them panning it
+    setPressHandler(handler: PressHandler | undefined) {
+      onPress = handler
     },
-    setPannable(value: boolean) {
-      pannable = value
-      panSurface.eventMode = value ? "static" : "none"
-      if (!value) {
-        endPan()
-      }
+    // Whether a point in the scene is on the house, rather than the sky or ground. The
+    // SVG has hairline gaps between some of its shapes, so a point counts if anything
+    // of the house is within a couple of units of it
+    isOnHouse(point: PointData) {
+      const opaqueAt = (x: number, y: number) =>
+        x >= 0 && y >= 0 && x < houseMask.width && y < houseMask.height
+        && houseMask.pixels[(y * houseMask.width + x) * 4 + 3] > 128
+      const x = Math.floor(point.x - houseLeft)
+      const y = Math.floor(point.y - houseTop)
+      return [-2, 0, 2].some(dy => [-2, 0, 2].some(dx => opaqueAt(x + dx, y + dy)))
     },
+    // Whether a point in the scene is on the porch's floor
+    isOnPorchFloor: (point: PointData) => isInside(point, porchFloor),
     destroy() {
+      window.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("pointermove", onPointerMove)
-      window.removeEventListener("pointerup", endPan)
-      window.removeEventListener("pointercancel", endPan)
+      window.removeEventListener("pointerup", onPointerUp)
+      window.removeEventListener("pointercancel", onPointerUp)
       window.removeEventListener("wheel", onWheel)
       container.destroy({children: true})
     },
   }
 }
 
-export {addBackgroundAssets, backgroundAssets, createBackground, sceneHeight, sceneWidth}
-export type {SceneName}
+type Background = ReturnType<typeof createBackground>
+
+export {addBackgroundAssets, backgroundAssets, createBackground, porchFloor, sceneHeight, sceneWidth}
+export type {Background}

@@ -45,7 +45,7 @@ const createTip = (emoji: string, tip: string) => {
   return span
 }
 
-// A bar along the bottom of the menu crediting who made it
+// A bar along the bottom of the screen crediting who made it
 const createFooter = () => {
   const stylesheet = document.createElement("style")
   stylesheet.textContent = style

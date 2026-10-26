@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 viewBox="0 0 512.005 512.005" xml:space="preserve">
+<g>
+	<polygon style="fill:#42A555;" points="8.969,207.146 206.593,9.445 305.405,108.259 305.405,207.069 404.219,207.069 
+		502.887,305.8 305.405,502.56 206.593,403.747 206.595,305.881 107.781,305.881 	"/>
+	<polygon style="fill:#42A555;" points="8.969,305.958 206.593,502.56 305.405,403.832 305.405,305.881 404.219,305.881 
+		502.887,206.987 305.322,9.445 206.593,108.257 206.593,207.069 107.781,207.069 	"/>
+</g>
+<g>
+	<rect x="107.787" y="108.256" style="fill:#FFDB6C;" width="98.806" height="98.806"/>
+	<polygon style="fill:#FFDB6C;" points="305.407,108.259 404.219,108.33 404.219,207.069 305.407,207.069 	"/>
+	<polygon style="fill:#FFDB6C;" points="305.407,305.881 404.219,305.881 404.219,403.747 305.407,403.832 	"/>
+	<rect x="107.787" y="305.88" style="fill:#FFDB6C;" width="98.806" height="97.861"/>
+</g>
+<polygon style="fill:#EE3446;" points="404.219,207.069 305.405,207.069 305.405,108.259 255.978,58.83 206.593,108.257 
+	206.593,207.069 107.781,207.069 58.376,256.514 107.781,305.881 206.595,305.881 206.593,403.746 256.022,453.174 305.405,403.831 
+	305.405,305.881 404.219,305.881 453.552,256.434 "/>
+<g>
+	<polygon style="fill:#634E9B;" points="404.219,9.445 503.031,9.445 503.031,108.257 404.219,108.33 	"/>
+	<rect x="8.971" y="403.753" style="fill:#634E9B;" width="98.806" height="98.806"/>
+	<rect x="404.217" y="403.753" style="fill:#634E9B;" width="98.806" height="98.806"/>
+	<rect x="8.969" y="9.445" style="fill:#634E9B;" width="98.806" height="98.806"/>
+</g>
+<g>
+	<circle style="fill:#303E48;" cx="8.969" cy="9.445" r="8.969"/>
+	<circle style="fill:#303E48;" cx="107.775" cy="9.445" r="8.969"/>
+	<circle style="fill:#303E48;" cx="206.593" cy="9.445" r="8.969"/>
+	<circle style="fill:#303E48;" cx="305.399" cy="9.445" r="8.969"/>
+	<circle style="fill:#303E48;" cx="404.217" cy="9.445" r="8.969"/>
+	<circle style="fill:#303E48;" cx="503.035" cy="9.445" r="8.969"/>
+	<circle style="fill:#303E48;" cx="107.775" cy="108.256" r="8.969"/>
+	<circle style="fill:#303E48;" cx="206.593" cy="108.256" r="8.969"/>
+	<circle style="fill:#303E48;" cx="305.399" cy="108.256" r="8.969"/>
+	<circle style="fill:#303E48;" cx="404.217" cy="108.256" r="8.969"/>
+	<circle style="fill:#303E48;" cx="503.035" cy="108.256" r="8.969"/>
+	<circle style="fill:#303E48;" cx="107.775" cy="207.074" r="8.969"/>
+	<circle style="fill:#303E48;" cx="206.593" cy="207.074" r="8.969"/>
+	<circle style="fill:#303E48;" cx="305.399" cy="207.074" r="8.969"/>
+	<circle style="fill:#303E48;" cx="404.217" cy="207.074" r="8.969"/>
+	<circle style="fill:#303E48;" cx="503.035" cy="207.074" r="8.969"/>
+	<circle style="fill:#303E48;" cx="107.775" cy="305.88" r="8.969"/>
+	<circle style="fill:#303E48;" cx="206.593" cy="305.88" r="8.969"/>
+	<circle style="fill:#303E48;" cx="305.399" cy="305.88" r="8.969"/>
+	<circle style="fill:#303E48;" cx="404.217" cy="305.88" r="8.969"/>
+	<circle style="fill:#303E48;" cx="503.035" cy="305.88" r="8.969"/>
+	<circle style="fill:#303E48;" cx="107.775" cy="403.753" r="8.969"/>
+	<circle style="fill:#303E48;" cx="206.593" cy="403.753" r="8.969"/>
+	<circle style="fill:#303E48;" cx="305.399" cy="403.753" r="8.969"/>
+	<circle style="fill:#303E48;" cx="404.217" cy="403.753" r="8.969"/>
+	<circle style="fill:#303E48;" cx="503.035" cy="403.753" r="8.969"/>
+	<circle style="fill:#303E48;" cx="107.775" cy="502.56" r="8.969"/>
+	<circle style="fill:#303E48;" cx="206.593" cy="502.56" r="8.969"/>
+	<circle style="fill:#303E48;" cx="305.399" cy="502.56" r="8.969"/>
+	<circle style="fill:#303E48;" cx="404.217" cy="502.56" r="8.969"/>
+	<circle style="fill:#303E48;" cx="503.035" cy="502.56" r="8.969"/>
+	<circle style="fill:#303E48;" cx="8.969" cy="108.256" r="8.969"/>
+	<circle style="fill:#303E48;" cx="8.969" cy="207.074" r="8.969"/>
+	<circle style="fill:#303E48;" cx="8.969" cy="305.88" r="8.969"/>
+	<circle style="fill:#303E48;" cx="8.969" cy="404.698" r="8.969"/>
+	<circle style="fill:#303E48;" cx="8.969" cy="502.308" r="8.969"/>
+</g>
+</svg>

@@ -5,14 +5,22 @@ import type {BaseTranslation} from "../i18n-types"
 const en = {
 	title: "Diwali this year",
 	loading: "Loading…",
-	menu: {
+	// The side rail's tools, each with its own bar of things to use
+	tools: {
 		diyas: "Diyas",
 		fireworks: "Fireworks",
-		craftKandil: "Craft Kandil",
-		decorateHouse: "Decorate House",
-		drawRangoli: "Draw Rangoli",
+		kandil: "Craft Kandil",
+		decorate: "Decorate House",
+		rangoli: "Draw Rangoli",
 	},
-	back: "← Back",
+	zoom: {
+		in: "Zoom in",
+		out: "Zoom out",
+	},
+	hud: {
+		hide: "Hide the bar",
+		show: "Show the bar",
+	},
 	splashWarning: {
 		heading: "Warning",
 		message: "This app contains flashing and twinkling lights that may trigger seizures in people with photosensitive epilepsy. If you have epilepsy or have had seizures before, please take care while using it, and stop at once if you feel unwell.",
@@ -69,6 +77,33 @@ const en = {
 		move: "Drag to move it, or onto the bar to put it back",
 		unlit: "Light it with the matchstick",
 		spent: "Burnt out. Drag onto the bar to clear it away",
+		lights: {
+			name: "Fairy lights",
+			red: "Red fairy lights",
+			orange: "Orange fairy lights",
+			yellow: "Yellow fairy lights",
+			green: "Green fairy lights",
+			blue: "Blue fairy lights",
+			white: "White fairy lights",
+			mixed: "Mixed fairy lights",
+			hint: "Pick, then drag from one point on the house to another to hang a string",
+			move: "Drag to move them, or onto the Decorate House bar to take them down",
+		},
+		rangoli: {
+			red: "Red powder",
+			orange: "Orange powder",
+			yellow: "Yellow powder",
+			green: "Green powder",
+			blue: "Blue powder",
+			purple: "Purple powder",
+			pink: "Pink powder",
+			white: "White powder",
+			hint: "Pick, then draw on the porch floor",
+			eraser: "Eraser",
+			eraserHint: "Pick, then rub out parts of the rangoli",
+			clear: "Clear",
+			clearHint: "Wipes the whole rangoli off the floor",
+		},
 	},
 } satisfies BaseTranslation
 

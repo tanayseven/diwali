@@ -6,7 +6,8 @@ const slotCount = 10
 const slotSize = 76
 const slotGap = 12
 const panelPadding = 12
-const bottomMargin = 20
+// Clear of the credit footer along the bottom of the screen
+const bottomMargin = 52
 const sideGutter = 16
 const highlight = 0xffd700
 // Share of a slot an item's icon fills
@@ -31,6 +32,21 @@ const cropped = (url: string, crop: Rectangle) =>
 
 const panelWidth = slotCount * slotSize + (slotCount - 1) * slotGap + panelPadding * 2
 const panelHeight = slotSize + panelPadding * 2
+// Room kept either side of the bar for the button that shows and hides it, so the bar
+// stays centred
+const toggleRoom = 72
+
+// Where every bar sits on this screen: its middle, and how much it's shrunk to fit
+const hudFrame = (screen: {width: number, height: number}) => {
+  const scale = Math.min(1, (screen.width - (sideGutter + toggleRoom) * 2) / panelWidth)
+  return {
+    x: screen.width / 2,
+    y: screen.height - bottomMargin - panelHeight * scale / 2,
+    scale,
+    width: panelWidth * scale,
+    height: panelHeight * scale,
+  }
+}
 
 // A bar of empty inventory slots along the bottom of the screen, shrunk to fit narrow
 // screens. Whatever fills the slots is added to the container at the boxes' positions
@@ -62,22 +78,31 @@ const createHud = (app: Application) => {
   }
 
   const layout = () => {
-    const scale = Math.min(1, (app.screen.width - sideGutter * 2) / panelWidth)
-    container.scale.set(scale)
-    container.position.set(app.screen.width / 2, app.screen.height - bottomMargin - panelHeight * scale / 2)
+    const frame = hudFrame(app.screen)
+    container.scale.set(frame.scale)
+    container.position.set(frame.x, frame.y)
     panel.clear()
       .roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 18)
       .fill({color: 0x000000, alpha: 0.55})
       .stroke({width: 2, color: 0x555555})
   }
 
-  // Puts an item in a slot: its drawing fitted inside, with a badge for its count if
-  // it's counted. The slot can be pressed to take one; show updates it after a change
-  const addItem = (idx: number, item: Item) => {
+  // An empty slot to fill with anything, which can be pressed. Its content is drawn
+  // centred on the slot, which is slotSize across
+  const addSlot = (idx: number) => {
     const slot = new Container()
     slot.position.copyFrom(boxes[idx].position)
     slot.eventMode = "static"
+    slot.cursor = "pointer"
     slot.hitArea = new Rectangle(-slotSize / 2, -slotSize / 2, slotSize, slotSize)
+    container.addChild(slot)
+    return {container: slot, box: boxes[idx]}
+  }
+
+  // Puts an item in a slot: its drawing fitted inside, with a badge for its count if
+  // it's counted. The slot can be pressed to take one; show updates it after a change
+  const addItem = (idx: number, item: Item) => {
+    const {container: slot, box} = addSlot(idx)
     const icon = new Sprite(cropped(item.url, item.crop))
     icon.anchor.set(0.5)
     icon.rotation = item.rotation ?? 0
@@ -99,10 +124,9 @@ const createHud = (app: Application) => {
       badge.addChild(circle, label)
       slot.addChild(badge)
     }
-    container.addChild(slot)
     return {
       container: slot,
-      box: boxes[idx],
+      box,
       // An empty stack, or a tool while it's in use, stays visible but faded
       show(inUse = false) {
         const available = !inUse && item.count !== 0
@@ -121,6 +145,7 @@ const createHud = (app: Application) => {
   return {
     container,
     addItem,
+    addSlot,
     drawBoxes,
     isOver,
     layout,
@@ -134,5 +159,5 @@ const createHud = (app: Application) => {
   }
 }
 
-export {createHud, cropped, highlight}
+export {createHud, cropped, highlight, hudFrame, iconFill, slotSize}
 export type {Item}

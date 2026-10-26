@@ -19,12 +19,18 @@ Live at: https://diwali.tanay.tech/
 
 - **Loading screen:** a progress bar while the images and the start of the music load.
 - **Photosensitivity warning:** the app has flashing and twinkling lights, so it opens with a warning for people with photosensitive epilepsy. It fades out after a few seconds, or straight away on a tap or key press.
-- **Night scene:** a house under a starry sky, with strings of twinkling fairy lights hung across the top of the screen.
-- **Diyas:** the camera zooms in on the house's porch, where night falls; it's lit only by the diyas once they're lit. Drag diyas from the inventory bar at the bottom to place them, pick them up again to move them, or drop them back on the bar. A back button (or Escape) returns at any point.
-- **Fireworks:** the camera moves in on the house, not quite as close as for diyas, and night falls on the porch as it does for them. Drag anars (flowerpot fireworks) and laddis (strings of firecrackers) from the inventory bar onto the porch, then drag the matchstick onto one to light its fuse. An anar throws up a fountain of crackling sparks with trailing embers, smoke and a roar, lights up the porch around it, and sputters out after about 20 seconds. A laddi's crackers go off one after another, each with a flash of light, sparks, shreds of paper and smoke. Burnt-out ones can be cleared away by dropping them on the bar.
-- **Craft Kandil, Decorate House and Draw Rangoli:** each moves the camera in on the house like Fireworks. Their inventory bars are empty for now.
-- **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
+- **One night scene:** after the warning it goes straight to a house on Diwali night, its porch lit only by what's lit on it. Drag the scenery to pan around, and zoom with the + and − buttons, the `+` and `-` keys, a trackpad pinch (or Ctrl and the wheel), or a two-finger pinch on touch screens.
+- **Side rail:** round buttons down the left pick a tool: Diyas, Fireworks, Craft Kandil, Decorate House and Draw Rangoli (or press `1` to `5`). Each tool has its own inventory bar along the bottom; everything placed stays in the scene and can be picked up again whichever tool is picked. The eye beside the bar (or `H`) hides it to see more of the scene.
+- **Diyas:** drag diyas from the bar onto the porch, put a wick and oil in them, and light them with the matchstick. Pick them up again to move them, or drop them back on the bar.
+- **Fireworks:** drag anars (flowerpot fireworks) and laddis (strings of firecrackers) onto the porch, then drag the matchstick onto one to light its fuse. An anar throws up a fountain of crackling sparks with trailing embers, smoke and a roar, lights up the porch around it, and sputters out after about 20 seconds. A laddi's crackers go off one after another, each with a flash of light, sparks, shreds of paper and smoke. Burnt-out ones can be cleared away by dropping them on the bar.
+- **Decorate House:** pick a colour of fairy lights (or mixed), then drag from one point on the house to another to hang a string between them. The bulbs twinkle and light up the house around them. Strings can be dragged to move them, or onto the bar to take them down.
+- **Draw Rangoli:** pick a colour of powder and draw on the porch floor, rub parts out with the eraser, or clear it all.
+- **Craft Kandil:** its bar is empty for now.
+- **Tooltips:** hovering over things with a mouse says what they are and what to do with them.
+- **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
+
+The side rail's icons are from [SVG Repo](https://www.svgrepo.com).
 
 All text is set in [Jaini](https://fonts.google.com/specimen/Jaini), loaded from Google Fonts.
 

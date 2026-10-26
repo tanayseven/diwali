@@ -21,7 +21,7 @@ type RootTranslation = {
 	 * L​o​a​d​i​n​g​…
 	 */
 	loading: string
-	menu: {
+	tools: {
 		/**
 		 * D​i​y​a​s
 		 */
@@ -33,20 +33,36 @@ type RootTranslation = {
 		/**
 		 * C​r​a​f​t​ ​K​a​n​d​i​l
 		 */
-		craftKandil: string
+		kandil: string
 		/**
 		 * D​e​c​o​r​a​t​e​ ​H​o​u​s​e
 		 */
-		decorateHouse: string
+		decorate: string
 		/**
 		 * D​r​a​w​ ​R​a​n​g​o​l​i
 		 */
-		drawRangoli: string
+		rangoli: string
 	}
-	/**
-	 * ←​ ​B​a​c​k
-	 */
-	back: string
+	zoom: {
+		/**
+		 * Z​o​o​m​ ​i​n
+		 */
+		'in': string
+		/**
+		 * Z​o​o​m​ ​o​u​t
+		 */
+		out: string
+	}
+	hud: {
+		/**
+		 * H​i​d​e​ ​t​h​e​ ​b​a​r
+		 */
+		hide: string
+		/**
+		 * S​h​o​w​ ​t​h​e​ ​b​a​r
+		 */
+		show: string
+	}
 	splashWarning: {
 		/**
 		 * W​a​r​n​i​n​g
@@ -199,6 +215,102 @@ type RootTranslation = {
 		 * B​u​r​n​t​ ​o​u​t​.​ ​D​r​a​g​ ​o​n​t​o​ ​t​h​e​ ​b​a​r​ ​t​o​ ​c​l​e​a​r​ ​i​t​ ​a​w​a​y
 		 */
 		spent: string
+		lights: {
+			/**
+			 * F​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			name: string
+			/**
+			 * R​e​d​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			red: string
+			/**
+			 * O​r​a​n​g​e​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			orange: string
+			/**
+			 * Y​e​l​l​o​w​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			yellow: string
+			/**
+			 * G​r​e​e​n​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			green: string
+			/**
+			 * B​l​u​e​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			blue: string
+			/**
+			 * W​h​i​t​e​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			white: string
+			/**
+			 * M​i​x​e​d​ ​f​a​i​r​y​ ​l​i​g​h​t​s
+			 */
+			mixed: string
+			/**
+			 * P​i​c​k​,​ ​t​h​e​n​ ​d​r​a​g​ ​f​r​o​m​ ​o​n​e​ ​p​o​i​n​t​ ​o​n​ ​t​h​e​ ​h​o​u​s​e​ ​t​o​ ​a​n​o​t​h​e​r​ ​t​o​ ​h​a​n​g​ ​a​ ​s​t​r​i​n​g
+			 */
+			hint: string
+			/**
+			 * D​r​a​g​ ​t​o​ ​m​o​v​e​ ​t​h​e​m​,​ ​o​r​ ​o​n​t​o​ ​t​h​e​ ​D​e​c​o​r​a​t​e​ ​H​o​u​s​e​ ​b​a​r​ ​t​o​ ​t​a​k​e​ ​t​h​e​m​ ​d​o​w​n
+			 */
+			move: string
+		}
+		rangoli: {
+			/**
+			 * R​e​d​ ​p​o​w​d​e​r
+			 */
+			red: string
+			/**
+			 * O​r​a​n​g​e​ ​p​o​w​d​e​r
+			 */
+			orange: string
+			/**
+			 * Y​e​l​l​o​w​ ​p​o​w​d​e​r
+			 */
+			yellow: string
+			/**
+			 * G​r​e​e​n​ ​p​o​w​d​e​r
+			 */
+			green: string
+			/**
+			 * B​l​u​e​ ​p​o​w​d​e​r
+			 */
+			blue: string
+			/**
+			 * P​u​r​p​l​e​ ​p​o​w​d​e​r
+			 */
+			purple: string
+			/**
+			 * P​i​n​k​ ​p​o​w​d​e​r
+			 */
+			pink: string
+			/**
+			 * W​h​i​t​e​ ​p​o​w​d​e​r
+			 */
+			white: string
+			/**
+			 * P​i​c​k​,​ ​t​h​e​n​ ​d​r​a​w​ ​o​n​ ​t​h​e​ ​p​o​r​c​h​ ​f​l​o​o​r
+			 */
+			hint: string
+			/**
+			 * E​r​a​s​e​r
+			 */
+			eraser: string
+			/**
+			 * P​i​c​k​,​ ​t​h​e​n​ ​r​u​b​ ​o​u​t​ ​p​a​r​t​s​ ​o​f​ ​t​h​e​ ​r​a​n​g​o​l​i
+			 */
+			eraserHint: string
+			/**
+			 * C​l​e​a​r
+			 */
+			clear: string
+			/**
+			 * W​i​p​e​s​ ​t​h​e​ ​w​h​o​l​e​ ​r​a​n​g​o​l​i​ ​o​f​f​ ​t​h​e​ ​f​l​o​o​r
+			 */
+			clearHint: string
+		}
 	}
 }
 
@@ -211,7 +323,7 @@ export type TranslationFunctions = {
 	 * Loading…
 	 */
 	loading: () => LocalizedString
-	menu: {
+	tools: {
 		/**
 		 * Diyas
 		 */
@@ -223,20 +335,36 @@ export type TranslationFunctions = {
 		/**
 		 * Craft Kandil
 		 */
-		craftKandil: () => LocalizedString
+		kandil: () => LocalizedString
 		/**
 		 * Decorate House
 		 */
-		decorateHouse: () => LocalizedString
+		decorate: () => LocalizedString
 		/**
 		 * Draw Rangoli
 		 */
-		drawRangoli: () => LocalizedString
+		rangoli: () => LocalizedString
 	}
-	/**
-	 * ← Back
-	 */
-	back: () => LocalizedString
+	zoom: {
+		/**
+		 * Zoom in
+		 */
+		'in': () => LocalizedString
+		/**
+		 * Zoom out
+		 */
+		out: () => LocalizedString
+	}
+	hud: {
+		/**
+		 * Hide the bar
+		 */
+		hide: () => LocalizedString
+		/**
+		 * Show the bar
+		 */
+		show: () => LocalizedString
+	}
 	splashWarning: {
 		/**
 		 * Warning
@@ -386,6 +514,102 @@ export type TranslationFunctions = {
 		 * Burnt out. Drag onto the bar to clear it away
 		 */
 		spent: () => LocalizedString
+		lights: {
+			/**
+			 * Fairy lights
+			 */
+			name: () => LocalizedString
+			/**
+			 * Red fairy lights
+			 */
+			red: () => LocalizedString
+			/**
+			 * Orange fairy lights
+			 */
+			orange: () => LocalizedString
+			/**
+			 * Yellow fairy lights
+			 */
+			yellow: () => LocalizedString
+			/**
+			 * Green fairy lights
+			 */
+			green: () => LocalizedString
+			/**
+			 * Blue fairy lights
+			 */
+			blue: () => LocalizedString
+			/**
+			 * White fairy lights
+			 */
+			white: () => LocalizedString
+			/**
+			 * Mixed fairy lights
+			 */
+			mixed: () => LocalizedString
+			/**
+			 * Pick, then drag from one point on the house to another to hang a string
+			 */
+			hint: () => LocalizedString
+			/**
+			 * Drag to move them, or onto the Decorate House bar to take them down
+			 */
+			move: () => LocalizedString
+		}
+		rangoli: {
+			/**
+			 * Red powder
+			 */
+			red: () => LocalizedString
+			/**
+			 * Orange powder
+			 */
+			orange: () => LocalizedString
+			/**
+			 * Yellow powder
+			 */
+			yellow: () => LocalizedString
+			/**
+			 * Green powder
+			 */
+			green: () => LocalizedString
+			/**
+			 * Blue powder
+			 */
+			blue: () => LocalizedString
+			/**
+			 * Purple powder
+			 */
+			purple: () => LocalizedString
+			/**
+			 * Pink powder
+			 */
+			pink: () => LocalizedString
+			/**
+			 * White powder
+			 */
+			white: () => LocalizedString
+			/**
+			 * Pick, then draw on the porch floor
+			 */
+			hint: () => LocalizedString
+			/**
+			 * Eraser
+			 */
+			eraser: () => LocalizedString
+			/**
+			 * Pick, then rub out parts of the rangoli
+			 */
+			eraserHint: () => LocalizedString
+			/**
+			 * Clear
+			 */
+			clear: () => LocalizedString
+			/**
+			 * Wipes the whole rangoli off the floor
+			 */
+			clearHint: () => LocalizedString
+		}
 	}
 }
 

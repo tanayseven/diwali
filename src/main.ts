@@ -1,24 +1,42 @@
-import {Screen, createApp, loadFont} from "./app"
+import {Container, FederatedPointerEvent, PointData} from "pixi.js"
+import {createApp, loadFont} from "./app"
 import {createAudioControl} from "./audioControl"
-import {SceneName, addBackgroundAssets, backgroundAssets, createBackground} from "./background"
-import {createBackButton} from "./backButton"
+import {addBackgroundAssets, backgroundAssets, createBackground} from "./background"
 import {createDiyaInventory, diyaAssets} from "./diyaInventory"
-import {createFairyLights, fairyLightAssets, fairyLightsHeight} from "./fairyLights"
+import {createHouseLights, fairyLightAssets} from "./fairyLights"
 import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
 import {createHud} from "./hud"
+import {createHudToggle} from "./hudToggle"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
 import {LL, loadLocale} from "./locale"
-import {createMenu} from "./menu"
 import {createPortraitWarning} from "./portraitWarning"
+import {createRangoli} from "./rangoli"
+import {RailItem, createSideRail} from "./sideRail"
 import {showSplashWarning} from "./splashWarning"
+import {createZoomControls} from "./zoomControls"
 
-// How long the camera takes to move between the menu and a scene
-const transitionDuration = 1400
+type Tool = "diyas" | "fireworks" | "kandil" | "decorate" | "rangoli"
 
-const clamp = (value: number) => Math.min(1, Math.max(0, value))
-const easeInOut = (t: number) => t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
+// The side rail's tools, in order, each with its icon
+const tools: RailItem<Tool>[] = [
+  {name: "diyas", icon: "sprites/icons/diya.svg", label: () => LL.tools.diyas()},
+  {name: "fireworks", icon: "sprites/icons/firecracker.svg", label: () => LL.tools.fireworks()},
+  {name: "kandil", icon: "sprites/icons/kandil.svg", label: () => LL.tools.kandil()},
+  {name: "decorate", icon: "sprites/icons/fairy-lights.svg", label: () => LL.tools.decorate()},
+  {name: "rangoli", icon: "sprites/icons/rangoli.svg", label: () => LL.tools.rangoli()},
+]
+
+type Layout = {layout: () => void}
+
+// What each tool brings: its bar (and whatever it drags from it), shown while the tool
+// is the one picked, and optionally a claim on presses on the scenery, e.g. to draw
+type ToolControls = Layout & {
+  container: Container
+  setHudShown: (shown: boolean) => void
+  pressHandler?: (at: PointData, e: FederatedPointerEvent) => boolean
+}
 
 const main = async () => {
   const [app] = await Promise.all([createApp(), loadFont(), loadLocale()])
@@ -26,7 +44,7 @@ const main = async () => {
   // Available on every screen, from the loader on
   const audio = createAudioControl()
   // Whatever is on screen right now, laid out again whenever the window changes size
-  let screens: Pick<Screen, "layout">[] = []
+  let screens: Layout[] = []
 
   window.addEventListener("resize", () => {
     // resizeTo updates the renderer on the next frame, so lay out after it
@@ -38,7 +56,7 @@ const main = async () => {
   screens = [loader]
   addBackgroundAssets()
   const failed = await loadAssets({
-    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets],
+    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...tools.map(tool => tool.icon)],
     images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
@@ -46,131 +64,85 @@ const main = async () => {
   loader.destroy()
   screens = []
   await showSplashWarning()
+  createFooter()
 
-  // "Diyas" zooms the camera onto the house's porch, and the others a little less close
-  const menu = createMenu(app, LL.title(), [
-    {label: LL.menu.diyas(), onSelect: () => open("diyas")},
-    {label: LL.menu.fireworks(), onSelect: () => open("fireworks")},
-    {label: LL.menu.craftKandil(), onSelect: () => open("craftKandil")},
-    {label: LL.menu.decorateHouse(), onSelect: () => open("decorateHouse")},
-    {label: LL.menu.drawRangoli(), onSelect: () => open("drawRangoli")},
-  ], () => fairyLightsHeight(app.screen.height))
-  const footer = createFooter()
-  const backButton = createBackButton(app, () => goTo(0))
-  app.stage.addChild(menu.container, backButton.container)
-  screens = [menu, backButton]
-  // Without every frame the lights can't twinkle, so leave them out rather than break the menu
-  let fairyLights: ReturnType<typeof createFairyLights> | undefined
-  if (fairyLightAssets.every(url => !failed.has(url))) {
-    fairyLights = createFairyLights(app)
-    // Hung behind the menu so the bulbs' glow never covers the buttons
-    app.stage.addChildAt(fairyLights.container, 0)
-    screens.unshift(fairyLights)
+  // Without the background there's nowhere to put anything, so nothing more to show
+  if (backgroundAssets.some(url => failed.has(url))) {
+    return
   }
-  // Below the lights and the menu, so its dimming layer only darkens the scene
-  let background: ReturnType<typeof createBackground> | undefined
-  if (backgroundAssets.every(url => !failed.has(url))) {
-    background = createBackground(app)
-    app.stage.addChildAt(background.container, 0)
-    screens.unshift(background)
-  }
-  // Night falls on the porch in the diyas and fireworks scenes, lit only by what's lit
-  const lighting = background && createLighting(app, background)
-  // Diyas are placed in the scene, so they need the background to go anywhere
-  let inventory: ReturnType<typeof createDiyaInventory> | undefined
-  if (background && lighting && diyaAssets.every(url => !failed.has(url))) {
-    inventory = createDiyaInventory(app, background, lighting, audio)
-    // On top of everything, so a dragged diya is never hidden
-    app.stage.addChild(inventory.container)
-    screens.push(inventory)
-  }
-  // Anars are set off on the porch too, so they need the background as well
-  let fireworks: ReturnType<typeof createFireworks> | undefined
-  if (background && lighting && fireworksAssets.every(url => !failed.has(url))) {
-    fireworks = createFireworks(app, background, lighting, audio)
-    app.stage.addChild(fireworks.container)
-    screens.push(fireworks)
-  }
-  // Only the diyas and fireworks scenes have anything to put in their slots yet, so
-  // the other scenes share one bar of empty slots
-  const emptyHud = createHud(app)
-  app.stage.addChild(emptyHud.container)
-  screens.push(emptyHud)
+  const loaded = (urls: string[]) => urls.every(url => !failed.has(url))
+  const background = createBackground(app)
+  app.stage.addChild(background.container)
+  screens.push(background)
+  // It's Diwali night: the porch is dark, lit only by what's lit on it
+  const lighting = createLighting(app, background)
+  lighting.setNight(1)
 
-  // Everything about moving between the menu (0) and a scene (1) follows one progress
-  // value, so going back mid-way simply reverses from wherever it got to
-  let progress = 0
-  let target = 0
-  let scene: SceneName = "diyas"
-  // A different scene picked while the camera is still on its way back to the menu,
-  // opened once it gets there so the camera never jumps between close-ups
-  let nextScene: SceneName | undefined
-  const apply = () => {
-    background?.setFocus(easeInOut(progress))
-    // The menu and lights fade out over the first part, the back button fades in at the end
-    const menuAlpha = 1 - clamp(progress / 0.3)
-    menu.setOpacity(menuAlpha)
-    footer.setOpacity(menuAlpha)
-    if (fairyLights) {
-      fairyLights.container.alpha = menuAlpha
-      fairyLights.container.visible = menuAlpha > 0
-    }
-    // The scene's controls fade in at the end
-    const controlsAlpha = clamp((progress - 0.7) / 0.3)
-    backButton.setOpacity(controlsAlpha)
-    inventory?.setOpacity(scene === "diyas" ? controlsAlpha : 0)
-    fireworks?.setOpacity(scene === "fireworks" ? controlsAlpha : 0)
-    lighting?.setNight(scene === "diyas" || scene === "fireworks" ? easeInOut(progress) : 0)
-    emptyHud.setOpacity(scene !== "diyas" && scene !== "fireworks" ? controlsAlpha : 0)
+  // Each tool has a bar of things to use, shown while it's the one picked. What's
+  // placed in the scene stays there, and can be picked up again, whichever tool is picked
+  const controls: Partial<Record<Tool, ToolControls>> = {}
+  if (loaded(diyaAssets)) {
+    const diyas = createDiyaInventory(app, background, lighting, audio)
+    diyas.setInteractive(true)
+    controls.diyas = diyas
   }
-  const goTo = (value: number) => {
-    target = value
-    menu.setInteractive(target === 0)
-    footer.setInteractive(target === 0)
-    backButton.setInteractive(target === 1)
-    inventory?.setInteractive(target === 1 && scene === "diyas")
-    fireworks?.setInteractive(target === 1 && scene === "fireworks")
-    emptyHud.setInteractive(target === 1 && scene !== "diyas" && scene !== "fireworks")
-    background?.setPannable(target === 1)
+  if (loaded(fireworksAssets)) {
+    const fireworks = createFireworks(app, background, lighting, audio)
+    fireworks.setInteractive(true)
+    controls.fireworks = fireworks
   }
-  const open = (name: SceneName) => {
-    if (name !== scene && progress > 0) {
-      nextScene = name
-      goTo(0)
-      return
-    }
-    if (name !== scene) {
-      scene = name
-      background?.setScene(name)
-    }
-    goTo(1)
+  // Nothing to craft a kandil with yet, so its bar is empty
+  const kandilHud = createHud(app)
+  controls.kandil = {
+    container: kandilHud.container,
+    layout: kandilHud.layout,
+    setHudShown(shown) {
+      kandilHud.setOpacity(shown ? 1 : 0)
+      kandilHud.setInteractive(shown)
+    },
   }
-  app.ticker.add(() => {
-    if (progress === 0 && nextScene) {
-      const name = nextScene
-      nextScene = undefined
-      open(name)
-    }
-    if (progress === target) {
-      return
-    }
-    const step = app.ticker.deltaMS / transitionDuration
-    progress = target > progress ? Math.min(target, progress + step) : Math.max(target, progress - step)
-    apply()
+  if (loaded(fairyLightAssets)) {
+    controls.decorate = createHouseLights(app, background, lighting)
+  }
+  controls.rangoli = createRangoli(app, background)
+
+  const available = tools.filter(tool => controls[tool.name] && loaded([tool.icon]))
+  let selected = available[0].name
+  // Only the picked tool's bar shows, unless the bars have been hidden with the eye
+  const showBars = () => Object.entries(controls).forEach(([name, control]) =>
+    control.setHudShown(name === selected && hudToggle.isShown()))
+  const select = (tool: Tool) => {
+    selected = tool
+    showBars()
+    // The tool still draws or hangs things with whatever was last picked from its bar
+    background.setPressHandler(controls[tool]?.pressHandler)
+  }
+  const zoomControls = createZoomControls(app, background)
+  const rail = createSideRail(app, available, select)
+  const hudToggle = createHudToggle(app, showBars)
+  app.stage.addChild(zoomControls.container, rail.container, hudToggle.container)
+  screens.push(zoomControls, rail, hudToggle)
+  // Above the rail and zoom buttons, so whatever's dragged from a bar is never hidden
+  Object.values(controls).forEach(control => {
+    app.stage.addChild(control.container)
+    screens.push(control)
   })
-  goTo(0)
-  apply()
+  select(selected)
 
   window.addEventListener("keydown", e => {
     // Don't let the keyboard drive anything while it's hidden behind the warning
     if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown()) {
       return
     }
-    if (target === 0) {
-      menu.onKeyDown?.(e)
-    } else if (e.key === "Escape" || e.key === "Backspace") {
-      e.preventDefault()
-      goTo(0)
+    if (e.key === "+" || e.key === "=") {
+      background.zoomBy(background.zoomStep)
+    } else if (e.key === "-" || e.key === "_") {
+      background.zoomBy(1 / background.zoomStep)
+    } else if (e.key === "h" || e.key === "H") {
+      hudToggle.toggle()
+    } else if (/^[1-9]$/.test(e.key) && available[Number(e.key) - 1]) {
+      // Number keys pick tools in the rail's order
+      rail.select(available[Number(e.key) - 1].name)
     }
   })
 }

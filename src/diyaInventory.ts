@@ -398,8 +398,9 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     startDrag(e, {kind: "match", sprite: matchstick.createSprite()}, background.scale() * matchstick.scale)
   })
 
-  // Whether the diyas scene is open, so its HUD and placed diyas can be used
+  // Whether placed diyas can be picked up, and whether the bar is showing to put them back on
   let interactive = false
+  let hudShown = false
 
   // A placed diya can be picked up again to move it or put it back on the stack,
   // except while it's busy being filled or lit, or while another scene is open
@@ -449,7 +450,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     setTarget(undefined)
     current.sprite.removeFromParent()
     if (current.kind === "diya") {
-      if (bar.isOver(at)) {
+      if (hudShown && bar.isOver(at)) {
         placed.push(current.diya)
         returnDiya(current.diya)
       } else {
@@ -486,7 +487,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     const at = toStage(e)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
-      setOverBar(bar.isOver(at))
+      setOverBar(hudShown && bar.isOver(at))
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(at, diya => !diya.wick))
     } else if (drag.kind === "oil") {
@@ -528,10 +529,14 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   return {
     container,
     layout: bar.layout,
-    setOpacity: bar.setOpacity,
+    // Shows its bar, while the Diyas tool is the one in use
+    setHudShown(shown: boolean) {
+      hudShown = shown
+      bar.setOpacity(shown ? 1 : 0)
+      bar.setInteractive(shown)
+    },
     setInteractive(value: boolean) {
       interactive = value
-      bar.setInteractive(interactive)
       placed.forEach(makePickable)
       // Leaving the scene mid-drag puts whatever was dragged back where it came from
       if (!interactive && drag) {

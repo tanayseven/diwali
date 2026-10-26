@@ -299,9 +299,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const screenFlash = new Graphics()
   screenFlash.eventMode = "none"
   screenFlash.visible = false
-  // How bright the screen's flash is now, from 0 to 1, and how much the scene shows
+  // How bright the screen's flash is now, from 0 to 1
   let flash = 0
-  let opacity = 0
+  // Whether the bar is showing, so fireworks can be put back on it
+  let hudShown = false
   const bar = createHud(app)
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
@@ -664,7 +665,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     setTarget(undefined)
     current.sprite.removeFromParent()
     if (current.kind === "firework") {
-      if (bar.isOver(at)) {
+      if (hudShown && bar.isOver(at)) {
         removeFirework(current.firework)
       } else {
         placeFirework(current.firework, background.toScene(at))
@@ -691,7 +692,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     const at = toStage(e)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "firework") {
-      setOverBar(bar.isOver(at))
+      setOverBar(hudShown && bar.isOver(at))
     } else {
       setTarget(fireworkAt(at))
     }
@@ -895,7 +896,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     // The screen's flash dies away as quickly as a blast's light, and only shows while
     // the scene does
     flash *= Math.exp(-blastFade * dt)
-    screenFlash.alpha = screenFlashAlpha * flash * opacity
+    screenFlash.alpha = screenFlashAlpha * flash
     screenFlash.visible = screenFlash.alpha > 0.002
 
     for (let idx = sparks.length - 1; idx >= 0; idx--) {
@@ -1018,13 +1019,14 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   return {
     container,
     layout,
-    setOpacity(alpha: number) {
-      opacity = alpha
-      bar.setOpacity(alpha)
+    // Shows its bar, while the Fireworks tool is the one in use
+    setHudShown(shown: boolean) {
+      hudShown = shown
+      bar.setOpacity(shown ? 1 : 0)
+      bar.setInteractive(shown)
     },
     setInteractive(value: boolean) {
       interactive = value
-      bar.setInteractive(interactive)
       placed.forEach(makePickable)
       // Leaving the scene mid-drag puts whatever was dragged back where it came from
       if (!interactive && drag) {
