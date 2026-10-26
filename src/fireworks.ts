@@ -81,6 +81,9 @@ const dieDuration = 3.5
 // Heard from when the fountain erupts, at its strength. It roars for about 19 seconds
 // and fades out by 20, as the fountain sputters out
 const anarSoundUrl = "audio/effects/anar.mp3"
+// The anar's recording roars much louder than a laddi's bangs, so it plays quieter to
+// let the crackers be heard over it
+const anarVolume = 0.7
 
 // The fountain, in scene units and seconds. Sparks leave the nozzle in a narrow cone,
 // slow down in the air and fall back, landing in a ring around the pot. At full
@@ -738,7 +741,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
     if (anar.state === "burning") {
       strength = fountainStrength(anar)
-      anar.sound?.setLevel(strength)
+      anar.sound?.setLevel(strength * anarVolume)
       anar.sparkDebt += maxSparkRate * strength * dt
       while (anar.sparkDebt >= 1) {
         anar.sparkDebt--
