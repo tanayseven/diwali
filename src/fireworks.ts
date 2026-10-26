@@ -3,7 +3,9 @@ import type {createAudioControl} from "./audioControl"
 import {createBackground, sceneHeight, sceneWidth} from "./background"
 import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
+import {LL} from "./locale"
 import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {addTooltip, Tooltip} from "./tooltip"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -307,6 +309,21 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const slots = {anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi)}
   const matchSlot = bar.addItem(2, matchstick.item)
 
+  const tips = LL.tooltip
+  const names: Record<Kind, () => string> = {anar: tips.anar.name, laddi: tips.laddi.name}
+  const stackHints: Record<Kind, () => string> = {anar: tips.anar.stack, laddi: tips.laddi.stack}
+  ;(["anar", "laddi"] as Kind[]).forEach(kind => addTooltip(slots[kind].container, () => ({
+    title: names[kind](),
+    lines: [stacks[kind].count === 0 ? tips.noneLeft() : stackHints[kind]()],
+  })))
+  addTooltip(matchSlot.container, () => ({title: tips.matchstick.name(), lines: [tips.matchstick.fireworkHint()]}))
+  // Only unlit and burnt-out fireworks can be hovered: they can't be picked up while
+  // they burn, so they take no pointer events then
+  const fireworkTooltip = (firework: Placed) => (): Tooltip => ({
+    title: names[firework.kind](),
+    lines: firework.state === "spent" ? [tips.spent()] : [tips.unlit(), tips.move()],
+  })
+
   const sparkTexture = radialTexture(32, [[0, 1], [0.3, 0.85], [1, 0]])
   const {glowTexture} = lighting
   const smokeTexture = radialTexture(64, [[0, 0.5], [0.5, 0.25], [1, 0]])
@@ -530,6 +547,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       kind, sprite, state: "unlit", busy: false, elapsed: 0, brightness: 0, lightAt: {x: 0, y: 0},
       sparkDebt: 0, smokeDebt: 0, spentAt: -Infinity, light, glow, core, blasts: 0, lastBlastAt: 0, nextBlastAt: 0,
     }
+    addTooltip(sprite, fireworkTooltip(firework))
     sprite.on("pointerdown", e => {
       const fromScene = {x: sprite.x, y: sprite.y}
       placed.splice(placed.indexOf(firework), 1)

@@ -3,7 +3,9 @@ import type {createAudioControl} from "./audioControl"
 import {createBackground} from "./background"
 import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
+import {LL} from "./locale"
 import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {addTooltip, Tooltip} from "./tooltip"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -196,6 +198,24 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   const bottleSlot = bar.addItem(2, oilBottle)
   const matchSlot = bar.addItem(3, matchstick.item)
 
+  const tips = LL.tooltip
+  const stackTooltip = (item: Item, title: string, hint: string) => (): Tooltip =>
+    ({title, lines: [item.count === 0 ? tips.noneLeft() : hint]})
+  addTooltip(diyaSlot.container, stackTooltip(emptyDiyas, tips.diya.name(), tips.diya.stack()))
+  addTooltip(wickSlot.container, stackTooltip(wicks, tips.wick.name(), tips.wick.hint()))
+  addTooltip(bottleSlot.container, () => ({title: tips.oil.name(), lines: [tips.oil.hint()]}))
+  addTooltip(matchSlot.container, () => ({title: tips.matchstick.name(), lines: [tips.matchstick.diyaHint()]}))
+
+  // What a placed diya still needs, or that it's lit
+  const diyaTooltip = (diya: PlacedDiya) => (): Tooltip => {
+    const status = diya.lit ? tips.diya.lit()
+      : diya.wick && diya.oil ? tips.diya.ready()
+      : diya.wick ? tips.diya.needsOil()
+      : diya.oil ? tips.diya.needsWick()
+      : tips.diya.needsWickAndOil()
+    return {title: tips.diya.name(), lines: [status, tips.move()]}
+  }
+
   const render = () => {
     bar.drawBoxes(overBar ? diyaSlot.box : undefined)
     diyaSlot.show()
@@ -347,6 +367,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
     emptyDiyas.count! -= 1
     const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false}
+    addTooltip(diya.sprite, diyaTooltip(diya))
     startDiyaDrag(e, diya)
   })
 

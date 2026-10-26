@@ -98,6 +98,108 @@ type RootTranslation = {
 		 */
 		volume: string
 	}
+	tooltip: {
+		diya: {
+			/**
+			 * D​i​y​a
+			 */
+			name: string
+			/**
+			 * A​n​ ​o​i​l​ ​l​a​m​p​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+			 */
+			stack: string
+			/**
+			 * N​e​e​d​s​ ​a​ ​w​i​c​k​ ​a​n​d​ ​o​i​l
+			 */
+			needsWickAndOil: string
+			/**
+			 * N​e​e​d​s​ ​a​ ​w​i​c​k
+			 */
+			needsWick: string
+			/**
+			 * N​e​e​d​s​ ​o​i​l
+			 */
+			needsOil: string
+			/**
+			 * R​e​a​d​y​ ​t​o​ ​l​i​g​h​t​ ​w​i​t​h​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k
+			 */
+			ready: string
+			/**
+			 * L​i​t
+			 */
+			lit: string
+		}
+		wick: {
+			/**
+			 * W​i​c​k
+			 */
+			name: string
+			/**
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​t​o​ ​p​u​t​ ​i​t​ ​i​n
+			 */
+			hint: string
+		}
+		oil: {
+			/**
+			 * O​i​l
+			 */
+			name: string
+			/**
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​t​o​ ​f​i​l​l​ ​i​t
+			 */
+			hint: string
+		}
+		matchstick: {
+			/**
+			 * M​a​t​c​h​s​t​i​c​k
+			 */
+			name: string
+			/**
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​w​i​t​h​ ​a​ ​w​i​c​k​ ​a​n​d​ ​o​i​l​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 */
+			diyaHint: string
+			/**
+			 * D​r​a​g​ ​o​n​t​o​ ​a​n​ ​a​n​a​r​ ​o​r​ ​a​ ​l​a​d​d​i​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 */
+			fireworkHint: string
+		}
+		anar: {
+			/**
+			 * A​n​a​r
+			 */
+			name: string
+			/**
+			 * A​ ​f​l​o​w​e​r​p​o​t​ ​f​i​r​e​w​o​r​k​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+			 */
+			stack: string
+		}
+		laddi: {
+			/**
+			 * L​a​d​d​i
+			 */
+			name: string
+			/**
+			 * A​ ​s​t​r​i​n​g​ ​o​f​ ​f​i​r​e​c​r​a​c​k​e​r​s​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+			 */
+			stack: string
+		}
+		/**
+		 * N​o​n​e​ ​l​e​f​t
+		 */
+		noneLeft: string
+		/**
+		 * D​r​a​g​ ​t​o​ ​m​o​v​e​ ​i​t​,​ ​o​r​ ​o​n​t​o​ ​t​h​e​ ​b​a​r​ ​t​o​ ​p​u​t​ ​i​t​ ​b​a​c​k
+		 */
+		move: string
+		/**
+		 * L​i​g​h​t​ ​i​t​ ​w​i​t​h​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k
+		 */
+		unlit: string
+		/**
+		 * B​u​r​n​t​ ​o​u​t​.​ ​D​r​a​g​ ​o​n​t​o​ ​t​h​e​ ​b​a​r​ ​t​o​ ​c​l​e​a​r​ ​i​t​ ​a​w​a​y
+		 */
+		spent: string
+	}
 }
 
 export type TranslationFunctions = {
@@ -182,6 +284,108 @@ export type TranslationFunctions = {
 		 * Volume
 		 */
 		volume: () => LocalizedString
+	}
+	tooltip: {
+		diya: {
+			/**
+			 * Diya
+			 */
+			name: () => LocalizedString
+			/**
+			 * An oil lamp. Drag one onto the porch
+			 */
+			stack: () => LocalizedString
+			/**
+			 * Needs a wick and oil
+			 */
+			needsWickAndOil: () => LocalizedString
+			/**
+			 * Needs a wick
+			 */
+			needsWick: () => LocalizedString
+			/**
+			 * Needs oil
+			 */
+			needsOil: () => LocalizedString
+			/**
+			 * Ready to light with the matchstick
+			 */
+			ready: () => LocalizedString
+			/**
+			 * Lit
+			 */
+			lit: () => LocalizedString
+		}
+		wick: {
+			/**
+			 * Wick
+			 */
+			name: () => LocalizedString
+			/**
+			 * Drag onto a diya to put it in
+			 */
+			hint: () => LocalizedString
+		}
+		oil: {
+			/**
+			 * Oil
+			 */
+			name: () => LocalizedString
+			/**
+			 * Drag onto a diya to fill it
+			 */
+			hint: () => LocalizedString
+		}
+		matchstick: {
+			/**
+			 * Matchstick
+			 */
+			name: () => LocalizedString
+			/**
+			 * Drag onto a diya with a wick and oil to light it
+			 */
+			diyaHint: () => LocalizedString
+			/**
+			 * Drag onto an anar or a laddi to light it
+			 */
+			fireworkHint: () => LocalizedString
+		}
+		anar: {
+			/**
+			 * Anar
+			 */
+			name: () => LocalizedString
+			/**
+			 * A flowerpot firework. Drag one onto the porch
+			 */
+			stack: () => LocalizedString
+		}
+		laddi: {
+			/**
+			 * Laddi
+			 */
+			name: () => LocalizedString
+			/**
+			 * A string of firecrackers. Drag one onto the porch
+			 */
+			stack: () => LocalizedString
+		}
+		/**
+		 * None left
+		 */
+		noneLeft: () => LocalizedString
+		/**
+		 * Drag to move it, or onto the bar to put it back
+		 */
+		move: () => LocalizedString
+		/**
+		 * Light it with the matchstick
+		 */
+		unlit: () => LocalizedString
+		/**
+		 * Burnt out. Drag onto the bar to clear it away
+		 */
+		spent: () => LocalizedString
 	}
 }
 

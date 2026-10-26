@@ -33,6 +33,43 @@ const en = {
 		unmute: "Unmute music",
 		volume: "Volume",
 	},
+	// Shown on hovering over things in the inventory bar and in the scene
+	tooltip: {
+		diya: {
+			name: "Diya",
+			stack: "An oil lamp. Drag one onto the porch",
+			needsWickAndOil: "Needs a wick and oil",
+			needsWick: "Needs a wick",
+			needsOil: "Needs oil",
+			ready: "Ready to light with the matchstick",
+			lit: "Lit",
+		},
+		wick: {
+			name: "Wick",
+			hint: "Drag onto a diya to put it in",
+		},
+		oil: {
+			name: "Oil",
+			hint: "Drag onto a diya to fill it",
+		},
+		matchstick: {
+			name: "Matchstick",
+			diyaHint: "Drag onto a diya with a wick and oil to light it",
+			fireworkHint: "Drag onto an anar or a laddi to light it",
+		},
+		anar: {
+			name: "Anar",
+			stack: "A flowerpot firework. Drag one onto the porch",
+		},
+		laddi: {
+			name: "Laddi",
+			stack: "A string of firecrackers. Drag one onto the porch",
+		},
+		noneLeft: "None left",
+		move: "Drag to move it, or onto the bar to put it back",
+		unlit: "Light it with the matchstick",
+		spent: "Burnt out. Drag onto the bar to clear it away",
+	},
 } satisfies BaseTranslation
 
 export default en
