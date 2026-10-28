@@ -1,4 +1,4 @@
-import {Application, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
+import {Application, ColorMatrix, ColorMatrixFilter, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
 import {createBackground, groundBelow, sceneHeight, sceneWidth, scenery} from "./background"
 import {outlineAboveNight} from "./outline"
 
@@ -21,6 +21,39 @@ const radialTexture = (size: number, stops: [number, number][]) => {
   context.fillStyle = gradient
   context.fillRect(0, 0, size, size)
   return Texture.from(canvas)
+}
+
+// The house is drawn as it looks by night, so the night shouldn't darken it again.
+// Its colours are brightened by as much as the night darkens them, so where nothing's
+// lit it shows just as drawn and where something is it's lit as brightly as anything
+// else. What's too bright to brighten that far, like its lit windows, is made up for by
+// a copy of just the shortfall, added on above the night. Both are drawn once, on the
+// graphics card, from the house as drawn
+const undoNight = (app: Application, house: Sprite) => {
+  const night = [nightColour >> 16, (nightColour >> 8) & 0xff, nightColour & 0xff].map(level => level / 255)
+  const drawn = house.texture
+  const redraw = (matrix: ColorMatrix) => {
+    const copy = new Sprite(drawn)
+    const filter = new ColorMatrixFilter()
+    filter.matrix = matrix
+    copy.filters = [filter]
+    const texture = app.renderer.generateTexture({target: copy, resolution: drawn.source.resolution, antialias: false})
+    copy.destroy()
+    filter.destroy()
+    return texture
+  }
+  const [r, g, b] = night
+  // Brightened, which the screen keeps to full brightness at most
+  house.texture = redraw([1 / r, 0, 0, 0, 0, 0, 1 / g, 0, 0, 0, 0, 0, 1 / b, 0, 0, 0, 0, 0, 1, 0])
+  // And whatever's left over above the night's colour
+  const shortfall = new Sprite(redraw([1, 0, 0, 0, -r, 0, 1, 0, 0, -g, 0, 0, 1, 0, -b, 0, 0, 0, 1, 0]))
+  drawn.destroy(true)
+  shortfall.anchor.copyFrom(house.anchor)
+  shortfall.scale.copyFrom(house.scale)
+  shortfall.position.copyFrom(house.position)
+  shortfall.blendMode = "add"
+  shortfall.eventMode = "none"
+  return shortfall
 }
 
 // The night over the scene, with lights that can be added to it. setNight sets how
@@ -51,6 +84,10 @@ const createLighting = (app: Application, background: Background) => {
   shadeAround.zIndex = sceneHeight + 1
   background.decorations.sortableChildren = true
   background.decorations.addChild(shade, shadeAround)
+  const houseShortfall = undoNight(app, background.house)
+  houseShortfall.visible = false
+  houseShortfall.zIndex = sceneHeight + 1
+  background.decorations.addChild(houseShortfall)
   // Outlines of things in the scene, over everything there so the night never dims them
   const outlines = new Container()
   outlines.zIndex = sceneHeight + 20
@@ -97,6 +134,8 @@ const createLighting = (app: Application, background: Background) => {
     setNight(value: number) {
       shade.alpha = shadeAround.alpha = value
       shade.visible = shadeAround.visible = value > 0
+      houseShortfall.alpha = value
+      houseShortfall.visible = value > 0
     },
   }
 }

@@ -340,6 +340,7 @@ const createBackground = (app: Application) => {
   return {
     container,
     decorations,
+    house,
     layout,
     // Where a point on screen falls in the scene, in scene units
     toScene(point: PointData) {
@@ -374,6 +375,8 @@ const createBackground = (app: Application) => {
     // The skyline's near layer, in the skyline drawing's own units, for things drawn on
     // it. It slides as the camera pans
     skyline: skylineLayers.near,
+    // And its far layer, behind it
+    skylineFar: skylineLayers.far,
     // Where a point in the near skyline's drawing is in the scene now
     fromSkyline: (point: PointData): PointData => ({
       x: skylineLayers.near.x + point.x * skylineScale,

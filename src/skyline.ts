@@ -1,7 +1,7 @@
 import {Application, Container, Graphics, PointData, Sprite, Texture} from "pixi.js"
 import {Background, scenery, skylineUrls} from "./background"
 import {Lighting} from "./lighting"
-import {createSkylineLights} from "./skylineLights"
+import {buildingsIn, createSkylineLights} from "./skylineLights"
 
 // The near skyline's lit windows are this colour; its far one's are all dark
 const litColour = "#F2C96B"
@@ -100,8 +100,13 @@ const createSkyline = async (app: Application, background: Background, lighting:
   covers.addChild(coverShapes)
 
   const svg = new DOMParser().parseFromString(await (await fetch(skylineUrls.near)).text(), "image/svg+xml")
-  // Fairy lights on most of its buildings, in front of their windows
-  const fairyLights = createSkylineLights(app, background, lighting, svg)
+  // Fairy lights on all its buildings, in front of their windows, and on all the far
+  // layer's too, wherever they aren't behind the near layer's
+  const farSvg = new DOMParser().parseFromString(await (await fetch(skylineUrls.far)).text(), "image/svg+xml")
+  const fairyLights = [
+    createSkylineLights(app, background, lighting, farSvg, {skyline: background.skylineFar, inFront: buildingsIn(svg)}),
+    createSkylineLights(app, background, lighting, svg),
+  ]
   const panes: Pane[] = []
   svg.querySelectorAll('g[data-name="Building"]').forEach(building => {
     const [left = 0, top = 0] = numbersIn(building.getAttribute("transform") ?? "")
@@ -229,7 +234,7 @@ const createSkyline = async (app: Application, background: Background, lighting:
     paneCount: panes.length,
     destroy() {
       app.ticker.remove(tick)
-      fairyLights.destroy()
+      fairyLights.forEach(lights => lights.destroy())
       glows.destroy({children: true})
       covers.destroy({children: true})
     },

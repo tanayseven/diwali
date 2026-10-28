@@ -1,12 +1,11 @@
-import {Application, Particle, ParticleContainer, Rectangle} from "pixi.js"
+import {Application, Container, Particle, ParticleContainer, Rectangle} from "pixi.js"
 import {Background, scenery} from "./background"
 import {lightColours} from "./fairyLights"
 import {paint, toBgr} from "./fireworks"
 import {Lighting, radialTexture} from "./lighting"
 
-// Strings of fairy lights on most of the city's buildings, too far off to make out more
-// than a glowing dot per bulb. Everything here is in the near skyline drawing's units
-const decoratedShare = 0.6
+// Strings of fairy lights on every one of the city's buildings, too far off to make out
+// more than a glowing dot per bulb. Everything here is in the skyline drawings' units
 // Each bulb's dot, and how far apart they're strung
 const bulbSize = 3
 const bulbSpacing = 5
@@ -16,7 +15,7 @@ const blinkPeriod = {min: 1.1, max: 1.6}
 const dimLevel = 0.3
 // Their colours are worked out afresh this often, in seconds, which is smooth enough
 // for a blink this slow and spares redoing thousands of bulbs every frame
-const repaintEvery = 1 / 30
+const repaintEvery = 1 / 20
 // Curtains hang strands this far apart down a building's front, each reaching between
 // these shares of the way down it
 const strandGap = 7
@@ -94,16 +93,21 @@ const stringsOn = (building: Building, style: "curtain" | "outline" | "swags") =
   })]
 }
 
-// Fairy lights strung on most of the near skyline's buildings, fading on and off in
+// The far layer's bulbs are smaller and fainter, as they're further off
+const farOff = {size: 0.75, brightness: 0.7}
+
+// Fairy lights strung on every building in a layer of the skyline, fading on and off in
 // chases, cascades and twinkles. They're drawn over the night, as they shine, but
-// hidden wherever the hills or the house stand in front of them
-const createSkylineLights = (app: Application, background: Background, lighting: Lighting, svg: Document) => {
-  const all = buildingsIn(svg)
-  const buildings = all
-    .map(building => ({building, order: Math.random()}))
-    .sort((a, b) => a.order - b.order)
-    .slice(0, Math.round(all.length * decoratedShare))
-    .map(({building}) => building)
+// hidden wherever the hills or the house stand in front of them, and the far layer's
+// wherever a building in the near one does
+const createSkylineLights = (
+  app: Application, background: Background, lighting: Lighting, svg: Document,
+  {skyline = background.skyline, inFront = []}: {skyline?: Container, inFront?: Building[]} = {},
+) => {
+  const buildings = buildingsIn(svg)
+  const far = skyline !== background.skyline
+  const size = bulbSize * (far ? farOff.size : 1)
+  const brightness = far ? farOff.brightness : 1
 
   const bulbTexture = radialTexture(16, [[0, 1], [0.25, 1], [0.5, 0.35], [1, 0]])
   // Nothing about the bulbs changes every frame, so their colours are only sent to be
@@ -111,8 +115,8 @@ const createSkylineLights = (app: Application, background: Background, lighting:
   const layer = new ParticleContainer({dynamicProperties: {position: false, color: false}})
   layer.blendMode = "add"
   layer.boundsArea = new Rectangle(-200, 0, 2960, 420)
-  layer.position.copyFrom(background.skyline.position)
-  layer.scale.copyFrom(background.skyline.scale)
+  layer.position.copyFrom(skyline.position)
+  layer.scale.copyFrom(skyline.scale)
   layer.zIndex = lighting.aboveNight
   layer.eventMode = "none"
   background.decorations.addChild(layer)
@@ -127,7 +131,7 @@ const createSkylineLights = (app: Application, background: Background, lighting:
     stringsOn(building, style).forEach(points => points.forEach((point, idx) => {
       const particle = new Particle({
         texture: bulbTexture, x: point.x, y: point.y, anchorX: 0.5, anchorY: 0.5,
-        scaleX: bulbSize / bulbTexture.width, scaleY: bulbSize / bulbTexture.width,
+        scaleX: size / bulbTexture.width, scaleY: size / bulbTexture.width,
       })
       layer.addParticle(particle)
       // Chasing along the string, cascading down a curtain, or each on its own
@@ -146,8 +150,14 @@ const createSkylineLights = (app: Application, background: Background, lighting:
   // Returns whether it had slid
   let slidTo: number | undefined
   const inScene = {x: 0, y: 0}
+  const near = background.skyline
+  const behindNear = (point: {x: number, y: number}) => {
+    const x = (point.x - near.x) / near.scale.x
+    const y = (point.y - near.y) / near.scale.y
+    return inFront.some(building => x >= building.left && x <= building.right && y >= building.top && y <= building.bottom)
+  }
   const reveal = () => {
-    const {x, y, scale} = background.skyline
+    const {x, y, scale} = skyline
     if (x === slidTo) {
       return false
     }
@@ -155,7 +165,7 @@ const createSkylineLights = (app: Application, background: Background, lighting:
     for (const bulb of bulbs) {
       inScene.x = x + bulb.x * scale.x
       inScene.y = y + bulb.y * scale.y
-      bulb.hidden = inScene.x < scenery.left || inScene.x > scenery.right || background.hidesSkyline(inScene)
+      bulb.hidden = inScene.x < scenery.left || inScene.x > scenery.right || background.hidesSkyline(inScene) || behindNear(inScene)
     }
     return true
   }
@@ -166,8 +176,8 @@ const createSkylineLights = (app: Application, background: Background, lighting:
     const dt = app.ticker.deltaMS / 1000
     time += dt
     sinceRepaint += dt
-    // Over the skyline's near layer, wherever it's slid to
-    layer.position.copyFrom(background.skyline.position)
+    // Over its layer of the skyline, wherever it's slid to
+    layer.position.copyFrom(skyline.position)
     if (!reveal() && sinceRepaint < repaintEvery) {
       return
     }
@@ -180,7 +190,7 @@ const createSkylineLights = (app: Application, background: Background, lighting:
       // Up and back down over its blink, from dim to fully on
       const t = ((time / bulb.period + bulb.phase) % 1 + 1) % 1
       const level = 1 - Math.abs(t * 2 - 1)
-      paint(bulb.particle, bulb.colour, dimLevel + (1 - dimLevel) * level)
+      paint(bulb.particle, bulb.colour, brightness * (dimLevel + (1 - dimLevel) * level))
     }
     layer.update()
   }
