@@ -167,6 +167,11 @@ const createSkyline = async (app: Application, background: Background, lighting:
   ].map(background.fromSkyline).every(corner =>
     corner.x >= scenery.left && corner.x <= scenery.right && !background.hidesSkyline(corner))
 
+  const onScreen = (pane: Pane) => {
+    const {x, y} = background.fromSkyline({x: pane.x + pane.width / 2, y: pane.y + pane.height / 2})
+    return background.inView(x, y)
+  }
+
   // Which windows are in view, worked out again whenever the skyline's slid, redrawing
   // the glows if any have come into view or gone out of it
   let slidTo: number | undefined
@@ -198,7 +203,9 @@ const createSkyline = async (app: Application, background: Background, lighting:
     nextSwitch -= dt
     if (nextSwitch <= 0) {
       nextSwitch = random(switchEvery.min, switchEvery.max)
-      const candidates = panes.filter(pane => pane.switching === undefined && pane.shown)
+      // Only windows on screen, as one switched where it can't be seen would only be
+      // found already switched
+      const candidates = panes.filter(pane => pane.switching === undefined && pane.shown && onScreen(pane))
       const pane = candidates[Math.floor(Math.random() * candidates.length)]
       if (pane) {
         pane.switching = 0

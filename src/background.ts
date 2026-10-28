@@ -211,6 +211,11 @@ const createBackground = (app: Application) => {
     centre.y = clampAxis(centre.y, height / 2 / scale, 0, sceneHeight + belowBar)
   }
 
+  // The part of the scene on screen, in scene units, and a count of how often it's
+  // changed, so whatever only animates what can be seen knows when to look again
+  const view = {left: 0, top: 0, right: 0, bottom: 0}
+  let viewVersion = 0
+
   const layout = () => {
     const {width, height} = app.screen
     clampView()
@@ -221,6 +226,15 @@ const createBackground = (app: Application) => {
     ;(["far", "near"] as const).forEach(layer => {
       skylineLayers[layer].x = skylineLeft + (centre.x - sceneWidth / 2) * (1 - skylineDepth[layer])
     })
+    const left = centre.x - width / 2 / scale
+    const top = centre.y - height / 2 / scale
+    if (left !== view.left || top !== view.top || width / scale !== view.right - view.left || height / scale !== view.bottom - view.top) {
+      view.left = left
+      view.top = top
+      view.right = left + width / scale
+      view.bottom = top + height / scale
+      viewVersion++
+    }
   }
 
   // Moves the view by a distance on screen, the way the scenery is dragged
@@ -350,6 +364,16 @@ const createBackground = (app: Application) => {
     scale() {
       return scene.scale.x
     },
+    // The part of the scene on screen now, in scene units. It's the same object each
+    // time, changed as the camera moves; viewVersion goes up whenever it does
+    view: view as Readonly<typeof view>,
+    viewVersion: () => viewVersion,
+    // Whether a point in the scene, or anything in a box in it, is on screen, or within
+    // a margin of it, in scene units
+    inView: (x: number, y: number, margin = 0) =>
+      x >= view.left - margin && x <= view.right + margin && y >= view.top - margin && y <= view.bottom + margin,
+    overlapsView: (left: number, top: number, right: number, bottom: number, margin = 0) =>
+      right >= view.left - margin && left <= view.right + margin && bottom >= view.top - margin && top <= view.bottom + margin,
     // Zooms in (above 1) or out (below 1) by a factor, eased over a moment, about a
     // point on screen, or its middle
     zoomBy(factor: number, about: PointData = screenCentre()) {
@@ -377,6 +401,15 @@ const createBackground = (app: Application) => {
     skyline: skylineLayers.near,
     // And its far layer, behind it
     skylineFar: skylineLayers.far,
+    // The part of a skyline layer's drawing on screen now, in its own units, into a box
+    // that's reused
+    viewInSkyline(layer: Container, into: {left: number, top: number, right: number, bottom: number}) {
+      into.left = (view.left - layer.x) / layer.scale.x
+      into.right = (view.right - layer.x) / layer.scale.x
+      into.top = (view.top - layer.y) / layer.scale.y
+      into.bottom = (view.bottom - layer.y) / layer.scale.y
+      return into
+    },
     // Where a point in the near skyline's drawing is in the scene now
     fromSkyline: (point: PointData): PointData => ({
       x: skylineLayers.near.x + point.x * skylineScale,

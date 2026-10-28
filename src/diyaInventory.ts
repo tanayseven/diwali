@@ -66,6 +66,11 @@ const flameAt = {x: wickTip.x, y: wickTip.y - 20}
 // glows at the flame
 const diyaLightColour = 0xffb35c
 const diyaLightRadius = 110
+// How far off screen, in scene units, a diya still counts as on it, as it's drawn
+// around where it stands
+const diyaMargin = 40
+// How often the lit diyas' flame is redrawn, in ms
+const redrawEvery = 1000 / 30
 const diyaGlowRadius = 10
 // A diya's bowl in its canvas, padded a little, for dropping wicks and oil onto it
 const diyaTarget = new Rectangle(diyaCrop.x - 20, diyaCrop.y - 30, diyaCrop.width + 40, diyaCrop.height + 30)
@@ -122,8 +127,12 @@ const createLiveDiyaTexture = (app: Application, isShown: () => boolean) => {
     context.drawImage(image, 0, 0, diyaCanvas.width, diyaCanvas.height)
     texture.source.update()
   }
+  // The flame is smooth enough redrawn at half the usual frame rate
+  let sinceDrawn = Infinity
   const tick = () => {
-    if (isShown()) {
+    sinceDrawn += app.ticker.deltaMS
+    if (sinceDrawn >= redrawEvery && isShown()) {
+      sinceDrawn = 0
       draw()
     }
   }
@@ -168,9 +177,10 @@ type Drag =
 const createDiyaInventory = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
   const {emptyDiyas, wicks, oilBottle} = createItems()
   const matchstick = createMatchstick(app, audio)
-  // Only drawn while a lit diya is on the porch or being carried
+  // Only drawn while a lit diya on the porch is on screen, or one is being carried
   const litDiya = createLiveDiyaTexture(app, () =>
-    placed.some(diya => diya.lit) || (drag?.kind === "diya" && drag.diya.lit))
+    placed.some(diya => diya.lit && background.inView(diya.sprite.x, diya.sprite.y, diyaMargin))
+    || (drag?.kind === "diya" && drag.diya.lit))
   const container = new Container()
   const bar = createHud(app)
   const hud = bar.container
@@ -537,7 +547,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       diya.light.shine(at, diyaLightRadius * (0.95 + 0.05 * flicker), flicker)
       diya.glow.position.copyFrom(at)
       diya.glow.alpha = 0.55 * flicker
-      diya.glow.visible = true
+      diya.glow.visible = background.inView(at.x, at.y, diyaGlowRadius)
     })
   }
   app.ticker.add(shine)

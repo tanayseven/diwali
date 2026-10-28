@@ -5,6 +5,7 @@ import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {createShownParticles} from "./shownParticles"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 
@@ -182,6 +183,14 @@ const blastSparks = 64
 const blastSpecks = 24
 const blastSparkSpeed = {min: 120, max: 320}
 const blastPuffs = 3
+
+// How far from a firework what it throws off can reach, in scene units: an anar's
+// fountain rises about 300 above it. One whose reach is all off screen throws nothing
+const effectReach = {up: 340, side: 260, down: 60}
+// How far off screen a spark or a puff of smoke still counts as on it, as each is drawn
+// around its middle and a puff grows to 90 across
+const sparkMargin = 20
+const smokeMargin = 50
 // Shreds of paper are thrown up and out, tumble down slowly and lie where they land
 const shredsPerBlast = {min: 20, max: 30}
 const shredSpeed = {min: 60, max: 200}
@@ -449,6 +458,9 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   ;[shredLayer, smokeLayer, sparkLayer].forEach(layer => {
     layer.boundsArea = sceneArea
   })
+  const shownShreds = createShownParticles(shredLayer)
+  const shownSmoke = createShownParticles(smokeLayer)
+  const shownSparks = createShownParticles(sparkLayer)
   const glowLayer = new Container()
   glowLayer.eventMode = "none"
   const overlays = [smokeLayer, sparkLayer, glowLayer]
@@ -480,7 +492,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
   }
 
-  // Particles are reused rather than removed: a spent one is hidden until it's needed
+  // Particles are reused rather than made afresh, and only drawn while they're alive
+  // and on screen
   const sparks: Spark[] = []
   const freeSparks: Spark[] = []
   const smoke: Smoke[] = []
@@ -488,13 +501,19 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const shreds: Shred[] = []
   const freeShreds: Shred[] = []
 
+  // Nothing is thrown off by what's off screen, as it would only be seen if it came back
+  // into view before burning out. Set while a firework off screen burns
+  let offScreen = false
+
   const addSpark = (
     x: number, y: number, vx: number, vy: number, life: number, kind: Spark["kind"], floor: number, grounded = false,
   ) => {
+    if (offScreen) {
+      return
+    }
     let spark = freeSparks.pop()
     if (!spark) {
       const particle = new Particle({texture: sparkTexture, anchorX: 0.5, anchorY: 0.5})
-      sparkLayer.addParticle(particle)
       spark = {
         particle, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 0, kind: "spark", grounded: false, burstAt: Infinity, floor: 0,
       }
@@ -505,10 +524,12 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   }
 
   const addSmoke = (x: number, y: number) => {
+    if (offScreen) {
+      return
+    }
     let puff = freeSmoke.pop()
     if (!puff) {
       const particle = new Particle({texture: smokeTexture, anchorX: 0.5, anchorY: 0.5})
-      smokeLayer.addParticle(particle)
       puff = {particle, x: 0, y: 0, vx: 0, vy: 0, age: 0}
     }
     Object.assign(puff, {x, y, vx: random(-5, 5), vy: random(-18, -9), age: 0})
@@ -516,13 +537,15 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   }
 
   const addShred = (x: number, y: number, floor: number) => {
+    if (offScreen) {
+      return
+    }
     let shred = freeShreds.pop()
     if (!shred) {
       const particle = new Particle({
         texture: paperTexture, anchorX: 0.5, anchorY: 0.5,
         scaleX: shredSize.width / paperTexture.width, scaleY: shredSize.height / paperTexture.height,
       })
-      shredLayer.addParticle(particle)
       shred = {particle, colour: 0, x: 0, y: 0, vx: 0, vy: 0, spin: 0, age: 0, life: 0, floor: 0}
     }
     // Thrown up and out, more sideways than up
@@ -1177,6 +1200,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       if (firework.state === "fuse" || firework.state === "burning") {
         firework.elapsed += dt
       }
+      // It still burns, lights the porch and is heard while it's off screen, but throws
+      // nothing off unless what it throws would reach the screen
+      const {x, y} = firework.sprite
+      offScreen = !background.overlapsView(x - effectReach.side, y - effectReach.up, x + effectReach.side, y + effectReach.down)
       if (firework.kind === "anar") {
         burnAnar(firework, dt)
       } else if (firework.kind === "laddi") {
@@ -1185,6 +1212,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         burnChakri(firework, dt)
       }
     })
+    offScreen = false
 
     // The screen's flash dies away as quickly as a blast's light, and only shows while
     // the scene does
@@ -1195,6 +1223,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     for (let idx = sparks.length - 1; idx >= 0; idx--) {
       const spark = sparks[idx]
       spark.age += dt
+      // Specks and embers only come off sparks that can be seen
+      offScreen = !background.inView(spark.x, spark.y, sparkMargin)
       if (spark.age >= spark.burstAt) {
         spark.burstAt = Infinity
         burst(spark)
@@ -1204,6 +1234,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       if (spark.kind === "spark" && !spark.grounded && Math.random() < emberRate * dt) {
         shedEmber(spark)
       }
+      offScreen = false
       if (spark.grounded) {
         // Skidding across the floor, it only slows down, and the floor is wherever it is
         const drag = Math.max(0, 1 - skidDrag * dt)
@@ -1228,12 +1259,15 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       }
       const {particle} = spark
       if (spark.age >= spark.life) {
-        particle.color = 0
         sparks[idx] = sparks[sparks.length - 1]
         sparks.pop()
         freeSparks.push(spark)
         continue
       }
+      if (!background.inView(spark.x, spark.y, sparkMargin)) {
+        continue
+      }
+      shownSparks.show(particle)
       const t = spark.age / spark.life
       particle.x = spark.x
       particle.y = spark.y
@@ -1268,7 +1302,6 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       puff.age += dt
       const {particle} = puff
       if (puff.age >= smokeLife) {
-        particle.color = 0
         smoke[idx] = smoke[smoke.length - 1]
         smoke.pop()
         freeSmoke.push(puff)
@@ -1277,6 +1310,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       const t = puff.age / smokeLife
       puff.x += puff.vx * dt
       puff.y += puff.vy * dt
+      if (!background.inView(puff.x, puff.y, smokeMargin)) {
+        continue
+      }
+      shownSmoke.show(particle)
       particle.x = puff.x
       particle.y = puff.y
       particle.scaleX = particle.scaleY = lerp(20, 90, t) / smokeTexture.width
@@ -1294,7 +1331,6 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       shred.age += dt
       const {particle} = shred
       if (shred.age >= shred.life) {
-        particle.color = 0
         shreds[idx] = shreds[shreds.length - 1]
         shreds.pop()
         freeShreds.push(shred)
@@ -1309,11 +1345,19 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         shred.y = Math.min(shred.floor, shred.y + shred.vy * dt)
         particle.rotation += shred.spin * dt
       }
+      if (!background.inView(shred.x, shred.y, sparkMargin)) {
+        continue
+      }
+      shownShreds.show(particle)
       particle.x = shred.x
       particle.y = shred.y
       // Fading away in the last part of its life
       paint(particle, shred.colour, (1 - shred.age / shred.life) / 0.3)
     }
+
+    shownSparks.draw()
+    shownSmoke.draw()
+    shownShreds.draw()
   }
   app.ticker.add(tick)
 

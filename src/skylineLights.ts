@@ -43,8 +43,6 @@ type Bulb = {
   // How far through its blink it starts, and how long its blink is
   phase: number
   period: number
-  // Whether the hills or the house hide it where the skyline's slid to now
-  hidden: boolean
 }
 
 const random = (min: number, max: number) => min + (max - min) * Math.random()
@@ -122,8 +120,9 @@ const createSkylineLights = (
   background.decorations.addChild(layer)
 
   const palette = Object.values(lightColours)
-  const bulbs: Bulb[] = []
-  buildings.forEach(building => {
+  // Each building's bulbs, so a whole building off screen can be passed over at once
+  const strung = buildings.map(building => ({building, bulbs: [] as Bulb[]}))
+  strung.forEach(({building, bulbs}) => {
     const style = pick(["curtain", "outline", "swags"] as const)
     const single = Math.random() < singleColourShare ? pick(palette) : undefined
     const twinkles = Math.random() < twinkleShare
@@ -133,39 +132,56 @@ const createSkylineLights = (
         texture: bulbTexture, x: point.x, y: point.y, anchorX: 0.5, anchorY: 0.5,
         scaleX: size / bulbTexture.width, scaleY: size / bulbTexture.width,
       })
-      layer.addParticle(particle)
       // Chasing along the string, cascading down a curtain, or each on its own
       const phase = twinkles ? Math.random()
         : style === "curtain" ? -(point.y - building.top) / cascadeLength
           : -idx / chaseLength
       bulbs.push({
         particle, x: point.x, y: point.y, colour: toBgr(single ?? palette[idx % palette.length]),
-        phase, period: twinkles ? between(blinkPeriod) : period, hidden: false,
+        phase, period: twinkles ? between(blinkPeriod) : period,
       })
     }))
   })
 
-  // Which bulbs are out of sight, worked out again whenever the skyline's slid, which
-  // is every frame of a pan, so each one's place in the scene goes into the same point.
-  // Returns whether it had slid
-  let slidTo: number | undefined
-  const inScene = {x: 0, y: 0}
+  // The bulbs that can be seen: on a building that's on screen, and not behind the hills,
+  // the house or a nearer building. Only these are drawn and repainted. Worked out again
+  // whenever the skyline's slid or the camera's moved, which is every frame of a pan, so
+  // each one's place in the scene goes into the same point. Returns whether it had to be
   const near = background.skyline
   const behindNear = (point: {x: number, y: number}) => {
     const x = (point.x - near.x) / near.scale.x
     const y = (point.y - near.y) / near.scale.y
     return inFront.some(building => x >= building.left && x <= building.right && y >= building.top && y <= building.bottom)
   }
+  const seen: Bulb[] = []
+  const drawn = layer.particleChildren as Particle[]
+  let slidTo: number | undefined
+  let viewedAt: number | undefined
+  const inScene = {x: 0, y: 0}
+  const onScreen = {left: 0, top: 0, right: 0, bottom: 0}
   const reveal = () => {
     const {x, y, scale} = skyline
-    if (x === slidTo) {
+    if (x === slidTo && background.viewVersion() === viewedAt) {
       return false
     }
     slidTo = x
-    for (const bulb of bulbs) {
-      inScene.x = x + bulb.x * scale.x
-      inScene.y = y + bulb.y * scale.y
-      bulb.hidden = inScene.x < scenery.left || inScene.x > scenery.right || background.hidesSkyline(inScene) || behindNear(inScene)
+    viewedAt = background.viewVersion()
+    background.viewInSkyline(skyline, onScreen)
+    seen.length = 0
+    drawn.length = 0
+    for (const {building, bulbs} of strung) {
+      if (building.right + size < onScreen.left || building.left - size > onScreen.right
+        || building.bottom + size < onScreen.top || building.top - size > onScreen.bottom) {
+        continue
+      }
+      for (const bulb of bulbs) {
+        inScene.x = x + bulb.x * scale.x
+        inScene.y = y + bulb.y * scale.y
+        if (inScene.x >= scenery.left && inScene.x <= scenery.right && !background.hidesSkyline(inScene) && !behindNear(inScene)) {
+          seen.push(bulb)
+          drawn.push(bulb.particle)
+        }
+      }
     }
     return true
   }
@@ -182,11 +198,7 @@ const createSkylineLights = (
       return
     }
     sinceRepaint = 0
-    for (const bulb of bulbs) {
-      if (bulb.hidden) {
-        bulb.particle.color = 0
-        continue
-      }
+    for (const bulb of seen) {
       // Up and back down over its blink, from dim to fully on
       const t = ((time / bulb.period + bulb.phase) % 1 + 1) % 1
       const level = 1 - Math.abs(t * 2 - 1)

@@ -93,6 +93,8 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   let chosen: Choice = "mixed"
   let hudShown = false
   let elapsed = 0
+  // Whether a string's been put up, moved or dimmed since the bulbs were last gone over
+  let restrung = true
   // A string being hung, from where it was started, or one being moved, with where
   // it started out and how far it's been dragged
   let hanging: LightString | undefined
@@ -134,6 +136,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
 
   // Lays out a string's wire and bulbs between its ends, sagging in the middle
   const build = (string: LightString) => {
+    restrung = true
     const {from, to, container} = string
     container.removeChildren().forEach(child => child.destroy())
     string.bulbs.forEach(bulb => bulb.light.destroy())
@@ -203,6 +206,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   // A string that can't be hung where it is shows faded
   const showValidity = (string: LightString) => {
     string.container.alpha = canHang(string.from, string.to) ? 1 : 0.4
+    restrung = true
   }
 
   const makePickable = (string: LightString) => {
@@ -266,6 +270,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       const {string, from, to} = moving
       moving = undefined
       string.container.alpha = 1
+      restrung = true
       setOutline(string.container, "selected", false)
       if (hudShown && bar.isOver(toStage(e))) {
         removeString(string)
@@ -281,10 +286,30 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
 
+  // The bulbs only change every frameDuration, or when a string's been put up, moved or
+  // dimmed, so they're only gone over then, or when the camera's moved. Strings off
+  // screen are hidden, their light too, as it can't reach the screen from there
+  let twinkledAt = -1
+  let viewedAt = -1
   function twinkle() {
     const step = Math.floor(elapsed / frameDuration)
+    if (step === twinkledAt && !restrung && background.viewVersion() === viewedAt) {
+      return
+    }
+    twinkledAt = step
+    restrung = false
+    viewedAt = background.viewVersion()
     const all = hanging ? [...strings, hanging] : strings
-    all.forEach(string => string.bulbs.forEach(({sprite, bloom, frames, phase, light}) => {
+    all.forEach(string => {
+      const {from, to} = string
+      const reach = maxSag + lightRadius
+      string.container.visible = background.overlapsView(
+        Math.min(from.x, to.x), Math.min(from.y, to.y), Math.max(from.x, to.x), Math.max(from.y, to.y), reach)
+      if (!string.container.visible) {
+        string.bulbs.forEach(({light}) => light.off())
+      }
+    })
+    all.forEach(string => string.container.visible && string.bulbs.forEach(({sprite, bloom, frames, phase, light}) => {
       const level = pingPong[(step + phase) % pingPong.length]
       sprite.texture = frames[level]
       sprite.tint = bulbTints[level]

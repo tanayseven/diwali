@@ -4,6 +4,7 @@ import {Background, scenery, skylineUrls} from "./background"
 import {blastSoundUrls, mixColour, paint, toBgr} from "./fireworks"
 import {Lighting, radialTexture} from "./lighting"
 import {buildingsIn} from "./skylineLights"
+import {createShownParticles} from "./shownParticles"
 
 // Shells go up from between the city's buildings now and then, and burst a little
 // above them. Everything here is in the near skyline drawing's units, as they're drawn
@@ -99,6 +100,10 @@ type Spark = {
   shedDebt: number
 }
 
+// How far off screen, in scene units, a spark still counts as on it, as each is drawn
+// around its middle and stretched along its path
+const viewMargin = 15
+
 type Flash = {sprite: Sprite, age: number}
 
 // The gaps between buildings wide enough to launch from, left to right
@@ -138,15 +143,16 @@ const createSkyFireworks = async (
   layer.eventMode = "none"
   const flashes: Flash[] = []
   background.decorations.addChild(layer)
+  const shown = createShownParticles(layer)
 
-  // Particles are reused rather than removed: a spent one is hidden until it's needed
+  // Particles are reused rather than made afresh, and only drawn while they're alive
+  // and can be seen
   const sparks: Spark[] = []
   const freeSparks: Spark[] = []
   const addSpark = (x: number, y: number, vx: number, vy: number, life: number, kind: Spark["kind"], colour = 0) => {
     let spark = freeSparks.pop()
     if (!spark) {
       const particle = new Particle({texture: sparkTexture, anchorX: 0.5, anchorY: 0.5})
-      layer.addParticle(particle)
       spark = {particle, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 0, kind, burstAt: 0, colour: 0, shades: [], shedDebt: 0}
     }
     spark.x = x
@@ -163,21 +169,34 @@ const createSkyFireworks = async (
     return spark
   }
 
-  // Whether a point in the skyline drawing is out of sight now, behind the hills or the
-  // house, or past the scenery's sides as the skyline slides. Asked of every spark each
-  // frame, so where it is in the scene is worked out into the same point each time
+  // Whether a point in the skyline drawing is out of sight now: off screen, behind the
+  // hills or the house, or past the scenery's sides as the skyline slides. Asked of every
+  // spark each frame, so where it is in the scene is worked out into the same point each
+  // time
   const inScene = {x: 0, y: 0}
   const isHidden = (x: number, y: number) => {
     inScene.x = background.skyline.x + x * background.skyline.scale.x
     inScene.y = background.skyline.y + y * background.skyline.scale.y
-    return inScene.x < scenery.left || inScene.x > scenery.right || background.hidesSkyline(inScene)
+    return inScene.x < scenery.left || inScene.x > scenery.right || !background.inView(inScene.x, inScene.y, viewMargin)
+      || background.hidesSkyline(inScene)
+  }
+
+  // Each burst is heard a moment after it's seen, as sound from that far off takes a while
+  const bangLater = () => {
+    const timer = window.setTimeout(() => {
+      bangTimers.delete(timer)
+      bangs[Math.floor(Math.random() * bangs.length)]().setLevel(bangLevel)
+    }, bangDelay)
+    bangTimers.add(timer)
   }
 
   const launch = () => {
-    // Only from where its burst would be seen
+    // Only from where its burst would be seen. With nowhere on screen to see one, as
+    // close up on the porch, the city's fireworks are only heard
     const seen = gaps.filter(gap => !isHidden(gap.x, gap.top - burstAbove.max))
     const gap = seen[Math.floor(Math.random() * seen.length)]
     if (!gap) {
+      bangLater()
       return
     }
     const x = gap.x + random(-gap.spread, gap.spread)
@@ -210,11 +229,7 @@ const createSkyFireworks = async (
     sprite.visible = !background.hidesSkyline(sprite.position)
     background.decorations.addChild(sprite)
     flashes.push({sprite, age: 0})
-    const timer = window.setTimeout(() => {
-      bangTimers.delete(timer)
-      bangs[Math.floor(Math.random() * bangs.length)]().setLevel(bangLevel)
-    }, bangDelay)
-    bangTimers.add(timer)
+    bangLater()
   }
 
   let nextLaunch = between(launchEvery)
@@ -260,7 +275,6 @@ const createSkyFireworks = async (
       }
       // Spent: the last spark takes its place, as hundreds can go out in one step
       if (spark.age >= spark.life) {
-        spark.particle.color = 0
         sparks[idx] = sparks[sparks.length - 1]
         sparks.pop()
         freeSparks.push(spark)
@@ -270,13 +284,13 @@ const createSkyFireworks = async (
 
   const draw = () => {
     for (const spark of sparks) {
-      const {particle} = spark
-      particle.x = spark.x
-      particle.y = spark.y
       if (isHidden(spark.x, spark.y)) {
-        particle.color = 0
         continue
       }
+      const {particle} = spark
+      shown.show(particle)
+      particle.x = spark.x
+      particle.y = spark.y
       const t = spark.age / spark.life
       if (spark.kind === "rocket") {
         particle.scaleX = particle.scaleY = rocketSize / sparkTexture.width
@@ -294,6 +308,7 @@ const createSkyFireworks = async (
         paint(particle, glitterBgr, (1 - t) * random(0.3, 1))
       }
     }
+    shown.draw()
   }
 
   const tick = () => {
