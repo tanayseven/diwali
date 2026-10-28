@@ -28,8 +28,8 @@ type Kind = "anar" | "laddi"
 // How each kind of firework's drawings sit in the scene. They're all the same size,
 // showing a frame of their drawing's units at a number of pixels to a unit. The origin
 // is the point in the drawing that's placed where it's dropped, and they're picked up,
-// lit and shown in their slot by an area of it. A laddi is drawn from above, so it's
-// squashed top to bottom to lie flat on the floor
+// lit and shown in their slot by an area of it. Both are drawn in the scene's
+// perspective, so they're shown as drawn
 type Shape = {
   frame: Rectangle
   density: number
@@ -37,9 +37,8 @@ type Shape = {
   area: Rectangle
   // Where the match is put to its fuse
   fuseAt: PointData
-  // Scene units per unit of the drawing, across, and how much shorter it is top to bottom
+  // Scene units per unit of the drawing
   scale: number
-  flatten: number
 }
 
 // The anar SVGs are the pot cropped out of bigger drawings, keeping their units, with
@@ -54,18 +53,19 @@ const anarShape: Shape = {
   area: new Rectangle(154, 428, 52, 62),
   fuseAt: {x: 182, y: 431},
   scale: 0.42,
-  flatten: 1,
 }
-// The laddi's crackers stand above and below its wick, which runs along y 241 from
-// x 72 to 650 and frays out past there. It's about two diyas wide
+// The laddi lies on the floor seen from in front, its crackers fanning out behind
+// and in front of its wick. The wick runs a little downhill from (117, 226.4) to
+// (607, 234.1) and frays out past there. It's placed by the middle of its wick, and
+// it's about two diyas wide
+const laddiWick = {from: {x: 117.2, y: 226.4}, to: {x: 606.9, y: 234.1}}
 const laddiShape: Shape = {
   frame: new Rectangle(0, 0, 720, 480),
   density: 1,
-  origin: {x: 390, y: 245},
-  area: new Rectangle(80, 85, 620, 320),
-  fuseAt: {x: 676, y: 262},
-  scale: 0.08,
-  flatten: 0.55,
+  origin: {x: 362, y: 230},
+  area: new Rectangle(110, 125, 550, 255),
+  fuseAt: {x: 645, y: 255},
+  scale: 0.085,
 }
 const shapes: Record<Kind, Shape> = {anar: anarShape, laddi: laddiShape}
 // A firework that can be lit grows this much while the match is dragged over it
@@ -130,18 +130,24 @@ const lightRise = 75
 const glowRadius = 16
 const coreRadius = 4
 
-// The laddi's crackers, in the order they go off, one per drawing from the second on.
+// The laddi's crackers, in the order they go off, one per drawing from the second on:
+// each one's middle, and how far along the wick it's tied on, which the fuse burns to.
 // Each blows apart where it lies: a flash and a burst of light, sparks, shreds of its
-// red paper and a puff of smoke. They go off in quick, uneven succession once the
+// red paper and a puff of smoke, falling to the floor around it, nearer for the
+// crackers in front of the wick. They go off in quick, uneven succession once the
 // fuse has fizzed along to the first
-const laddiBlasts: PointData[] = [
-  {x: 616.1, y: 316.6}, {x: 588.7, y: 180.8}, {x: 562.3, y: 320.2}, {x: 532.4, y: 171.5},
-  {x: 509.6, y: 311.7}, {x: 482.4, y: 172.4}, {x: 450.6, y: 306.5}, {x: 424.2, y: 172.2},
-  {x: 397.4, y: 305.8}, {x: 367.9, y: 178.8}, {x: 345.1, y: 310.7}, {x: 312.6, y: 167.6},
-  {x: 288.8, y: 307.4}, {x: 258.4, y: 172.1}, {x: 230.2, y: 310.2}, {x: 203.1, y: 167.8},
-  {x: 178.9, y: 305.1}, {x: 150.7, y: 173.6}, {x: 121.7, y: 301.8}, {x: 95.7, y: 168},
+const laddiBlasts: (PointData & {tied: number})[] = [
+  {x: 595.9, y: 296.3, tied: 581.6}, {x: 544.3, y: 190.6, tied: 560.1},
+  {x: 547.5, y: 300.1, tied: 534.6}, {x: 498.2, y: 185.1, tied: 512.7},
+  {x: 497.4, y: 291.5, tied: 487.8}, {x: 458, y: 185.5, tied: 465.4},
+  {x: 442.8, y: 286.5, tied: 441}, {x: 411.9, y: 185.3, tied: 418.2},
+  {x: 394.4, y: 285.9, tied: 394.4}, {x: 366.8, y: 189.1, tied: 371.1},
+  {x: 347.2, y: 290.9, tied: 347.7}, {x: 321.9, y: 182.6, tied: 324.1},
+  {x: 294.6, y: 287.8, tied: 301.2}, {x: 278.5, y: 184.9, tied: 277.2},
+  {x: 240.7, y: 290.9, tied: 254.8}, {x: 234.8, y: 182.4, tied: 230.3},
+  {x: 195.1, y: 285.7, tied: 208.4}, {x: 192.3, y: 185.8, tied: 183.6},
+  {x: 143.8, y: 282.7, tied: 162.1}, {x: 149.3, y: 182.3, tied: 136.9},
 ]
-const laddiWickY = 241
 const laddiFuseDuration = 1
 // Each cracker goes off anywhere up to half a second after the one before
 const maxBlastGap = 0.5
@@ -366,10 +372,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
 
   // A point in a placed firework's drawing, in scene units
   const onFirework = (firework: Placed, point: PointData) => {
-    const {origin, scale, flatten} = shapes[firework.kind]
+    const {origin, scale} = shapes[firework.kind]
     return {
       x: firework.sprite.x + (point.x - origin.x) * scale,
-      y: firework.sprite.y + (point.y - origin.y) * scale * flatten,
+      y: firework.sprite.y + (point.y - origin.y) * scale,
     }
   }
 
@@ -495,8 +501,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Sizes a firework's sprite as it's drawn in the scene, times a factor: grown while
   // it's targeted, or zoomed like the scene while it's dragged on screen
   const scaleSprite = (firework: Placed, factor = 1) => {
-    const {scale, flatten, density} = shapes[firework.kind]
-    firework.sprite.scale.set(scale / density * factor, scale * flatten / density * factor)
+    const {scale, density} = shapes[firework.kind]
+    firework.sprite.scale.set(scale / density * factor)
   }
 
   // The nearest placed firework under a point on screen that could be lit
@@ -506,10 +512,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       .filter(firework => firework.state === "unlit" && !firework.busy)
       .sort((a, b) => b.sprite.zIndex - a.sprite.zIndex)
       .find(firework => {
-        const {origin, area, scale, flatten} = shapes[firework.kind]
+        const {origin, area, scale} = shapes[firework.kind]
         return area.contains(
           origin.x + (at.x - firework.sprite.x) / scale,
-          origin.y + (at.y - firework.sprite.y) / (scale * flatten),
+          origin.y + (at.y - firework.sprite.y) / scale,
         )
       })
   }
@@ -789,21 +795,22 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
 
   // One of a laddi's crackers goes off where it lies
   const blast = (laddi: Placed, at: PointData) => {
-    const floor = laddi.sprite.y
+    // What's thrown up falls back to the floor around the cracker, where it lay
+    const floor = at.y
     for (let idx = 0; idx < blastSparks; idx++) {
       const angle = random(0, Math.PI * 2)
       const speed = random(blastSparkSpeed.min, blastSparkSpeed.max)
       addSpark(at.x, at.y, Math.cos(angle) * speed, Math.sin(angle) * speed * 0.7 - 60,
-        random(0.15, 0.4), "spark", floor + random(-6, 8))
+        random(0.15, 0.4), "spark", floor + random(0, 4))
     }
     for (let idx = 0; idx < blastSpecks; idx++) {
       const angle = random(0, Math.PI * 2)
       const speed = random(30, 90)
-      addSpark(at.x, at.y, Math.cos(angle) * speed, Math.sin(angle) * speed, random(0.1, 0.25), "speck", floor + 8)
+      addSpark(at.x, at.y, Math.cos(angle) * speed, Math.sin(angle) * speed, random(0.1, 0.25), "speck", floor + 3)
     }
     const shredCount = Math.round(random(shredsPerBlast.min, shredsPerBlast.max))
     for (let idx = 0; idx < shredCount; idx++) {
-      addShred(at.x, at.y, floor + random(-8, 10))
+      addShred(at.x, at.y, floor + random(-2, 6))
     }
     for (let idx = 0; idx < blastPuffs; idx++) {
       addSmoke(at.x + random(-4, 4), at.y - random(0, 8))
@@ -816,12 +823,16 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
 
   // Moves a laddi's burn on: the fuse fizzing along, then the crackers going off
   const burnLaddi = (laddi: Placed, dt: number) => {
-    const wickAt = (x: number) => onFirework(laddi, {x, y: laddiWickY})
+    // A point along the wick, by how far across the drawing it is
+    const wickAt = (x: number) => {
+      const {from, to} = laddiWick
+      return onFirework(laddi, {x, y: lerp(from.y, to.y, (x - from.x) / (to.x - from.x))})
+    }
     let fuseAt: PointData | undefined
     if (laddi.state === "fuse") {
       // From where the match lit it, along the frayed end to the first cracker
       const from = onFirework(laddi, laddiShape.fuseAt)
-      const to = wickAt(laddiBlasts[0].x)
+      const to = wickAt(laddiBlasts[0].tied)
       const t = clamp(laddi.elapsed / laddiFuseDuration)
       fuseAt = {x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t)}
       if (laddi.elapsed >= laddiFuseDuration) {
@@ -849,7 +860,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         const next = laddiBlasts[laddi.blasts]
         const gap = Math.max(0.001, laddi.nextBlastAt - laddi.lastBlastAt)
         const t = clamp((laddi.elapsed - laddi.lastBlastAt) / gap)
-        fuseAt = wickAt(lerp(last.x, next.x, t))
+        fuseAt = wickAt(lerp(last.tied, next.tied, t))
       }
     }
     if (fuseAt) {
