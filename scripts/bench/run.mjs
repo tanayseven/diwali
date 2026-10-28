@@ -63,8 +63,22 @@ const openGame = async (browser, size) => {
 // The photosensitivity warning shows once loading's done, which waits for the music to
 // buffer, so how long it takes varies. Its text is what's looked for
 const warningText = "flashing and twinkling lights"
+// Opens the game, trying again if the load's cut off, which now and then happens as one
+// browser context closes and the next opens
+const open = async page => {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await page.goto(url)
+    } catch (error) {
+      if (attempt === 3) {
+        throw error
+      }
+      await page.waitForTimeout(1000)
+    }
+  }
+}
 const enterScene = async page => {
-  await page.goto(url)
+  await open(page)
   await page.waitForFunction(text => document.body.innerText.includes(text), warningText, {timeout: 30000})
   await page.waitForTimeout(500)
   await page.keyboard.press("Space")
@@ -155,7 +169,7 @@ const timeline = async (browser, name, size) => {
     }
     requestAnimationFrame(frame)
   })
-  await game.page.goto(url)
+  await open(game.page)
   await game.page.waitForFunction(text => document.body.innerText.includes(text), warningText, {timeout: 30000})
   await game.page.waitForTimeout(500)
   const start = await game.page.evaluate(() => performance.now())
