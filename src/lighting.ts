@@ -1,5 +1,5 @@
-import {Application, ColorMatrix, ColorMatrixFilter, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
-import {createBackground, groundBelow, sceneHeight, sceneWidth, scenery} from "./background"
+import {Application, Assets, ColorMatrix, ColorMatrixFilter, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
+import {createBackground, groundBelow, houseUrl, sceneHeight, sceneWidth, scenery} from "./background"
 import {outlineAboveNight} from "./outline"
 
 type Background = ReturnType<typeof createBackground>
@@ -47,7 +47,8 @@ const undoNight = (app: Application, house: Sprite) => {
   house.texture = redraw([1 / r, 0, 0, 0, 0, 0, 1 / g, 0, 0, 0, 0, 0, 1 / b, 0, 0, 0, 0, 0, 1, 0])
   // And whatever's left over above the night's colour
   const shortfall = new Sprite(redraw([1, 0, 0, 0, -r, 0, 1, 0, 0, -g, 0, 0, 1, 0, -b, 0, 0, 0, 1, 0]))
-  drawn.destroy(true)
+  // The house as drawn isn't shown any more, so it's let go from the loaded assets
+  Assets.unload(houseUrl).catch(() => {})
   shortfall.anchor.copyFrom(house.anchor)
   shortfall.scale.copyFrom(house.scale)
   shortfall.position.copyFrom(house.position)
