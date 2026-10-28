@@ -29,11 +29,12 @@ const skylineDepth = {far: 0.3, near: 0.55}
 const groundBelow = 400
 const barClearance = 8
 // The house stands with its bottom edge on the ground band, which starts at y 600
-const houseHeight = 420
+const houseHeight = 470
 const houseBottom = 680
 // house.svg's own size and where its viewBox starts, which it's scaled from to stand
-// houseHeight tall, centred on the scene
-const houseSvg = {x: 153.35, y: 52.83, width: 597.11, height: 489.61}
+// houseHeight tall, centred on the scene. Its wings stretch it wide, so it's drawn a
+// little smaller than its middle would be on its own, to keep the door diya-sized
+const houseSvg = {x: 130, y: 85, width: 1538, height: 766}
 const houseScale = houseHeight / houseSvg.height
 const houseLeft = sceneWidth / 2 - houseSvg.width * houseScale / 2
 const houseTop = houseBottom - houseHeight
@@ -44,20 +45,20 @@ const fromHouseSvg = (x: number, y: number): PointData => ({
   y: houseTop + (y - houseSvg.y) * houseScale,
 })
 
-// The porch's tiled floor, from the first path in house.svg: its back edge runs along
-// the foot of the wall and its front edge flares out to the steps
+// The porch's tiled floor, from the first shape after the backfills in house.svg: its
+// back edge runs along the foot of the walls and its front edge flares out to the steps
 const porchFloor: PointData[] = [
-  fromHouseSvg(201.225, 479.175),
-  fromHouseSvg(683.175, 479.175),
-  fromHouseSvg(743.55, 528.225),
-  fromHouseSvg(156.075, 527.55),
+  fromHouseSvg(249.357, 681.086),
+  fromHouseSvg(1508.623, 681.086),
+  fromHouseSvg(1666.374, 817.301),
+  fromHouseSvg(131.386, 815.426),
 ]
 
 type View = {x: number, y: number, width: number, height: number}
 
 // What the camera frames to begin with: the house from its porch floor, kept clear of
 // the bar along the bottom, up to the eaves
-const startView: View = {x: 440, y: 510, width: 400, height: 180}
+const startView: View = {x: 395, y: 470, width: 490, height: 220}
 // The closest the camera gets: about a diya's width and a half across the screen's
 // shorter side on a phone, or a few diyas on a desktop
 const closestView = {width: 180, height: 80}
@@ -81,7 +82,8 @@ const addBackgroundAssets = () => {
   const density = window.devicePixelRatio || 1
   const skyResolution = Math.min(3, Math.ceil(density * coverScale(width, height)))
   const houseZoom = fitScale(closestView, width, height) * houseScale
-  const houseResolution = Math.min(4, Math.ceil(density * houseZoom))
+  // It's kept within 4096 pixels across too
+  const houseResolution = Math.min(4, Math.ceil(density * houseZoom), 4096 / houseSvg.width)
   Assets.add({alias: skyUrl, src: skyUrl, data: {resolution: skyResolution}})
   Assets.add({alias: hillsUrl, src: hillsUrl, data: {resolution: skyResolution}})
   // The skyline is wider than the scene, so it's kept within 4096 pixels across
@@ -154,11 +156,15 @@ const createBackground = (app: Application) => {
 
   // The house's outline as a mask, one byte per scene unit, so things can be hung on it
   // and not on the sky around it. The hills' outline too, for what they hide
+  // Extracting leaves out the target's own transform, so the scaled copy is put in a
+  // container for its scale to count
   const maskOf = (texture: Texture, scale: number) => {
+    const holder = new Container()
     const copy = new Sprite(texture)
     copy.scale.set(scale)
-    const {pixels, width, height} = app.renderer.extract.pixels({target: copy, resolution: 1})
-    copy.destroy()
+    holder.addChild(copy)
+    const {pixels, width, height} = app.renderer.extract.pixels({target: holder, resolution: 1})
+    holder.destroy({children: true})
     return {pixels, width, height}
   }
   const houseMask = maskOf(house.texture, houseScale)
