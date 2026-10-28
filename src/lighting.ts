@@ -1,5 +1,5 @@
 import {Application, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
-import {createBackground, groundBelow, sceneHeight, sceneWidth} from "./background"
+import {createBackground, groundBelow, sceneHeight, sceneWidth, scenery} from "./background"
 import {outlineAboveNight} from "./outline"
 
 type Background = ReturnType<typeof createBackground>
@@ -38,14 +38,19 @@ const createLighting = (app: Application, background: Background) => {
   shade.eventMode = "none"
   shade.visible = false
   shade.zIndex = sceneHeight + 1
-  // The ground carrying on below the scene is just as dark, and nothing there is lit
-  const shadeBelow = new Graphics().rect(0, sceneHeight, sceneWidth, groundBelow).fill(nightColour)
-  shadeBelow.blendMode = "multiply"
-  shadeBelow.eventMode = "none"
-  shadeBelow.visible = false
-  shadeBelow.zIndex = sceneHeight + 1
+  // The sky and the ground carrying on past the scene's sides and below it are just as
+  // dark, and nothing there is lit
+  const shadeAround = new Graphics()
+    .rect(scenery.left, 0, -scenery.left, sceneHeight)
+    .rect(sceneWidth, 0, scenery.right - sceneWidth, sceneHeight)
+    .rect(scenery.left, sceneHeight, scenery.right - scenery.left, groundBelow)
+    .fill(nightColour)
+  shadeAround.blendMode = "multiply"
+  shadeAround.eventMode = "none"
+  shadeAround.visible = false
+  shadeAround.zIndex = sceneHeight + 1
   background.decorations.sortableChildren = true
-  background.decorations.addChild(shade, shadeBelow)
+  background.decorations.addChild(shade, shadeAround)
   // Outlines of things in the scene, over everything there so the night never dims them
   const outlines = new Container()
   outlines.zIndex = sceneHeight + 20
@@ -90,8 +95,8 @@ const createLighting = (app: Application, background: Background) => {
       }
     },
     setNight(value: number) {
-      shade.alpha = shadeBelow.alpha = value
-      shade.visible = shadeBelow.visible = value > 0
+      shade.alpha = shadeAround.alpha = value
+      shade.visible = shadeAround.visible = value > 0
     },
   }
 }

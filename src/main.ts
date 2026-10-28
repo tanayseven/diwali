@@ -15,6 +15,7 @@ import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {createScreenshotButton} from "./screenshot"
 import {RailItem, createSideRail} from "./sideRail"
+import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
 import {showSplashWarning} from "./splashWarning"
 import {addTooltip} from "./tooltip"
@@ -82,6 +83,8 @@ const main = async () => {
   lighting.setNight(1)
   // Lights in the city's windows, glowing through the night and now and then switched
   createSkyline(app, background, lighting).catch(error => console.error("Couldn't light the skyline", error))
+  // Fireworks going up all over the city, bursting just above its buildings
+  createSkyFireworks(app, background, lighting, audio).catch(error => console.error("Couldn't set off the city's fireworks", error))
 
   // Each tool has a bar of things to use, shown while it's the one picked. What's
   // placed in the scene stays there, and can be picked up again, whichever tool is picked

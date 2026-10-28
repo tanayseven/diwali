@@ -1,6 +1,7 @@
 import {Application, Container, Graphics, PointData, Sprite, Texture} from "pixi.js"
-import {Background, sceneWidth, skylineUrls} from "./background"
+import {Background, scenery, skylineUrls} from "./background"
 import {Lighting} from "./lighting"
+import {createSkylineLights} from "./skylineLights"
 
 // The near skyline's lit windows are this colour; its far one's are all dark
 const litColour = "#F2C96B"
@@ -99,6 +100,8 @@ const createSkyline = async (app: Application, background: Background, lighting:
   covers.addChild(coverShapes)
 
   const svg = new DOMParser().parseFromString(await (await fetch(skylineUrls.near)).text(), "image/svg+xml")
+  // Fairy lights on most of its buildings, in front of their windows
+  const fairyLights = createSkylineLights(app, background, lighting, svg)
   const panes: Pane[] = []
   svg.querySelectorAll('g[data-name="Building"]').forEach(building => {
     const [left = 0, top = 0] = numbersIn(building.getAttribute("transform") ?? "")
@@ -151,13 +154,13 @@ const createSkyline = async (app: Application, background: Background, lighting:
     return sprite
   }
 
-  // Whether a window can be seen right now: within the scene, as the skyline slides
+  // Whether a window can be seen right now: within the scenery, as the skyline slides
   // beyond its edges, and not behind the hills or the house
   const inView = (pane: Pane) => [
     {x: pane.x, y: pane.y}, {x: pane.x + pane.width, y: pane.y}, {x: pane.x, y: pane.y + pane.height},
     {x: pane.x + pane.width, y: pane.y + pane.height},
   ].map(background.fromSkyline).every(corner =>
-    corner.x >= 0 && corner.x <= sceneWidth && !background.hidesSkyline(corner))
+    corner.x >= scenery.left && corner.x <= scenery.right && !background.hidesSkyline(corner))
 
   // Which windows are in view, worked out again whenever the skyline's slid, redrawing
   // the glows if any have come into view or gone out of it
@@ -226,6 +229,7 @@ const createSkyline = async (app: Application, background: Background, lighting:
     paneCount: panes.length,
     destroy() {
       app.ticker.remove(tick)
+      fairyLights.destroy()
       glows.destroy({children: true})
       covers.destroy({children: true})
     },

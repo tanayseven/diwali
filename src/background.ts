@@ -1,4 +1,5 @@
 import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {pixelDensity} from "./app"
 import {hudFrame} from "./hud"
 
 // The night sky, with its moon and stars, and the hills and ground in front of it. A
@@ -6,9 +7,12 @@ import {hudFrame} from "./hud"
 const skyUrl = "sprites/backgrounds/night-sky.svg"
 const hillsUrl = "sprites/backgrounds/night-hills.svg"
 const houseUrl = "sprites/house.svg"
-// The sky is drawn at 1280 x 720, and the house is placed in those same units
+// The scene is 1280 x 720, and the house is placed in those same units. The sky and
+// the hills carry on 400 past either side of it, from x -400 to 1680, so the camera
+// can pan further across than the scene. It still zooms out only to the scene
 const sceneWidth = 1280
 const sceneHeight = 720
+const scenery = {left: -400, right: sceneWidth + 400}
 // The skyline in two layers, far behind near, each drawn 2560 x 420. It's shown a
 // little smaller, centred, standing on y 530
 const skylineUrls = {far: "sprites/backgrounds/skyline-far.svg", near: "sprites/backgrounds/skyline-near.svg"}
@@ -79,13 +83,16 @@ const backgroundAssets = [skyUrl, hillsUrl, ...Object.values(skylineUrls), house
 // of them shows up close
 const addBackgroundAssets = () => {
   const {width, height} = window.screen
-  const density = window.devicePixelRatio || 1
+  const density = pixelDensity
   const skyResolution = Math.min(3, Math.ceil(density * coverScale(width, height)))
   const houseZoom = fitScale(closestView, width, height) * houseScale
   // It's kept within 4096 pixels across too
   const houseResolution = Math.min(4, Math.ceil(density * houseZoom), 4096 / houseSvg.width)
-  Assets.add({alias: skyUrl, src: skyUrl, data: {resolution: skyResolution}})
-  Assets.add({alias: hillsUrl, src: hillsUrl, data: {resolution: skyResolution}})
+  // The sky and the hills are wider than the scene, so they're kept within 4096 pixels
+  // across
+  const sceneryResolution = Math.min(skyResolution, 4096 / (scenery.right - scenery.left))
+  Assets.add({alias: skyUrl, src: skyUrl, data: {resolution: sceneryResolution}})
+  Assets.add({alias: hillsUrl, src: hillsUrl, data: {resolution: sceneryResolution}})
   // The skyline is wider than the scene, so it's kept within 4096 pixels across
   const skylineResolution = Math.min(skyResolution * skylineScale, 4096 / skylineSize.width)
   Object.values(skylineUrls).forEach(url => Assets.add({alias: url, src: url, data: {resolution: skylineResolution}}))
@@ -119,7 +126,9 @@ type PressHandler = (at: PointData, e: FederatedPointerEvent) => boolean
 const createBackground = (app: Application) => {
   const container = new Container()
   const scene = new Container()
-  scene.addChild(new Sprite(Assets.get<Texture>(skyUrl)))
+  const sky = new Sprite(Assets.get<Texture>(skyUrl))
+  sky.x = scenery.left
+  scene.addChild(sky)
   // The skyline's two layers. The near one has whatever changes in it drawn over it too,
   // like its windows going dark
   const skylineLayers = {far: new Container(), near: new Container()}
@@ -130,12 +139,13 @@ const createBackground = (app: Application) => {
     scene.addChild(skylineLayers[layer])
   })
   const hills = new Sprite(Assets.get<Texture>(hillsUrl))
+  hills.x = scenery.left
   scene.addChild(hills)
   // The ground below the scene, behind the bar: the hills' bottom row, drawn on down
   const ground = new Sprite(new Texture({
-    source: hills.texture.source, frame: new Rectangle(0, sceneHeight - 1, sceneWidth, 1),
+    source: hills.texture.source, frame: new Rectangle(0, sceneHeight - 1, hills.texture.width, 1),
   }))
-  ground.position.set(0, sceneHeight)
+  ground.position.set(scenery.left, sceneHeight)
   ground.scale.set(1, groundBelow)
   scene.addChild(ground)
   const house = new Sprite(Assets.get<Texture>(houseUrl))
@@ -186,18 +196,19 @@ const createBackground = (app: Application) => {
     return fitScale(closestView, width, height) / coverScale(width, height)
   }
 
-  // Keeps the zoom within its range, and the view within the scene's edges, though it
-  // can go down past the bottom one by as much as the bar covers
+  // Keeps the zoom within its range, and the view within the scenery's sides and the
+  // scene's top and bottom, though it can go down past the bottom by as much as the bar
+  // covers
   const clampView = () => {
     const {width, height} = app.screen
     zoom = Math.min(maxZoom(), Math.max(1, zoom))
     const scale = coverScale(width, height) * zoom
     const bar = hudFrame(app.screen)
     const belowBar = Math.min(groundBelow, (height - (bar.y - bar.height / 2) + barClearance) / scale)
-    const clampAxis = (value: number, half: number, size: number, past = 0) =>
-      half * 2 >= size + past ? (size + past) / 2 : Math.min(size - half + past, Math.max(half, value))
-    centre.x = clampAxis(centre.x, width / 2 / scale, sceneWidth)
-    centre.y = clampAxis(centre.y, height / 2 / scale, sceneHeight, belowBar)
+    const clampAxis = (value: number, half: number, from: number, to: number) =>
+      half * 2 >= to - from ? (from + to) / 2 : Math.min(to - half, Math.max(from + half, value))
+    centre.x = clampAxis(centre.x, width / 2 / scale, scenery.left, scenery.right)
+    centre.y = clampAxis(centre.y, height / 2 / scale, 0, sceneHeight + belowBar)
   }
 
   const layout = () => {
@@ -373,7 +384,7 @@ const createBackground = (app: Application) => {
     hidesSkyline(point: PointData) {
       const x = Math.floor(point.x)
       const y = Math.floor(point.y)
-      return isOpaque(hillsMask, x, y) || isOpaque(houseMask, x - Math.floor(houseLeft), y - Math.floor(houseTop))
+      return isOpaque(hillsMask, x - scenery.left, y) || isOpaque(houseMask, x - Math.floor(houseLeft), y - Math.floor(houseTop))
     },
     // Whether a point in the scene is on the porch's floor
     isOnPorchFloor: (point: PointData) => isInside(point, porchFloor),
@@ -390,5 +401,5 @@ const createBackground = (app: Application) => {
 
 type Background = ReturnType<typeof createBackground>
 
-export {addBackgroundAssets, backgroundAssets, createBackground, groundBelow, porchFloor, sceneHeight, sceneWidth, skylineUrls}
+export {addBackgroundAssets, backgroundAssets, createBackground, groundBelow, porchFloor, sceneHeight, sceneWidth, scenery, skylineUrls}
 export type {Background}

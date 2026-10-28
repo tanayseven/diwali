@@ -1363,4 +1363,4 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   }
 }
 
-export {createFireworks, fireworksAssets}
+export {blastSoundUrls, createFireworks, fireworksAssets, mixColour, paint, toBgr}

@@ -1,4 +1,5 @@
 import {Application, Color, Container, defaultFilterVert, Filter, GlProgram, GpuProgram, Sprite} from "pixi.js"
+import {pixelDensity} from "./app"
 
 const highlight = 0xffd700
 // How thick the outline is on screen, in CSS pixels
@@ -117,7 +118,7 @@ class OutlineFilter extends Filter {
   // The thickness is in the filtered texture's pixels, which are device pixels
   apply(...args: Parameters<Filter["apply"]>) {
     const [, input] = args
-    const pixels = thickness * (window.devicePixelRatio || 1)
+    const pixels = thickness * pixelDensity
     const uniforms = this.resources.outline.uniforms
     uniforms.uThickness[0] = pixels / input.source.width
     uniforms.uThickness[1] = pixels / input.source.height

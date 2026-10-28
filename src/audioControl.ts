@@ -20,6 +20,8 @@ const duckRelease = 400
 // Some browsers (notably iOS Safari) won't buffer audio before a tap, so the loader
 // stops waiting for the first track after this long rather than getting stuck
 const readyTimeout = 8000
+// Muffled effects, like bangs from far off, lose everything above this pitch, in Hz
+const muffledCutoff = 600
 
 // The volume and mute setting are remembered between visits. Storage can be
 // unavailable (private windows, blocked site data), so it's only a convenience
@@ -73,6 +75,25 @@ const createAudioControl = () => {
   let duckTarget = 1
   let duckFrame: number | undefined
   let duckReleaseTimer: number | undefined
+  // The filter muffled effects go through, made the first time one plays
+  let muffler: {context: AudioContext, filter: BiquadFilterNode} | undefined
+
+  // Sends an effect through the muffler, returning how to take it out again
+  const muffle = (effect: HTMLAudioElement) => {
+    if (!muffler) {
+      const context = new AudioContext()
+      const filter = context.createBiquadFilter()
+      filter.type = "lowpass"
+      filter.frequency.value = muffledCutoff
+      filter.connect(context.destination)
+      muffler = {context, filter}
+    }
+    // It starts suspended until there's been a tap, and is resumed once there has
+    muffler.context.resume().catch(() => {})
+    const source = muffler.context.createMediaElementSource(effect)
+    source.connect(muffler.filter)
+    return () => source.disconnect()
+  }
 
   const renderMusicVolume = () => players.forEach(player => player.volume = settings.volume * duck)
 
@@ -331,14 +352,17 @@ const createAudioControl = () => {
 
   // A sound effect, loaded now and played at the music's volume, following the mute and
   // volume setting while it plays. Each play is a fresh copy of it, so quick repeats
-  // overlap instead of cutting off, and can be made quieter or stopped early
-  const createEffect = (src: string) => {
+  // overlap instead of cutting off, and can be made quieter or stopped early. A muffled
+  // one sounds far off
+  const createEffect = (src: string, {muffled = false} = {}) => {
     const effect = new Audio(src)
     effect.preload = "auto"
     return () => {
       const copy = effect.cloneNode() as HTMLAudioElement
+      const unmuffle = muffled ? muffle(copy) : undefined
       const forget = () => {
         effects.delete(copy)
+        unmuffle?.()
         updateDuck()
       }
       effects.set(copy, 1)

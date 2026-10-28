@@ -324,4 +324,4 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   }
 }
 
-export {createHouseLights, fairyLightAssets}
+export {createHouseLights, fairyLightAssets, lightColours}
