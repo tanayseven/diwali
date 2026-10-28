@@ -13,10 +13,12 @@ import {createLoader, loadAssets} from "./loader"
 import {LL, loadLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
+import {createScreenshotButton} from "./screenshot"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyline} from "./skyline"
 import {showSplashWarning} from "./splashWarning"
-import {createZoomControls} from "./zoomControls"
+import {addTooltip} from "./tooltip"
+import {buttonRadius, createZoomControls} from "./zoomControls"
 
 type Tool = "diyas" | "fireworks" | "kandil" | "decorate" | "rangoli"
 
@@ -120,7 +122,10 @@ const main = async () => {
     // The tool still draws or hangs things with whatever was last picked from its bar
     background.setPressHandler(controls[tool]?.pressHandler)
   }
-  const zoomControls = createZoomControls(app, background)
+  // A photo of the scene to share, taken with the camera button under the zoom buttons
+  const camera = createScreenshotButton(app, background.container, buttonRadius)
+  addTooltip(camera, () => ({title: LL.screenshot.take()}), {outline: false})
+  const zoomControls = createZoomControls(app, background, [camera])
   const rail = createSideRail(app, available, select)
   const hudToggle = createHudToggle(app, showBars)
   app.stage.addChild(zoomControls.container, rail.container, hudToggle.container)

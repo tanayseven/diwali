@@ -63,6 +63,17 @@ type RootTranslation = {
 		 */
 		show: string
 	}
+	screenshot: {
+		/**
+		 * T​a​k​e​ ​a​ ​p​h​o​t​o​ ​t​o​ ​s​h​a​r​e
+		 */
+		take: string
+		/**
+		 * M​y​ ​D​i​w​a​l​i​ ​t​h​i​s​ ​y​e​a​r​,​ ​a​t​ ​{​u​r​l​}
+		 * @param {unknown} url
+		 */
+		shareText: RequiredParams<'url'>
+	}
 	splashWarning: {
 		/**
 		 * W​a​r​n​i​n​g
@@ -374,6 +385,16 @@ export type TranslationFunctions = {
 		 * Show the bar
 		 */
 		show: () => LocalizedString
+	}
+	screenshot: {
+		/**
+		 * Take a photo to share
+		 */
+		take: () => LocalizedString
+		/**
+		 * My Diwali this year, at {url}
+		 */
+		shareText: (arg: { url: unknown }) => LocalizedString
 	}
 	splashWarning: {
 		/**

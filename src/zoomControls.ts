@@ -14,9 +14,10 @@ const clearTop = 96
 const eyeRadius = 26
 const clearGap = 12
 
-// Zoom in and zoom out buttons stacked down the right of the screen. A button fades
-// when the camera can't zoom any further that way
-const createZoomControls = (app: Application, background: Background) => {
+// Zoom in and zoom out buttons stacked down the right of the screen, with any other
+// buttons given stacked below them, set a little apart. A zoom button fades when the
+// camera can't zoom any further that way
+const createZoomControls = (app: Application, background: Background, below: Container[] = []) => {
   const container = new Container()
 
   const makeButton = (sign: 1 | -1, label: () => string) => {
@@ -60,6 +61,10 @@ const createZoomControls = (app: Application, background: Background) => {
   const zoomIn = makeButton(1, LL.zoom.in)
   const zoomOut = makeButton(-1, LL.zoom.out)
   zoomOut.container.y = buttonRadius * 2 + buttonGap
+  below.forEach((button, idx) => {
+    button.y = (buttonRadius * 2 + buttonGap) * (idx + 2) + buttonGap
+    container.addChild(button)
+  })
 
   // The camera zooms in other ways too, like pinching, so keep the buttons up to date
   const tick = () => {
@@ -69,7 +74,8 @@ const createZoomControls = (app: Application, background: Background) => {
   app.ticker.add(tick)
 
   const layout = () => {
-    const height = buttonRadius * 4 + buttonGap
+    const buttons = 2 + below.length
+    const height = buttonRadius * 2 * buttons + buttonGap * (buttons - 1) + (below.length > 0 ? buttonGap : 0)
     const bottom = hudFrame(app.screen).y - eyeRadius - clearGap
     const room = bottom - clearTop
     container.position.set(
@@ -89,4 +95,4 @@ const createZoomControls = (app: Application, background: Background) => {
   }
 }
 
-export {createZoomControls}
+export {buttonRadius, createZoomControls}

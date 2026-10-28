@@ -21,6 +21,11 @@ const en = {
 		hide: "Hide the bar",
 		show: "Show the bar",
 	},
+	screenshot: {
+		take: "Take a photo to share",
+		// Sent with the photo when it's shared
+		shareText: "My Diwali this year, at {url}",
+	},
 	splashWarning: {
 		heading: "Warning",
 		message: "This app contains flashing and twinkling lights that may trigger seizures in people with photosensitive epilepsy. If you have epilepsy or have had seizures before, please take care while using it, and stop at once if you feel unwell.",

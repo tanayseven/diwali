@@ -27,6 +27,7 @@ Live at: https://diwali.tanay.tech/
 - **Draw Rangoli:** pick a colour of powder and draw on the porch floor, rub parts out with the eraser, or clear it all.
 - **Craft Kandil:** its bar is empty for now.
 - **Tooltips:** hovering over things with a mouse says what they are and what to do with them.
+- **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. Where the browser can share files, as on most phones, it opens the share sheet to send it to any app; otherwise it downloads it.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 
