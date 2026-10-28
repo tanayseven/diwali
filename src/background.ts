@@ -17,6 +17,11 @@ const skylineScale = 0.95
 const skylineFoot = 530
 const skylineLeft = sceneWidth / 2 - skylineSize.width * skylineScale / 2
 const skylineTop = skylineFoot - skylineSize.height * skylineScale
+// The skyline's layers are further away than the house, so as the camera pans across,
+// they slide past more slowly: on screen the far one moves this share as much as the
+// house does, and the near one this much. Only across, as moving up and down would
+// lift them off the horizon behind the hills
+const skylineDepth = {far: 0.3, near: 0.55}
 // The bar and the credit along the bottom of the screen cover the scene behind them,
 // so the camera can go further down than the scene, to bring its bottom up above the
 // bar. Below the scene, the ground carries on this far, and the view clears the bar by
@@ -113,12 +118,15 @@ const createBackground = (app: Application) => {
   const container = new Container()
   const scene = new Container()
   scene.addChild(new Sprite(Assets.get<Texture>(skyUrl)))
-  // The skyline, and over it whatever changes in it, like its windows going dark
-  const skyline = new Container()
-  skyline.position.set(skylineLeft, skylineTop)
-  skyline.scale.set(skylineScale)
-  skyline.addChild(new Sprite(Assets.get<Texture>(skylineUrls.far)), new Sprite(Assets.get<Texture>(skylineUrls.near)))
-  scene.addChild(skyline)
+  // The skyline's two layers. The near one has whatever changes in it drawn over it too,
+  // like its windows going dark
+  const skylineLayers = {far: new Container(), near: new Container()}
+  ;(["far", "near"] as const).forEach(layer => {
+    skylineLayers[layer].position.set(skylineLeft, skylineTop)
+    skylineLayers[layer].scale.set(skylineScale)
+    skylineLayers[layer].addChild(new Sprite(Assets.get<Texture>(skylineUrls[layer])))
+    scene.addChild(skylineLayers[layer])
+  })
   const hills = new Sprite(Assets.get<Texture>(hillsUrl))
   scene.addChild(hills)
   // The ground below the scene, behind the bar: the hills' bottom row, drawn on down
@@ -192,6 +200,10 @@ const createBackground = (app: Application) => {
     const scale = coverScale(width, height) * zoom
     scene.scale.set(scale)
     scene.position.set(width / 2 - centre.x * scale, height / 2 - centre.y * scale)
+    // Each skyline layer follows the camera across part of the way, so it seems further
+    ;(["far", "near"] as const).forEach(layer => {
+      skylineLayers[layer].x = skylineLeft + (centre.x - sceneWidth / 2) * (1 - skylineDepth[layer])
+    })
   }
 
   // Moves the view by a distance on screen, the way the scenery is dragged
@@ -342,12 +354,13 @@ const createBackground = (app: Application) => {
       const y = Math.floor(point.y - houseTop)
       return [-2, 0, 2].some(dy => [-2, 0, 2].some(dx => isOpaque(houseMask, x + dx, y + dy)))
     },
-    // The skyline's layer, in the skyline drawing's own units, for things drawn on it
-    skyline,
-    // Where a point in the skyline drawing is in the scene
+    // The skyline's near layer, in the skyline drawing's own units, for things drawn on
+    // it. It slides as the camera pans
+    skyline: skylineLayers.near,
+    // Where a point in the near skyline's drawing is in the scene now
     fromSkyline: (point: PointData): PointData => ({
-      x: skylineLeft + point.x * skylineScale,
-      y: skylineTop + point.y * skylineScale,
+      x: skylineLayers.near.x + point.x * skylineScale,
+      y: skylineLayers.near.y + point.y * skylineScale,
     }),
     // Whether a point in the scene is hidden from the skyline behind it by the hills,
     // the ground or the house

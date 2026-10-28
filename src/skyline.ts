@@ -19,6 +19,8 @@ type Pane = Rect & {
   // The wall it's covered with once it's switched off
   wall: string
   lit: boolean
+  // Whether it's fully in view where the skyline's slid to now
+  shown: boolean
   // How far through switching it is, from 0 (as it was) to 1 (switched), if it is, and
   // its light and cover meanwhile, fading one into the other
   switching?: number
@@ -75,9 +77,9 @@ const rectsIn = (path: SVGPathElement): Rect[] => {
 }
 
 // Lights in the windows of the city on the skyline, which glow through the night. Now
-// and then one of them is switched off, or back on. Only windows the hills and the
-// house leave fully in view, within the scene, glow and switch, so they're never drawn
-// over them
+// and then one of them in view is switched off, or back on. The skyline slides behind
+// the hills and the house as the camera pans, so a window only glows while they leave
+// it fully in view, or it'd be drawn over them; otherwise it shows as drawn
 const createSkyline = async (app: Application, background: Background, lighting: Lighting) => {
   // The glows go over the night, laid out like the skyline itself. All of them are one
   // shape, as are all the covers, redrawn only once a window's switched, which is much
@@ -112,34 +114,32 @@ const createSkyline = async (app: Application, background: Background, lighting:
         // The last wall drawn that it's in is the one it's on
         const wall = walls.filter(wall => middle.x >= wall.x && middle.x <= wall.x + wall.width
           && middle.y >= wall.y && middle.y <= wall.y + wall.height).pop()
-        const at = {x: left + rect.x, y: top + rect.y, width: rect.width, height: rect.height}
-        const corners = [
-          {x: at.x, y: at.y}, {x: at.x + at.width, y: at.y}, {x: at.x, y: at.y + at.height},
-          {x: at.x + at.width, y: at.y + at.height}, {x: at.x + at.width / 2, y: at.y + at.height / 2},
-        ]
-        // The skyline is wider than the scene, and what's beyond its edges never shows
-        const inScene = corners.map(background.fromSkyline)
-        if (!wall || inScene.some(corner => corner.x < 0 || corner.x > sceneWidth || background.hidesSkyline(corner))) {
-          return
+        if (wall) {
+          panes.push({
+            x: left + rect.x, y: top + rect.y, width: rect.width, height: rect.height,
+            wall: wall.fill, lit: Math.random() < litShare, shown: false,
+          })
         }
-        panes.push({...at, wall: wall.fill, lit: Math.random() < litShare})
       })
     })
   })
 
-  // Every window that isn't switching, lit or covered
+  // Every window that isn't switching, lit and in view or covered. Covers are on the
+  // skyline itself, behind the hills and the house, so they're drawn wherever it is
   const redraw = () => {
     glowShapes.clear()
     coverShapes.clear()
     panes.forEach(pane => {
-      if (pane.switching === undefined) {
-        const shapes = pane.lit ? glowShapes : coverShapes
-        shapes.rect(pane.x, pane.y, pane.width, pane.height)
-          .fill(pane.lit ? {color: litColour, alpha: glowAlpha} : pane.wall)
+      if (pane.switching !== undefined) {
+        return
+      }
+      if (!pane.lit) {
+        coverShapes.rect(pane.x, pane.y, pane.width, pane.height).fill(pane.wall)
+      } else if (pane.shown) {
+        glowShapes.rect(pane.x, pane.y, pane.width, pane.height).fill({color: litColour, alpha: glowAlpha})
       }
     })
   }
-  redraw()
 
   const rectSprite = (pane: Pane, colour: string, layer: Container) => {
     const sprite = new Sprite(Texture.WHITE)
@@ -151,15 +151,48 @@ const createSkyline = async (app: Application, background: Background, lighting:
     return sprite
   }
 
+  // Whether a window can be seen right now: within the scene, as the skyline slides
+  // beyond its edges, and not behind the hills or the house
+  const inView = (pane: Pane) => [
+    {x: pane.x, y: pane.y}, {x: pane.x + pane.width, y: pane.y}, {x: pane.x, y: pane.y + pane.height},
+    {x: pane.x + pane.width, y: pane.y + pane.height},
+  ].map(background.fromSkyline).every(corner =>
+    corner.x >= 0 && corner.x <= sceneWidth && !background.hidesSkyline(corner))
+
+  // Which windows are in view, worked out again whenever the skyline's slid, redrawing
+  // the glows if any have come into view or gone out of it
+  let slidTo: number | undefined
+  const reveal = () => {
+    if (background.skyline.x === slidTo) {
+      return
+    }
+    slidTo = background.skyline.x
+    let changed = false
+    panes.forEach(pane => {
+      const shown = inView(pane)
+      changed ||= shown !== pane.shown
+      pane.shown = shown
+    })
+    if (changed) {
+      redraw()
+    }
+  }
+  reveal()
+  redraw()
+
   let nextSwitch = random(switchEvery.min, switchEvery.max)
   const switching: Pane[] = []
   const tick = () => {
     const dt = app.ticker.deltaMS / 1000
+    // Over the skyline's near layer, wherever it's slid to
+    glows.position.copyFrom(background.skyline.position)
+    reveal()
     nextSwitch -= dt
-    if (nextSwitch <= 0 && panes.length > 0) {
+    if (nextSwitch <= 0) {
       nextSwitch = random(switchEvery.min, switchEvery.max)
-      const pane = panes[Math.floor(Math.random() * panes.length)]
-      if (pane.switching === undefined) {
+      const candidates = panes.filter(pane => pane.switching === undefined && pane.shown)
+      const pane = candidates[Math.floor(Math.random() * candidates.length)]
+      if (pane) {
         pane.switching = 0
         pane.glow = rectSprite(pane, litColour, glows)
         pane.cover = rectSprite(pane, pane.wall, covers)
@@ -173,6 +206,7 @@ const createSkyline = async (app: Application, background: Background, lighting:
       // How lit it is now: going from lit to dark, or back
       const lit = pane.lit ? 1 - pane.switching : pane.switching
       pane.glow!.alpha = glowAlpha * lit
+      pane.glow!.visible = pane.shown
       pane.cover!.alpha = 1 - lit
       if (pane.switching === 1) {
         pane.lit = !pane.lit
@@ -188,7 +222,7 @@ const createSkyline = async (app: Application, background: Background, lighting:
   app.ticker.add(tick)
 
   return {
-    // How many windows glow and can be switched
+    // How many windows there are to glow and switch
     paneCount: panes.length,
     destroy() {
       app.ticker.remove(tick)
