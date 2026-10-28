@@ -1,5 +1,6 @@
 import {Application, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
-import {createBackground, sceneHeight, sceneWidth} from "./background"
+import {createBackground, groundBelow, sceneHeight, sceneWidth} from "./background"
+import {outlineAboveNight} from "./outline"
 
 type Background = ReturnType<typeof createBackground>
 
@@ -37,8 +38,20 @@ const createLighting = (app: Application, background: Background) => {
   shade.eventMode = "none"
   shade.visible = false
   shade.zIndex = sceneHeight + 1
+  // The ground carrying on below the scene is just as dark, and nothing there is lit
+  const shadeBelow = new Graphics().rect(0, sceneHeight, sceneWidth, groundBelow).fill(nightColour)
+  shadeBelow.blendMode = "multiply"
+  shadeBelow.eventMode = "none"
+  shadeBelow.visible = false
+  shadeBelow.zIndex = sceneHeight + 1
   background.decorations.sortableChildren = true
-  background.decorations.addChild(shade)
+  background.decorations.addChild(shade, shadeBelow)
+  // Outlines of things in the scene, over everything there so the night never dims them
+  const outlines = new Container()
+  outlines.zIndex = sceneHeight + 20
+  outlines.eventMode = "none"
+  background.decorations.addChild(outlines)
+  outlineAboveNight(app, background.decorations, outlines)
 
   // Drawn after everything else has moved its lights this frame
   const render = () => {
@@ -77,8 +90,8 @@ const createLighting = (app: Application, background: Background) => {
       }
     },
     setNight(value: number) {
-      shade.alpha = value
-      shade.visible = value > 0
+      shade.alpha = shadeBelow.alpha = value
+      shade.visible = shadeBelow.visible = value > 0
     },
   }
 }

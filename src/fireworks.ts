@@ -5,6 +5,7 @@ import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 
 type Background = ReturnType<typeof createBackground>
@@ -20,15 +21,18 @@ const anarUrls = {
 // A string of firecrackers (a laddi) whole, then with one more cracker blown apart in
 // each drawing after, from the wick's end at the right
 const laddiUrls = Array.from({length: 21}, (_, idx) => `sprites/fireworks/pathaka-${String(idx + 1).padStart(2, "0")}.svg`)
+// A chakri (a ground spinner) whole with its wick, then its coil burning away from the
+// outside in, smeared by its spin, and finally burnt out
+const chakriUrls = Array.from({length: 16}, (_, idx) => `sprites/fireworks/chakri-${String(idx + 1).padStart(2, "0")}.svg`)
 // Every texture the fireworks need, to be loaded before they're created
-const fireworksAssets = [...Object.values(anarUrls), ...laddiUrls, ...matchFrameUrls]
+const fireworksAssets = [...Object.values(anarUrls), ...laddiUrls, ...chakriUrls, ...matchFrameUrls]
 
-type Kind = "anar" | "laddi"
+type Kind = "anar" | "laddi" | "chakri"
 
 // How each kind of firework's drawings sit in the scene. They're all the same size,
 // showing a frame of their drawing's units at a number of pixels to a unit. The origin
 // is the point in the drawing that's placed where it's dropped, and they're picked up,
-// lit and shown in their slot by an area of it. Both are drawn in the scene's
+// lit and shown in their slot by an area of it. They're all drawn in the scene's
 // perspective, so they're shown as drawn
 type Shape = {
   frame: Rectangle
@@ -67,7 +71,19 @@ const laddiShape: Shape = {
   fuseAt: {x: 645, y: 255},
   scale: 0.085,
 }
-const shapes: Record<Kind, Shape> = {anar: anarShape, laddi: laddiShape}
+// The chakri lies flat on the floor, its coiled disc seen as an ellipse half as tall
+// as it's wide, centred on (364, 265), with the wick's frayed tip at (186, 297) by
+// the coil's outer end. It's a little smaller than a diya
+const chakriDisc = {x: 364, y: 265, rx: 166, ry: 89}
+const chakriShape: Shape = {
+  frame: new Rectangle(0, 0, 720, 480),
+  density: 1,
+  origin: {x: chakriDisc.x, y: chakriDisc.y},
+  area: new Rectangle(176, 170, 362, 196),
+  fuseAt: {x: 186, y: 297},
+  scale: 0.065,
+}
+const shapes: Record<Kind, Shape> = {anar: anarShape, laddi: laddiShape, chakri: chakriShape}
 // A firework that can be lit grows this much while the match is dragged over it
 const targetGrowth = 1.12
 
@@ -90,7 +106,7 @@ const anarVolume = 0.7
 // height the fastest reach about 170 units up, two fifths as tall as the house
 const gravity = 780
 const airDrag = 1.4
-const maxSparkRate = 650
+const maxSparkRate = 1450
 const minSparkSpeed = 330
 const maxSparkSpeed = 690
 // How far from straight up a spark can leave, in radians
@@ -162,18 +178,66 @@ const blastGlowRadius = 30
 const blastCoreRadius = 9
 // How quickly a blast's flash and light die away, per second
 const blastFade = 16
-const blastSparks = 28
-const blastSpecks = 10
+const blastSparks = 64
+const blastSpecks = 24
 const blastSparkSpeed = {min: 120, max: 320}
 const blastPuffs = 3
 // Shreds of paper are thrown up and out, tumble down slowly and lie where they land
-const shredsPerBlast = {min: 10, max: 16}
+const shredsPerBlast = {min: 20, max: 30}
 const shredSpeed = {min: 60, max: 200}
 const shredGravity = 420
 const shredDrag = 3
 const shredLife = {min: 2.5, max: 4}
 const shredSize = {width: 1.3, height: 0.6}
 const shredColours = [0xb8322a, 0xd8503a, 0x8e2018, 0xf2e6c8]
+
+// A chakri's fuse fizzes to the coil's end, then it spins up, burns and spins down,
+// in seconds. Its drawings go from whole to burnt out over the burn
+const chakriFuse = {from: {x: 186, y: 297}, to: {x: 209, y: 310}, duration: 0.8}
+const chakriSpinUp = 0.5
+// Each one burns for its own time, up to 6 seconds either side of 12
+const chakriBurn = {min: 6, max: 18}
+const chakriSpinDown = 1.5
+// Turns a second at full speed
+const chakriSpin = 12
+// The coil burns from its outside in, so the fire is at this share of the disc's
+// radius, from the start of the burn to its end
+const chakriBurnRadius = {from: 0.97, to: 0.5}
+// It skitters about while it spins, around where it was put: it heads for a new
+// spot this far away now and then, in scene units across the floor
+const chakriRoam = 20
+const chakriRoamEvery = {min: 0.3, max: 0.9}
+const chakriRoamPull = 40
+const chakriRoamDamping = 7
+// It shakes as it spins, by up to this much
+const chakriJitter = 0.35
+// The burning end of the coil spits jets of fire as it whirls round, which make a
+// ring of flame, fringed like a sunburst. Each lives so briefly it doesn't trail far
+// behind the end, and is drawn as a short streak along the way it's shot
+const flameRate = 4800
+const flameLife = {min: 0.06, max: 0.13}
+const flameSpeed = {min: 45, max: 110}
+const flameSize = 1.5
+const flameStreak = 1 / 35
+// It throws sparks all round, flung off its burning end: most skid out across the
+// floor, slowing as they go, and some are thrown up and land further out
+const chakriSkidRate = 1900
+const chakriFlungRate = 560
+const skidSpeed = {min: 200, max: 620}
+const skidLife = {min: 0.35, max: 1}
+const skidDrag = 1.6
+// Skidding sparks are drawn with longer streaks than flying ones
+const skidStreak = 1 / 70
+const chakriSmokeRate = 7
+// Its hiss is heard while it spins, at its strength, so it dies away as it slows. The
+// recording runs 18 seconds, as long as the longest burn, and was made louder to match
+// the anar's
+const chakriSoundUrl = "audio/effects/chakri.mp3"
+// A chakri lights up the floor around it as it goes
+const chakriLightColour = 0xffcf8a
+const chakriLightRadius = {min: 60, max: 240}
+const chakriGlowRadius = 9
+const chakriCoreRadius = 4
 
 // A spark's colour as it ages: white hot, cooling through gold and orange to red
 const sparkColours: [number, number][] = [
@@ -203,6 +267,19 @@ const sparkColour = (t: number) => {
   return mixColour(from, to, (t - fromAt) / (toAt - fromAt))
 }
 
+// A particle keeps its tint and alpha packed into one number, with the tint's red and
+// blue swapped. Setting its tint parses that as a colour each time, which is slow for
+// the thousands of sparks a frame, so they're packed here instead
+const toBgr = (rgb: number) => ((rgb & 0xff) << 16) | (rgb & 0xff00) | (rgb >> 16)
+const paint = (particle: Particle, bgr: number, alpha: number) => {
+  particle.color = bgr + ((clamp(alpha) * 255 | 0) << 24)
+}
+// The sparks' colours as they age, worked out once and swapped ready to paint
+const sparkTable = Array.from({length: 256}, (_, idx) => toBgr(sparkColour(idx / 255)))
+const sparkBgr = (t: number) => sparkTable[Math.round(clamp(t) * 255)]
+const whiteBgr = 0xffffff
+const smokeBgr = toBgr(smokeTint)
+
 // A small white rectangle, tinted as each shred of paper
 const shredTexture = () => {
   const canvas = document.createElement("canvas")
@@ -222,9 +299,11 @@ type Spark = {
   vy: number
   age: number
   life: number
-  // A spark from the fountain, a glitter speck (tiny, white and twinkling), or an
-  // ember shed by a spark (tiny, orange and fading)
-  kind: "spark" | "speck" | "ember"
+  // A spark from the fountain, a glitter speck (tiny, white and twinkling), an ember
+  // shed by a spark (tiny, orange and fading), or a lick of a chakri's flame
+  kind: "spark" | "speck" | "ember" | "flame"
+  // Skidding along the floor rather than flying, so it doesn't fall
+  grounded: boolean
   // When a crackling spark bursts into specks, if it does
   burstAt: number
   // How far down the floor is for this spark, so they land spread out in depth
@@ -235,6 +314,8 @@ type Smoke = {particle: Particle, x: number, y: number, vx: number, vy: number, 
 
 type Shred = {
   particle: Particle
+  // Its colour, swapped ready to paint
+  colour: number
   x: number
   y: number
   vx: number
@@ -267,12 +348,22 @@ type Placed = {
   light: Light
   glow: Sprite
   core: Sprite
-  // An anar's roar, while it's burning
+  // An anar's roar or a chakri's hiss, while it's burning
   sound?: ReturnType<ReturnType<AudioControl["createEffect"]>>
   // How many of a laddi's crackers have gone off, when the last did and the next will
   blasts: number
   lastBlastAt: number
   nextBlastAt: number
+  // A chakri's turn, where it was put and how far it's roamed from there, how fast and
+  // to where, and when it'll head somewhere else
+  spin: number
+  // How long its coil burns for, picked as it catches
+  burnFor: number
+  home: PointData
+  roam: PointData
+  roamVelocity: PointData
+  roamGoal: PointData
+  nextRoamAt: number
 }
 
 type Drag =
@@ -298,10 +389,16 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     ),
     count: 5,
   })
-  const stacks: Record<Kind, Item> = {anar: itemFor(anarShape, anarUrls.unlit), laddi: itemFor(laddiShape, laddiUrls[0])}
-  const unlitUrls: Record<Kind, string> = {anar: anarUrls.unlit, laddi: laddiUrls[0]}
+  const stacks: Record<Kind, Item> = {
+    anar: itemFor(anarShape, anarUrls.unlit),
+    laddi: itemFor(laddiShape, laddiUrls[0]),
+    chakri: itemFor(chakriShape, chakriUrls[0]),
+  }
+  const unlitUrls: Record<Kind, string> = {anar: anarUrls.unlit, laddi: laddiUrls[0], chakri: chakriUrls[0]}
+  const kinds: Kind[] = ["anar", "laddi", "chakri"]
   const matchstick = createMatchstick(app, audio)
   const playAnarSound = audio.createEffect(anarSoundUrl)
+  const playChakriSound = audio.createEffect(chakriSoundUrl)
   const blastSounds = blastSoundUrls.map(url => audio.createEffect(url))
   const container = new Container()
   // Over the whole screen, under the HUD, for the blasts' flashes
@@ -316,13 +413,15 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(screenFlash, bar.container, dragLayer)
-  const slots = {anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi)}
-  const matchSlot = bar.addItem(2, matchstick.item)
+  const slots = {anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri)}
+  const matchSlot = bar.addItem(3, matchstick.item)
 
   const tips = LL.tooltip
-  const names: Record<Kind, () => string> = {anar: tips.anar.name, laddi: tips.laddi.name}
-  const stackHints: Record<Kind, () => string> = {anar: tips.anar.stack, laddi: tips.laddi.stack}
-  ;(["anar", "laddi"] as Kind[]).forEach(kind => addTooltip(slots[kind].container, () => ({
+  const names: Record<Kind, () => string> = {anar: tips.anar.name, laddi: tips.laddi.name, chakri: tips.chakri.name}
+  const stackHints: Record<Kind, () => string> = {
+    anar: tips.anar.stack, laddi: tips.laddi.stack, chakri: tips.chakri.stack,
+  }
+  kinds.forEach(kind => addTooltip(slots[kind].container, () => ({
     title: names[kind](),
     lines: [stacks[kind].count === 0 ? tips.noneLeft() : stackHints[kind]()],
   })))
@@ -361,6 +460,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   background.decorations.addChild(shredLayer, ...overlays)
 
   const placed: Placed[] = []
+  // Sparks and flames a spinning chakri owes from earlier frames
+  const chakriDebts = new Map<Placed, {flames: number, skids: number, flung: number}>()
   let drag: Drag | undefined
   // Whether a dragged firework is over the bar, where letting go puts it back
   let overBar = false
@@ -387,22 +488,26 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const shreds: Shred[] = []
   const freeShreds: Shred[] = []
 
-  const addSpark = (x: number, y: number, vx: number, vy: number, life: number, kind: Spark["kind"], floor: number) => {
+  const addSpark = (
+    x: number, y: number, vx: number, vy: number, life: number, kind: Spark["kind"], floor: number, grounded = false,
+  ) => {
     let spark = freeSparks.pop()
     if (!spark) {
       const particle = new Particle({texture: sparkTexture, anchorX: 0.5, anchorY: 0.5})
       sparkLayer.addParticle(particle)
-      spark = {particle, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 0, kind: "spark", burstAt: Infinity, floor: 0}
+      spark = {
+        particle, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 0, kind: "spark", grounded: false, burstAt: Infinity, floor: 0,
+      }
     }
-    Object.assign(spark, {x, y, vx, vy, age: 0, life, kind, floor})
-    spark.burstAt = kind === "spark" && Math.random() < glitterShare ? life * random(0.3, 0.7) : Infinity
+    Object.assign(spark, {x, y, vx, vy, age: 0, life, kind, floor, grounded})
+    spark.burstAt = kind === "spark" && !grounded && Math.random() < glitterShare ? life * random(0.3, 0.7) : Infinity
     sparks.push(spark)
   }
 
   const addSmoke = (x: number, y: number) => {
     let puff = freeSmoke.pop()
     if (!puff) {
-      const particle = new Particle({texture: smokeTexture, anchorX: 0.5, anchorY: 0.5, tint: smokeTint})
+      const particle = new Particle({texture: smokeTexture, anchorX: 0.5, anchorY: 0.5})
       smokeLayer.addParticle(particle)
       puff = {particle, x: 0, y: 0, vx: 0, vy: 0, age: 0}
     }
@@ -418,7 +523,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         scaleX: shredSize.width / paperTexture.width, scaleY: shredSize.height / paperTexture.height,
       })
       shredLayer.addParticle(particle)
-      shred = {particle, x: 0, y: 0, vx: 0, vy: 0, spin: 0, age: 0, life: 0, floor: 0}
+      shred = {particle, colour: 0, x: 0, y: 0, vx: 0, vy: 0, spin: 0, age: 0, life: 0, floor: 0}
     }
     // Thrown up and out, more sideways than up
     const angle = -Math.PI / 2 + random(-1.3, 1.3)
@@ -427,7 +532,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, spin: random(-14, 14),
       age: 0, life: random(shredLife.min, shredLife.max), floor,
     })
-    shred.particle.tint = shredColours[Math.floor(Math.random() * shredColours.length)]
+    shred.colour = toBgr(shredColours[Math.floor(Math.random() * shredColours.length)])
     shred.particle.rotation = random(0, Math.PI)
     shreds.push(shred)
   }
@@ -486,8 +591,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const render = () => {
     const dragged = drag?.kind === "firework" ? drag.firework.kind : undefined
     bar.drawBoxes(overBar && dragged ? slots[dragged].box : undefined)
-    slots.anar.show()
-    slots.laddi.show()
+    kinds.forEach(kind => slots[kind].show())
     matchSlot.show(drag?.kind === "match")
   }
 
@@ -524,10 +628,12 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     if (target !== firework) {
       if (target) {
         scaleSprite(target)
+        setOutline(target.sprite, "selected", false)
       }
       target = firework
       if (target) {
         scaleSprite(target, targetGrowth)
+        setOutline(target.sprite, "selected", true)
       }
     }
   }
@@ -544,7 +650,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     const sprite = new Sprite(Assets.get<Texture>(unlitUrls[kind]))
     sprite.anchor.set((origin.x - frame.x) / frame.width, (origin.y - frame.y) / frame.height)
     sprite.cursor = "grab"
-    const light = lighting.addLight(kind === "anar" ? lightColour : blastLightColour)
+    const lightColours: Record<Kind, number> = {anar: lightColour, laddi: blastLightColour, chakri: chakriLightColour}
+    const light = lighting.addLight(lightColours[kind])
     const glow = new Sprite(glowTexture)
     glow.tint = 0xffd59a
     const core = new Sprite(glowTexture)
@@ -556,6 +663,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     const firework: Placed = {
       kind, sprite, state: "unlit", busy: false, elapsed: 0, brightness: 0, lightAt: {x: 0, y: 0},
       sparkDebt: 0, smokeDebt: 0, spentAt: -Infinity, light, glow, core, blasts: 0, lastBlastAt: 0, nextBlastAt: 0,
+      spin: 0, burnFor: 0, home: {x: 0, y: 0}, roam: {x: 0, y: 0}, roamVelocity: {x: 0, y: 0}, roamGoal: {x: 0, y: 0}, nextRoamAt: 0,
     }
     addTooltip(sprite, fireworkTooltip(firework))
     sprite.on("pointerdown", e => {
@@ -572,6 +680,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     scaleSprite(firework)
     sprite.position.copyFrom(at)
     sprite.zIndex = at.y
+    firework.home = {x: at.x, y: at.y}
     background.decorations.addChild(sprite)
     glowLayer.addChild(firework.glow, firework.core)
     makePickable(firework)
@@ -621,6 +730,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     sprite.position.copyFrom(e.global)
     sprite.eventMode = "none"
     dragLayer.addChild(sprite)
+    setOutline(sprite, "selected", true)
     drag = next
     render()
   }
@@ -631,7 +741,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     startDrag(e, {kind: "firework", sprite: firework.sprite, firework, fromScene})
   }
 
-  ;(["anar", "laddi"] as Kind[]).forEach(kind => slots[kind].container.on("pointerdown", e => {
+  kinds.forEach(kind => slots[kind].container.on("pointerdown", e => {
     if (stacks[kind].count === 0 || drag) {
       return
     }
@@ -652,6 +762,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Sends whatever's dragged back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
+    setOutline(current.sprite, "selected", false)
     if (current.kind === "firework") {
       if (current.fromScene) {
         placeFirework(current.firework, current.fromScene)
@@ -673,6 +784,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     setOverBar(false)
     setTarget(undefined)
     current.sprite.removeFromParent()
+    setOutline(current.sprite, "selected", false)
     if (current.kind === "firework") {
       if (hudShown && bar.isOver(at)) {
         removeFirework(current.firework)
@@ -893,6 +1005,171 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     core.alpha = clamp(lit * 3)
   }
 
+  // How hard a chakri is spinning and burning at this point in its life, from 0 to 1:
+  // spinning up once its fuse is burnt, and slowing to a stop as its coil runs out
+  const spinStrength = (chakri: Placed) => {
+    const t = chakri.elapsed - chakriFuse.duration
+    const sway = 0.9 + 0.1 * Math.sin(time * 5.3 + chakri.home.x)
+    if (t < chakriSpinUp) {
+      return t / chakriSpinUp * sway
+    }
+    return clamp((chakri.burnFor - t) / chakriSpinDown) ** 1.5 * sway
+  }
+
+  // A point on a chakri's disc, at a share of its radius and an angle round it, in
+  // scene units. Seen in perspective, the disc is an ellipse
+  const onDisc = (chakri: Placed, radius: number, angle: number) => onFirework(chakri, {
+    x: chakriDisc.x + Math.cos(angle) * chakriDisc.rx * radius,
+    y: chakriDisc.y + Math.sin(angle) * chakriDisc.ry * radius,
+  })
+  // Across the floor, distances front to back look this much shorter
+  const floorSquash = chakriDisc.ry / chakriDisc.rx
+
+  // Moves a chakri's burn on: the fuse fizzing to the coil, then the whole thing
+  // spinning and skittering about in a ring of fire, throwing sparks all round
+  const burnChakri = (chakri: Placed, dt: number) => {
+    let strength = 0
+    let fuseAt: PointData | undefined
+    if (chakri.state === "fuse") {
+      const t = clamp(chakri.elapsed / chakriFuse.duration)
+      const {from, to} = chakriFuse
+      fuseAt = onFirework(chakri, {x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t)})
+      chakri.sparkDebt += 60 * dt
+      while (chakri.sparkDebt >= 1) {
+        chakri.sparkDebt--
+        emitFuseSpark(chakri, fuseAt)
+      }
+      if (chakri.elapsed >= chakriFuse.duration) {
+        chakri.state = "burning"
+        chakri.burnFor = random(chakriBurn.min, chakriBurn.max)
+        chakri.sound = playChakriSound()
+      }
+    }
+    if (chakri.state === "burning") {
+      const t = chakri.elapsed - chakriFuse.duration
+      const progress = clamp(t / chakri.burnFor)
+      strength = spinStrength(chakri)
+      chakri.sound?.setLevel(strength)
+      // Its drawings burn through the coil, after the whole one with its wick
+      const frame = 1 + Math.min(chakriUrls.length - 3, Math.floor(progress * (chakriUrls.length - 2)))
+      chakri.sprite.texture = Assets.get<Texture>(chakriUrls[frame])
+      const lastSpin = chakri.spin
+      chakri.spin += chakriSpin * Math.PI * 2 * strength * dt
+
+      // It heads for somewhere new now and then, pulled there and overshooting a little
+      const {roam, roamVelocity: velocity, roamGoal: goal} = chakri
+      if (time >= chakri.nextRoamAt) {
+        const angle = random(0, Math.PI * 2)
+        const distance = random(0, chakriRoam)
+        goal.x = Math.cos(angle) * distance
+        goal.y = Math.sin(angle) * distance * floorSquash
+        chakri.nextRoamAt = time + random(chakriRoamEvery.min, chakriRoamEvery.max)
+      }
+      velocity.x += ((goal.x - roam.x) * chakriRoamPull - velocity.x * chakriRoamDamping) * strength * dt
+      velocity.y += ((goal.y - roam.y) * chakriRoamPull - velocity.y * chakriRoamDamping) * strength * dt
+      roam.x += velocity.x * dt
+      roam.y += velocity.y * dt
+      const shake = chakriJitter * strength
+      chakri.sprite.position.set(
+        chakri.home.x + roam.x + random(-shake, shake),
+        chakri.home.y + roam.y + random(-shake, shake) * floorSquash,
+      )
+      chakri.sprite.zIndex = chakri.sprite.y
+
+      // The burning end whirls round the coil, spitting flame and flinging sparks. They
+      // come out spread along the arc it's swept this frame, so the ring has no gaps
+      const radius = lerp(chakriBurnRadius.from, chakriBurnRadius.to, progress)
+      const along = (share: number) => lerp(lastSpin, chakri.spin, share)
+      const emit = (rate: number, debt: "flames" | "skids" | "flung", fling: (angle: number) => void) => {
+        debts[debt] += rate * strength * dt
+        const count = Math.floor(debts[debt])
+        debts[debt] -= count
+        for (let idx = 0; idx < count; idx++) {
+          fling(along((idx + Math.random()) / count))
+        }
+      }
+      const debts = chakriDebts.get(chakri) ?? {flames: 0, skids: 0, flung: 0}
+      chakriDebts.set(chakri, debts)
+      // Which way a spark leaves the burning end at an angle round the disc, across the
+      // floor: off the back of the end as it whirls past, and outwards
+      const flingDirection = (angle: number) => {
+        const spread = random(-0.35, 0.35)
+        const x = Math.cos(angle) * 0.7 + Math.sin(angle) * 0.9 + spread * Math.cos(angle + Math.PI / 2)
+        const y = Math.sin(angle) * 0.7 - Math.cos(angle) * 0.9 + spread * Math.sin(angle + Math.PI / 2)
+        const length = Math.hypot(x, y)
+        return {x: x / length, y: y / length}
+      }
+      emit(flameRate, "flames", angle => {
+        const at = onDisc(chakri, radius, angle)
+        const away = flingDirection(angle)
+        const speed = random(flameSpeed.min, flameSpeed.max)
+        addSpark(at.x, at.y, away.x * speed, away.y * speed * floorSquash, random(flameLife.min, flameLife.max),
+          "flame", at.y, true)
+      })
+      emit(chakriSkidRate, "skids", angle => {
+        const at = onDisc(chakri, radius, angle)
+        const away = flingDirection(angle)
+        const speed = random(skidSpeed.min, skidSpeed.max)
+        addSpark(at.x, at.y, away.x * speed, away.y * speed * floorSquash, random(skidLife.min, skidLife.max),
+          "spark", at.y, true)
+      })
+      emit(chakriFlungRate, "flung", angle => {
+        const at = onDisc(chakri, radius, angle)
+        const away = flingDirection(angle)
+        const speed = random(skidSpeed.min, skidSpeed.max) * 0.8
+        addSpark(at.x, at.y, away.x * speed, away.y * speed * floorSquash - random(120, 300),
+          random(minSparkLife, maxSparkLife) * 0.7, "spark", at.y + random(0, 4))
+      })
+      chakri.smokeDebt += chakriSmokeRate * strength * dt
+      while (chakri.smokeDebt >= 1) {
+        chakri.smokeDebt--
+        const centre = onDisc(chakri, 0, 0)
+        addSmoke(centre.x + random(-4, 4), centre.y - random(2, 10))
+      }
+
+      if (t >= chakri.burnFor) {
+        chakri.state = "spent"
+        chakri.spentAt = time
+        chakri.sound?.stop()
+        chakri.sound = undefined
+        chakri.sprite.texture = Assets.get<Texture>(chakriUrls[chakriUrls.length - 1])
+        // It stays where it stopped
+        chakri.home = {x: chakri.home.x + roam.x, y: chakri.home.y + roam.y}
+        chakri.sprite.position.copyFrom(chakri.home)
+        chakri.sprite.zIndex = chakri.home.y
+        chakriDebts.delete(chakri)
+        makePickable(chakri)
+      }
+    }
+    const centre = onDisc(chakri, 0, 0)
+    smoulder(chakri, centre, dt)
+
+    // The light goes with it, flickering a little; the disc glows white hot in the
+    // middle of its ring of fire
+    const target = chakri.state === "fuse" ? 0.1 : strength
+    chakri.brightness = lerp(chakri.brightness, target, clamp(dt * 12))
+    const {brightness, light, glow, core} = chakri
+    const shining = brightness > 0.005
+    glow.visible = shining
+    core.visible = shining
+    if (!shining) {
+      light.off()
+      return
+    }
+    const flicker = 0.92 + 0.05 * Math.sin(time * 13 + chakri.home.x) + 0.03 * Math.sin(time * 29)
+    const lit = brightness * flicker
+    chakri.lightAt = fuseAt ?? centre
+    light.shine(chakri.lightAt, lerp(chakriLightRadius.min, chakriLightRadius.max, brightness), lit * 1.3)
+    const glowAt = fuseAt ?? centre
+    glow.position.copyFrom(glowAt)
+    core.position.copyFrom(glowAt)
+    glow.width = glow.height = chakriGlowRadius * 2 * (0.3 + 0.7 * brightness)
+    glow.height *= fuseAt ? 1 : floorSquash * 1.4
+    core.width = core.height = chakriCoreRadius * 2 * (0.4 + 0.6 * brightness)
+    glow.alpha = clamp(lit * 1.2)
+    core.alpha = clamp(lit * 2.5)
+  }
+
   const tick = () => {
     const dt = Math.min(0.05, app.ticker.deltaMS / 1000)
     time += dt
@@ -902,8 +1179,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       }
       if (firework.kind === "anar") {
         burnAnar(firework, dt)
-      } else {
+      } else if (firework.kind === "laddi") {
         burnLaddi(firework, dt)
+      } else {
+        burnChakri(firework, dt)
       }
     })
 
@@ -920,15 +1199,27 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         spark.burstAt = Infinity
         burst(spark)
       }
-      if (spark.kind === "spark" && Math.random() < emberRate * dt) {
+      // Sparks skidding on the floor leave their streak for a trail; an ember shed there
+      // would only die where it fell
+      if (spark.kind === "spark" && !spark.grounded && Math.random() < emberRate * dt) {
         shedEmber(spark)
       }
-      const drag = Math.max(0, 1 - airDrag * dt)
-      spark.vx *= drag
-      spark.vy = spark.vy * drag + gravity * dt
-      spark.x += spark.vx * dt
-      spark.y += spark.vy * dt
-      if (spark.y > spark.floor && spark.vy > 0) {
+      if (spark.grounded) {
+        // Skidding across the floor, it only slows down, and the floor is wherever it is
+        const drag = Math.max(0, 1 - skidDrag * dt)
+        spark.vx *= drag
+        spark.vy *= drag
+        spark.x += spark.vx * dt
+        spark.y += spark.vy * dt
+        spark.floor = spark.y
+      } else {
+        const drag = Math.max(0, 1 - airDrag * dt)
+        spark.vx *= drag
+        spark.vy = spark.vy * drag + gravity * dt
+        spark.x += spark.vx * dt
+        spark.y += spark.vy * dt
+      }
+      if (!spark.grounded && spark.y > spark.floor && spark.vy > 0) {
         spark.y = spark.floor
         spark.vy *= -bounce
         spark.vx *= 0.5
@@ -937,7 +1228,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       }
       const {particle} = spark
       if (spark.age >= spark.life) {
-        particle.alpha = 0
+        particle.color = 0
         sparks[idx] = sparks[sparks.length - 1]
         sparks.pop()
         freeSparks.push(spark)
@@ -949,22 +1240,26 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       if (spark.kind === "speck") {
         const size = sparkWidth * 0.8 / sparkTexture.width
         particle.scaleX = particle.scaleY = size
-        particle.tint = 0xffffff
-        particle.alpha = (1 - t) * random(0.3, 1)
+        paint(particle, whiteBgr, (1 - t) * random(0.3, 1))
+      } else if (spark.kind === "flame") {
+        const speed = Math.hypot(spark.vx, spark.vy)
+        const size = flameSize * (1 - 0.4 * t) / sparkTexture.width
+        particle.rotation = Math.atan2(spark.vy, spark.vx)
+        particle.scaleX = size * (1 + speed * flameStreak)
+        particle.scaleY = size
+        paint(particle, sparkBgr(0.18 + 0.6 * t), 1 - t * t)
       } else if (spark.kind === "ember") {
         const size = sparkWidth * 0.6 / sparkTexture.width
         particle.scaleX = particle.scaleY = size
-        particle.tint = sparkColour(0.35 + 0.65 * t)
-        particle.alpha = 0.8 * (1 - t)
+        paint(particle, sparkBgr(0.35 + 0.65 * t), 0.8 * (1 - t))
       } else {
         // Drawn stretched along its path, the streak a fast spark leaves to the eye
         const speed = Math.hypot(spark.vx, spark.vy)
         const size = sparkWidth * (1 - 0.4 * t) / sparkTexture.width
         particle.rotation = Math.atan2(spark.vy, spark.vx)
-        particle.scaleX = size * (1 + speed * streakLength)
+        particle.scaleX = size * (1 + speed * (spark.grounded ? skidStreak : streakLength))
         particle.scaleY = size
-        particle.tint = sparkColour(t)
-        particle.alpha = 1 - t * t
+        paint(particle, sparkBgr(t), 1 - t * t)
       }
     }
 
@@ -973,7 +1268,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       puff.age += dt
       const {particle} = puff
       if (puff.age >= smokeLife) {
-        particle.alpha = 0
+        particle.color = 0
         smoke[idx] = smoke[smoke.length - 1]
         smoke.pop()
         freeSmoke.push(puff)
@@ -985,13 +1280,13 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       particle.x = puff.x
       particle.y = puff.y
       particle.scaleX = particle.scaleY = lerp(20, 90, t) / smokeTexture.width
-      particle.alpha = smokeAlpha * Math.sin(Math.PI * t)
       // Lit by the nearest fire while it's close to it and burning bright
       const lit = placed.reduce((most, firework) => {
         const nearness = clamp(1 - Math.hypot(puff.x - firework.lightAt.x, puff.y - firework.lightAt.y) / 120)
         return Math.max(most, nearness * firework.brightness)
       }, 0)
-      particle.tint = mixColour(smokeTint, litSmokeTint, 0.6 * lit)
+      const colour = lit > 0.005 ? toBgr(mixColour(smokeTint, litSmokeTint, 0.6 * lit)) : smokeBgr
+      paint(particle, colour, smokeAlpha * Math.sin(Math.PI * t))
     }
 
     for (let idx = shreds.length - 1; idx >= 0; idx--) {
@@ -999,7 +1294,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       shred.age += dt
       const {particle} = shred
       if (shred.age >= shred.life) {
-        particle.alpha = 0
+        particle.color = 0
         shreds[idx] = shreds[shreds.length - 1]
         shreds.pop()
         freeShreds.push(shred)
@@ -1017,7 +1312,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       particle.x = shred.x
       particle.y = shred.y
       // Fading away in the last part of its life
-      particle.alpha = clamp((1 - shred.age / shred.life) / 0.3)
+      paint(particle, shred.colour, (1 - shred.age / shred.life) / 0.3)
     }
   }
   app.ticker.add(tick)

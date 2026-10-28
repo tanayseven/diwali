@@ -14,6 +14,7 @@ import {LL, loadLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {RailItem, createSideRail} from "./sideRail"
+import {createSkyline} from "./skyline"
 import {showSplashWarning} from "./splashWarning"
 import {createZoomControls} from "./zoomControls"
 
@@ -77,6 +78,8 @@ const main = async () => {
   // It's Diwali night: the porch is dark, lit only by what's lit on it
   const lighting = createLighting(app, background)
   lighting.setNight(1)
+  // Lights in the city's windows, glowing through the night and now and then switched
+  createSkyline(app, background, lighting).catch(error => console.error("Couldn't light the skyline", error))
 
   // Each tool has a bar of things to use, shown while it's the one picked. What's
   // placed in the scene stays there, and can be picked up again, whichever tool is picked

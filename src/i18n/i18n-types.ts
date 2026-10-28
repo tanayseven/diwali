@@ -175,7 +175,7 @@ type RootTranslation = {
 			 */
 			diyaHint: string
 			/**
-			 * D​r​a​g​ ​o​n​t​o​ ​a​n​ ​a​n​a​r​ ​o​r​ ​a​ ​l​a​d​d​i​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * D​r​a​g​ ​o​n​t​o​ ​a​n​ ​a​n​a​r​,​ ​a​ ​l​a​d​d​i​ ​o​r​ ​a​ ​c​h​a​k​r​i​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			fireworkHint: string
 		}
@@ -196,6 +196,16 @@ type RootTranslation = {
 			name: string
 			/**
 			 * A​ ​s​t​r​i​n​g​ ​o​f​ ​f​i​r​e​c​r​a​c​k​e​r​s​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+			 */
+			stack: string
+		}
+		chakri: {
+			/**
+			 * C​h​a​k​r​i
+			 */
+			name: string
+			/**
+			 * A​ ​g​r​o​u​n​d​ ​s​p​i​n​n​e​r​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
 			 */
 			stack: string
 		}
@@ -474,7 +484,7 @@ export type TranslationFunctions = {
 			 */
 			diyaHint: () => LocalizedString
 			/**
-			 * Drag onto an anar or a laddi to light it
+			 * Drag onto an anar, a laddi or a chakri to light it
 			 */
 			fireworkHint: () => LocalizedString
 		}
@@ -495,6 +505,16 @@ export type TranslationFunctions = {
 			name: () => LocalizedString
 			/**
 			 * A string of firecrackers. Drag one onto the porch
+			 */
+			stack: () => LocalizedString
+		}
+		chakri: {
+			/**
+			 * Chakri
+			 */
+			name: () => LocalizedString
+			/**
+			 * A ground spinner. Drag one onto the porch
 			 */
 			stack: () => LocalizedString
 		}

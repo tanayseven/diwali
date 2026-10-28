@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="420" viewBox="0 0 2560 420">
+  <title>Layer 1 – Far Skyline (slow)</title>
+  <rect data-name="Base" x="0" y="390" width="2560" height="30" fill="#2A3B6A"/>
+  <g id="nLExG" data-name="Building" transform="translate(0 169)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.5 0.18) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="18" width="50" height="233" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 18) scale(1 1) translate(0 0)" d="M28 12h5v7h-5z m-11 30h5v7h-5z m0 30h5v7h-5z m11 15h5v7h-5z m0 15h5v7h-5z m0 15h5v7h-5z m-11 30h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m0 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="L5Eoar" data-name="Building" transform="translate(2560 169)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.5 0.18) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="18" width="50" height="233" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 18) scale(1 1) translate(0 0)" d="M28 12h5v7h-5z m-11 30h5v7h-5z m0 30h5v7h-5z m11 15h5v7h-5z m0 15h5v7h-5z m0 15h5v7h-5z m-11 30h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m0 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="e7z64x" data-name="Building" transform="translate(46 150)">
+    <path data-name="Tank" transform="translate(44 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(46 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="74" height="240" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M13 12h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-44 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m33 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="mAjjn" data-name="Building" transform="translate(109 221)">
+    <path data-name="Dome" d="M29.5 24.0L53.0 24.0A23.5 24.0 0 0 0 6.0 24.0Z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="24" width="59" height="175" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 24) scale(1 1) translate(0 0)" d="M27 12h5v22h-5z m0 30h5v22h-5z m11 0h5v22h-5z m0 60h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="CQL75" data-name="Building" transform="translate(159 150)">
+    <rect data-name="Step" x="22" y="34" width="65" height="30" fill="#2A3B6A"/>
+    <rect data-name="Antenna" x="53" y="4" width="3" height="34" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="54.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="64" width="108" height="206" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 64) scale(1 1) translate(0 0)" d="M35 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m22 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="eE4CK" data-name="Building" transform="translate(260 244)">
+    <path data-name="Dome" d="M26.0 21.0L47.0 21.0A21.0 21.0 0 0 0 5.0 21.0Z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="21" width="53" height="155" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 21) scale(1 1) translate(0 0)" d="M13 12h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m22 15h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m0 15h5v7h-5z m0 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="yRNaj" data-name="Building" transform="translate(315 223)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.51 0.18) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="18" width="51" height="179" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 18) scale(1 1) translate(0 0)" d="M12 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="Cbs5Y" data-name="Building" transform="translate(355 223)">
+    <rect data-name="Cornice" x="-3" y="0" width="65" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="59" height="192" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M16 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="ZTG0s" data-name="Building" transform="translate(417 178)">
+    <rect data-name="Antenna" x="33" y="4" width="3" height="36" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="35.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="36" width="110" height="206" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 36) scale(1 1) translate(0 0)" d="M14 12h5v7h-5z m22 0h5v7h-5z m33 0h5v7h-5z m22 0h5v7h-5z m-77 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m33 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m44 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="drgqV" data-name="Building" transform="translate(516 159)">
+    <path data-name="Tank" transform="translate(35 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(37 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="59" height="231" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M16 12h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m0 15h5v7h-5z m-22 15h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m11 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="ijWWe" data-name="Building" transform="translate(580 263)">
+    <rect data-name="Cornice" x="-3" y="0" width="91" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="85" height="152" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M24 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="spoU0" data-name="Building" transform="translate(659 108)">
+    <rect data-name="Antenna" x="32" y="4" width="3" height="46" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="34.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="46" width="108" height="266" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 46) scale(1 1) translate(0 0)" d="M24 12h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m22 0h5v22h-5z m-77 30h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m-66 30h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-77 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-77 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="ZdkZh" data-name="Building" transform="translate(754 105)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.99 0.35) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="35" width="99" height="280" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 35) scale(1 1) translate(0 0)" d="M14 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-44 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-55 15h5v7h-5z m44 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m44 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-55 15h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m22 0h5v7h-5z m44 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="ftcyh" data-name="Building" transform="translate(851 219)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.66 0.23) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="23" width="66" height="178" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 23) scale(1 1) translate(0 0)" d="M36 12h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m33 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="IIVUA" data-name="Building" transform="translate(918 202)">
+    <path data-name="Tank" transform="translate(61 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(63 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="101" height="188" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M26 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-66 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m55 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="mH2p4" data-name="Building" transform="translate(1025 99)">
+    <rect data-name="Step" x="20" y="25" width="60" height="32" fill="#2A3B6A"/>
+    <rect data-name="Antenna" x="49" y="4" width="3" height="25" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="50.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="57" width="100" height="264" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 57) scale(1 1) translate(0 0)" d="M15 12h5v7h-5z m22 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m44 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m33 0h5v7h-5z m-55 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m44 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m44 0h5v7h-5z m22 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="t8Fe3n" data-name="Building" transform="translate(1126 236)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(1.01 0.35) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="35" width="101" height="149" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 35) scale(1 1) translate(0 0)" d="M15 12h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m-66 30h5v22h-5z m11 0h5v22h-5z m55 0h5v22h-5z m-66 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="JzNuk" data-name="Building" transform="translate(1230 102)">
+    <path data-name="Tank" transform="translate(60 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(62 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="100" height="288" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M26 12h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m55 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-55 15h5v7h-5z m22 0h5v7h-5z m33 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="V5m5h" data-name="Building" transform="translate(1318 91)">
+    <rect data-name="Step" x="15" y="27" width="43" height="20" fill="#2A3B6A"/>
+    <rect data-name="Antenna" x="35" y="4" width="3" height="27" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="36.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="47" width="72" height="282" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 47) scale(1 1) translate(0 0)" d="M17 12h5v22h-5z m22 0h5v22h-5z m-22 30h5v22h-5z m11 0h5v22h-5z m11 30h5v22h-5z m11 0h5v22h-5z m-33 30h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m-22 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-33 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-33 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-22 30h5v22h-5z m22 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="zYsgo" data-name="Building" transform="translate(1388 120)">
+    <rect data-name="Cornice" x="-3" y="0" width="75" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="69" height="295" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M16 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 30h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="xLlbU" data-name="Building" transform="translate(1454 114)">
+    <rect data-name="Step" x="14" y="39" width="41" height="31" fill="#2A3B6A"/>
+    <rect data-name="Antenna" x="33" y="4" width="3" height="39" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="34.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="70" width="68" height="236" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 70) scale(1 1) translate(0 0)" d="M48 12h5v7h-5z m-33 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m33 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m33 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="kUtuw" data-name="Building" transform="translate(1513 169)">
+    <path data-name="Tank" transform="translate(64 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(66 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="106" height="221" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M23 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-55 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="lSda4" data-name="Building" transform="translate(1610 165)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.75 0.26) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="26" width="75" height="229" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 26) scale(1 1) translate(0 0)" d="M13 12h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-44 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m0 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-11 15h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="vF8Aw" data-name="Building" transform="translate(1685 122)">
+    <rect data-name="Antenna" x="33" y="4" width="3" height="52" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="35.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="52" width="110" height="246" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 52) scale(1 1) translate(0 0)" d="M25 12h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m-77 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-33 30h5v22h-5z m33 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m44 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m-77 30h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="hwb43" data-name="Building" transform="translate(1795 230)">
+    <path data-name="Dome" d="M31.0 25.0L56.0 25.0A25.0 25.0 0 0 0 6.0 25.0Z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="25" width="63" height="165" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 25) scale(1 1) translate(0 0)" d="M13 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="lThwl" data-name="Building" transform="translate(1847 259)">
+    <rect data-name="Cornice" x="-3" y="0" width="113" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="107" height="156" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M13 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m22 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-66 15h5v7h-5z m11 0h5v7h-5z m33 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m33 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-77 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="Ntkj0" data-name="Building" transform="translate(1960 152)">
+    <path data-name="Tank" transform="translate(46 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(48 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="77" height="238" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M14 12h5v22h-5z m22 0h5v22h-5z m-22 30h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-22 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m11 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="Y8BJ9" data-name="Building" transform="translate(2026 137)">
+    <rect data-name="Cornice" x="-3" y="0" width="107" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="101" height="278" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M26 12h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-55 30h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m33 0h5v22h-5z m-55 30h5v22h-5z m22 0h5v22h-5z m33 0h5v22h-5z m-66 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m33 0h5v22h-5z m-44 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m-66 30h5v22h-5z m22 0h5v22h-5z m22 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="fNZJ2" data-name="Building" transform="translate(2121 97)">
+    <path data-name="Pitched Roof" transform="translate(0 0) scale(0.75 0.26) translate(0 0)" d="M0 100l50-100 50 100z" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="26" width="75" height="297" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 26) scale(1 1) translate(0 0)" d="M35 12h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-44 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="L523VI" data-name="Building" transform="translate(2202 165)">
+    <rect data-name="Cornice" x="-3" y="0" width="95" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="89" height="250" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M26 12h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m11 0h5v22h-5z m44 0h5v22h-5z m-55 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m33 0h5v22h-5z m11 0h5v22h-5z m-55 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-55 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="x6l2A" data-name="Building" transform="translate(2279 162)">
+    <path data-name="Tank" transform="translate(63 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#2A3B6A"/>
+    <path data-name="Tank Legs" transform="translate(65 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#2A3B6A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="105" height="228" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M28 12h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-55 30h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-55 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-44 30h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-55 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m11 0h5v22h-5z m-66 30h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z m22 0h5v22h-5z m11 0h5v22h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="bvRO6" data-name="Building" transform="translate(2381 178)">
+    <rect data-name="Antenna" x="17" y="4" width="3" height="55" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="18.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="55" width="56" height="187" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 55) scale(1 1) translate(0 0)" d="M15 12h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m-11 15h5v7h-5z m22 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m22 0h5v7h-5z m-22 15h5v7h-5z m0 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="bT1yo" data-name="Building" transform="translate(2442 192)">
+    <rect data-name="Cornice" x="-3" y="0" width="75" height="5" fill="#2A3B6A"/>
+    <rect data-name="Body" x="0" y="5" width="69" height="223" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M27 12h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m22 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 15h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m22 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-33 15h5v7h-5z m11 0h5v7h-5z m11 15h5v7h-5z m11 0h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="dYjQo" data-name="Building" transform="translate(2515 91)">
+    <rect data-name="Step" x="12" y="32" width="36" height="27" fill="#2A3B6A"/>
+    <rect data-name="Antenna" x="29" y="4" width="3" height="32" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="30.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="59" width="60" height="270" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 59) scale(1 1) translate(0 0)" d="M28 12h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m0 15h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+  <g id="rHi6v" data-name="Building" transform="translate(-45 91)">
+    <rect data-name="Step" x="12" y="32" width="36" height="27" fill="#2A3B6A"/>
+    <rect data-name="Antenna" x="29" y="4" width="3" height="32" fill="#2A3B6A"/>
+    <ellipse data-name="Beacon" cx="30.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="59" width="60" height="270" fill="#2A3B6A"/>
+    <path data-name="Windows" transform="translate(0 59) scale(1 1) translate(0 0)" d="M28 12h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m-11 15h5v7h-5z m0 15h5v7h-5z m0 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z m-11 15h5v7h-5z m11 0h5v7h-5z m-22 15h5v7h-5z m11 0h5v7h-5z m0 15h5v7h-5z" fill="#8E86A0"/>
+  </g>
+</svg>

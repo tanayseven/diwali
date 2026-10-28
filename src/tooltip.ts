@@ -1,5 +1,6 @@
 import {Container, FederatedPointerEvent} from "pixi.js"
 import {fontFamily} from "./app"
+import {setOutline} from "./outline"
 
 type Tooltip = {
   title: string
@@ -19,6 +20,8 @@ let element: HTMLDivElement | undefined
 // What it's showing for now, and how to describe that
 let owner: Container | undefined
 let describe: (() => Tooltip | undefined) | undefined
+// What's outlined while it's hovered, as most things are
+const outlined = new WeakSet<Container>()
 
 const getElement = () => {
   if (!element) {
@@ -50,6 +53,9 @@ const getElement = () => {
 }
 
 const hide = () => {
+  if (owner && outlined.has(owner)) {
+    setOutline(owner, "hover", false)
+  }
   owner = undefined
   describe = undefined
   if (element) {
@@ -126,14 +132,23 @@ function onWindowPointerMove(e: PointerEvent) {
 
 // Shows a tooltip beside the pointer while a mouse hovers over the target. It's
 // described afresh as the pointer moves, so it follows changes to what it's for;
-// describing it as undefined shows none. Touch screens have no hover, so they get none
-const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined) => {
+// describing it as undefined shows none. Touch screens have no hover, so they get none.
+// While it shows, the target's outlined in yellow too, unless it's a button that has
+// its own way of showing it's hovered
+const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined, {outline = true} = {}) => {
+  if (outline) {
+    outlined.add(target)
+  }
   const show = (e: FederatedPointerEvent) => {
     if (owner === target || e.pointerType !== "mouse" || e.buttons !== 0) {
       return
     }
+    hide()
     owner = target
     describe = describeTarget
+    if (outline) {
+      setOutline(target, "hover", true)
+    }
     render()
     if (owner === target) {
       moveTo(e.clientX, e.clientY)

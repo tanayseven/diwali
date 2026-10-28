@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="420" viewBox="0 0 2560 420">
+  <title>Layer 2 – Near Skyline (faster)</title>
+  <rect data-name="Base" x="0" y="400" width="2560" height="20" fill="#1C2A52"/>
+  <g id="sERZf" data-name="Building" transform="translate(30 149)">
+    <rect data-name="Antenna" x="18" y="4" width="3" height="39" fill="#1C2A52"/>
+    <ellipse data-name="Beacon" cx="20.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="39" width="60" height="232" fill="#1C2A52"/>
+    <rect data-name="Shade" x="48" y="39" width="12" height="232" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 39) scale(1 1) translate(0 0)" d="M20 14h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z m0 20h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z m0 20h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m0 20h7v10h-7z m0 20h7v10h-7z m14 0h7v10h-7z m0 20h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="c2mlFa" data-name="Building" transform="translate(146 218)">
+    <rect data-name="Step" x="26" y="0" width="77" height="27" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="27" width="129" height="175" fill="#1C2A52"/>
+    <rect data-name="Shade" x="103" y="27" width="26" height="175" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 27) scale(1 1) translate(0 0)" d="M19 14h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-70 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-84 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-84 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-70 20h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-84 20h7v10h-7z m14 0h7v10h-7z m56 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="p4d3mt" data-name="Building" transform="translate(307 319)">
+    <rect data-name="Cornice" x="-3" y="0" width="93" height="5" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="5" width="87" height="96" fill="#1C2A52"/>
+    <rect data-name="Shade" x="70" y="5" width="17" height="96" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M19 34h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="n9Uw1" data-name="Building" transform="translate(439 274)">
+    <path data-name="Dome" d="M63.0 50.0L113.0 50.0A50.0 50.0 0 0 0 13.0 50.0Z" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="50" width="125" height="96" fill="#1C2A52"/>
+    <rect data-name="Shade" x="100" y="50" width="25" height="96" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 50) scale(1 1) translate(0 0)" d="M31 14h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m28 0h7v30h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="RyT2B" data-name="Building" transform="translate(627 290)">
+    <rect data-name="Cornice" x="-3" y="0" width="75" height="5" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="5" width="69" height="125" fill="#1C2A52"/>
+    <rect data-name="Shade" x="55" y="5" width="14" height="125" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M31 14h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 40h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="H6GWtW" data-name="Building" transform="translate(706 203)">
+    <rect data-name="Antenna" x="29" y="4" width="3" height="37" fill="#1C2A52"/>
+    <ellipse data-name="Beacon" cx="31.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="37" width="97" height="180" fill="#1C2A52"/>
+    <rect data-name="Shade" x="78" y="37" width="19" height="180" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 37) scale(1 1) translate(0 0)" d="M17 14h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="Rroed" data-name="Building" transform="translate(868 204)">
+    <rect data-name="Cornice" x="-3" y="0" width="93" height="5" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="5" width="87" height="211" fill="#1C2A52"/>
+    <rect data-name="Shade" x="70" y="5" width="17" height="211" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M19 14h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m-42 40h7v30h-7z m42 0h7v30h-7z m-28 40h7v30h-7z m14 0h7v30h-7z m-28 40h7v30h-7z m42 0h7v30h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="yf12h" data-name="Building" transform="translate(1002 295)">
+    <path data-name="Tank" transform="translate(56 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#1C2A52"/>
+    <path data-name="Tank Legs" transform="translate(58 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#1C2A52" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="94" height="95" fill="#1C2A52"/>
+    <rect data-name="Shade" x="75" y="30" width="19" height="95" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M30 14h7v10h-7z m-14 20h7v10h-7z m42 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="YYekA" data-name="Building" transform="translate(1158 218)">
+    <path data-name="Dome" d="M60.5 48.0L109.0 48.0A48.5 48.0 0 0 0 12.0 48.0Z" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="48" width="121" height="154" fill="#1C2A52"/>
+    <rect data-name="Shade" x="97" y="48" width="24" height="154" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 48) scale(1 1) translate(0 0)" d="M29 14h7v30h-7z m14 0h7v30h-7z m28 0h7v30h-7z m28 0h7v30h-7z m-84 40h7v30h-7z m28 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m-70 40h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="oWuZk" data-name="Building" transform="translate(1340 174)">
+    <path data-name="Dome" d="M64.5 52.0L116.0 52.0A51.5 52.0 0 0 0 13.0 52.0Z" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="52" width="129" height="194" fill="#1C2A52"/>
+    <rect data-name="Shade" x="103" y="52" width="26" height="194" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 52) scale(1 1) translate(0 0)" d="M33 14h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m28 0h7v30h-7z m-56 40h7v30h-7z m28 0h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m-84 40h7v30h-7z m28 0h7v30h-7z m14 0h7v30h-7z m28 0h7v30h-7z m14 0h7v30h-7z m-84 40h7v30h-7z m14 0h7v30h-7z m14 0h7v30h-7z m28 0h7v30h-7z m14 0h7v30h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="GWMu5" data-name="Building" transform="translate(1537 226)">
+    <rect data-name="Antenna" x="27" y="4" width="3" height="33" fill="#1C2A52"/>
+    <ellipse data-name="Beacon" cx="28.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="33" width="89" height="161" fill="#1C2A52"/>
+    <rect data-name="Shade" x="71" y="33" width="18" height="161" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 33) scale(1 1) translate(0 0)" d="M20 14h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m28 0h7v10h-7z m-42 20h7v10h-7z m42 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="ynGz2" data-name="Building" transform="translate(1672 273)">
+    <path data-name="Tank" transform="translate(59 0)" d="M4 0H16A4 4 0 0 1 20 4V18A0 0 0 0 1 20 18H0A0 0 0 0 1 0 18V4A4 4 0 0 1 4 0Z" fill="#1C2A52"/>
+    <path data-name="Tank Legs" transform="translate(61 18) scale(1 1) translate(0 0)" d="M0 12l3-12m13 12l-3-12m-10 6h10" fill="none" stroke="#1C2A52" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <rect data-name="Body" x="0" y="30" width="98" height="117" fill="#1C2A52"/>
+    <rect data-name="Shade" x="78" y="30" width="20" height="117" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 30) scale(1 1) translate(0 0)" d="M46 14h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="w6jgAv" data-name="Building" transform="translate(1812 311)">
+    <rect data-name="Cornice" x="-3" y="0" width="79" height="5" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="5" width="73" height="104" fill="#1C2A52"/>
+    <rect data-name="Shade" x="58" y="5" width="15" height="104" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M19 14h7v10h-7z m14 0h7v10h-7z m14 20h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="oabvN" data-name="Building" transform="translate(1915 217)">
+    <rect data-name="Step" x="14" y="45" width="41" height="31" fill="#1C2A52"/>
+    <rect data-name="Antenna" x="33" y="4" width="3" height="45" fill="#1C2A52"/>
+    <ellipse data-name="Beacon" cx="35.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="76" width="69" height="127" fill="#1C2A52"/>
+    <rect data-name="Shade" x="55" y="76" width="14" height="127" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 76) scale(1 1) translate(0 0)" d="M31 14h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m28 0h7v10h-7z m-28 20h7v10h-7z m28 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="k6GrmW" data-name="Building" transform="translate(2054 134)">
+    <rect data-name="Step" x="21" y="32" width="61" height="25" fill="#1C2A52"/>
+    <rect data-name="Antenna" x="50" y="4" width="3" height="32" fill="#1C2A52"/>
+    <ellipse data-name="Beacon" cx="51.0" cy="3.0" rx="3.0" ry="3.0" fill="#FF5A4A"/>
+    <rect data-name="Body" x="0" y="57" width="102" height="229" fill="#1C2A52"/>
+    <rect data-name="Shade" x="82" y="57" width="20" height="229" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 57) scale(1 1) translate(0 0)" d="M34 14h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m28 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="w7kva" data-name="Building" transform="translate(2215 305)">
+    <rect data-name="Cornice" x="-3" y="0" width="76" height="5" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="5" width="70" height="110" fill="#1C2A52"/>
+    <rect data-name="Shade" x="56" y="5" width="14" height="110" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 5) scale(1 1) translate(0 0)" d="M18 14h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-14 20h7v10h-7z m0 20h7v10h-7z m-14 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="G1tPxe" data-name="Building" transform="translate(2329 166)">
+    <path data-name="Dome" d="M51.0 41.0L92.0 41.0A41.0 41.0 0 0 0 10.0 41.0Z" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="41" width="102" height="213" fill="#1C2A52"/>
+    <rect data-name="Shade" x="82" y="41" width="20" height="213" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 41) scale(1 1) translate(0 0)" d="M20 14h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-28 20h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-42 20h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m42 0h7v10h-7z m14 0h7v10h-7z m-56 20h7v10h-7z m28 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m42 0h7v10h-7z m-56 20h7v10h-7z m42 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="A5x4A" data-name="Building" transform="translate(2484 276)">
+    <rect data-name="Step" x="18" y="0" width="54" height="22" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="22" width="90" height="122" fill="#1C2A52"/>
+    <rect data-name="Shade" x="72" y="22" width="18" height="122" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 22) scale(1 1) translate(0 0)" d="M21 14h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-28 20h7v10h-7z m28 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+  <g id="N6MhH" data-name="Building" transform="translate(-76 276)">
+    <rect data-name="Step" x="18" y="0" width="54" height="22" fill="#1C2A52"/>
+    <rect data-name="Body" x="0" y="22" width="90" height="122" fill="#1C2A52"/>
+    <rect data-name="Shade" x="72" y="22" width="18" height="122" fill="#162244"/>
+    <path data-name="Windows" transform="translate(0 22) scale(1 1) translate(0 0)" d="M21 14h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z m-42 20h7v10h-7z m14 0h7v10h-7z m28 0h7v10h-7z m-28 20h7v10h-7z m28 0h7v10h-7z m-28 20h7v10h-7z m14 0h7v10h-7z m14 0h7v10h-7z" fill="#F2C96B"/>
+  </g>
+</svg>

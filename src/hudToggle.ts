@@ -57,7 +57,7 @@ const createHudToggle = (app: Application, onChange: (shown: boolean) => void) =
     render()
   })
   container.on("pointertap", () => setShown(!shown))
-  addTooltip(container, () => ({title: shown ? LL.hud.hide() : LL.hud.show()}))
+  addTooltip(container, () => ({title: shown ? LL.hud.hide() : LL.hud.show()}), {outline: false})
 
   const layout = () => {
     const frame = hudFrame(app.screen)

@@ -35,7 +35,7 @@ const createZoomControls = (app: Application, background: Background) => {
     button.on("pointerover", () => hovered = true)
     button.on("pointerout", () => hovered = false)
     button.on("pointertap", () => background.zoomBy(sign > 0 ? background.zoomStep : 1 / background.zoomStep))
-    addTooltip(button, () => ({title: label()}))
+    addTooltip(button, () => ({title: label()}), {outline: false})
     container.addChild(button)
     const canZoom = sign > 0 ? background.canZoomIn : background.canZoomOut
     let shown: string | undefined

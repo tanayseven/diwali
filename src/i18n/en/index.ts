@@ -63,7 +63,7 @@ const en = {
 		matchstick: {
 			name: "Matchstick",
 			diyaHint: "Drag onto a diya with a wick and oil to light it",
-			fireworkHint: "Drag onto an anar or a laddi to light it",
+			fireworkHint: "Drag onto an anar, a laddi or a chakri to light it",
 		},
 		anar: {
 			name: "Anar",
@@ -72,6 +72,10 @@ const en = {
 		laddi: {
 			name: "Laddi",
 			stack: "A string of firecrackers. Drag one onto the porch",
+		},
+		chakri: {
+			name: "Chakri",
+			stack: "A ground spinner. Drag one onto the porch",
 		},
 		noneLeft: "None left",
 		move: "Drag to move it, or onto the bar to put it back",

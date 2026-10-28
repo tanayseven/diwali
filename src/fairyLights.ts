@@ -3,6 +3,7 @@ import type {Background} from "./background"
 import {createHud, cropped, iconFill, slotSize} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
+import {setOutline} from "./outline"
 import {addTooltip} from "./tooltip"
 
 const colors = ["red", "orange", "yellow", "green", "blue", "white"] as const
@@ -122,7 +123,11 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     return slot
   })
 
-  const render = () => bar.drawBoxes(slots[choices.indexOf(chosen)].box)
+  // The colour picked is outlined as well as its box highlighted
+  const render = () => {
+    bar.drawBoxes(slots[choices.indexOf(chosen)].box)
+    slots.forEach((slot, idx) => setOutline(slot.container, "selected", choices[idx] === chosen))
+  }
 
   const colorOf = (string: LightString, idx: number): Color =>
     string.choice === "mixed" ? colors[idx % colors.length] : string.choice
@@ -209,6 +214,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       }
       e.stopPropagation()
       moving = {string, from: {...string.from}, to: {...string.to}, grabbedAt: background.toScene(e.global)}
+      setOutline(string.container, "selected", true)
     })
   }
 
@@ -218,6 +224,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       return false
     }
     hanging = createString(at, at, chosen)
+    setOutline(hanging.container, "selected", true)
     hanging.container.eventMode = "none"
     build(hanging)
     showValidity(hanging)
@@ -248,6 +255,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     if (hanging) {
       const string = hanging
       hanging = undefined
+      setOutline(string.container, "selected", false)
       if (canHang(string.from, string.to)) {
         strings.push(string)
         makePickable(string)
@@ -258,6 +266,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       const {string, from, to} = moving
       moving = undefined
       string.container.alpha = 1
+      setOutline(string.container, "selected", false)
       if (hudShown && bar.isOver(toStage(e))) {
         removeString(string)
       } else if (!canHang(string.from, string.to)) {

@@ -5,6 +5,7 @@ import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 
 type Background = ReturnType<typeof createBackground>
@@ -88,9 +89,10 @@ const pourFillAt = 600
 
 // The animated diya animates its flame with SMIL, which only runs while it's shown as
 // an image; turned straight into a texture it would freeze. So a hidden copy of it
-// keeps playing, and is drawn onto a canvas every frame for all the lit diyas to share.
-// Where a browser only draws an animated SVG's first frame, the flames simply stay still
-const createLiveDiyaTexture = (app: Application) => {
+// keeps playing, and is drawn onto a canvas every frame for all the lit diyas to share,
+// though only while there are any to show it. Where a browser only draws an animated
+// SVG's first frame, the flames simply stay still
+const createLiveDiyaTexture = (app: Application, isShown: () => boolean) => {
   const image = document.createElement("img")
   image.src = animatedDiyaUrl
   image.alt = ""
@@ -120,12 +122,17 @@ const createLiveDiyaTexture = (app: Application) => {
     context.drawImage(image, 0, 0, diyaCanvas.width, diyaCanvas.height)
     texture.source.update()
   }
-  app.ticker.add(draw)
+  const tick = () => {
+    if (isShown()) {
+      draw()
+    }
+  }
+  app.ticker.add(tick)
   draw()
   return {
     texture,
     destroy() {
-      app.ticker.remove(draw)
+      app.ticker.remove(tick)
       image.remove()
       texture.destroy(true)
     },
@@ -161,7 +168,9 @@ type Drag =
 const createDiyaInventory = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
   const {emptyDiyas, wicks, oilBottle} = createItems()
   const matchstick = createMatchstick(app, audio)
-  const litDiya = createLiveDiyaTexture(app)
+  // Only drawn while a lit diya is on the porch or being carried
+  const litDiya = createLiveDiyaTexture(app, () =>
+    placed.some(diya => diya.lit) || (drag?.kind === "diya" && drag.diya.lit))
   const container = new Container()
   const bar = createHud(app)
   const hud = bar.container
@@ -245,9 +254,15 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
 
   const setTarget = (diya: PlacedDiya | undefined) => {
     if (target !== diya) {
-      target?.sprite.scale.set(diyaScale)
+      if (target) {
+        target.sprite.scale.set(diyaScale)
+        setOutline(target.sprite, "selected", false)
+      }
       target = diya
-      target?.sprite.scale.set(diyaScale * targetGrowth)
+      if (target) {
+        target.sprite.scale.set(diyaScale * targetGrowth)
+        setOutline(target.sprite, "selected", true)
+      }
     }
   }
 
@@ -351,6 +366,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     sprite.position.copyFrom(e.global)
     sprite.eventMode = "none"
     dragLayer.addChild(sprite)
+    setOutline(sprite, "selected", true)
     drag = next
     render()
   }
@@ -424,6 +440,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // Sends whatever's dragged back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
+    setOutline(current.sprite, "selected", false)
     if (current.kind === "diya") {
       if (current.fromScene) {
         placeDiya(current.diya, current.fromScene)
@@ -449,6 +466,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     setOverBar(false)
     setTarget(undefined)
     current.sprite.removeFromParent()
+    setOutline(current.sprite, "selected", false)
     if (current.kind === "diya") {
       if (hudShown && bar.isOver(at)) {
         placed.push(current.diya)

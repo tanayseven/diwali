@@ -46,7 +46,7 @@ const createSideRail = <Name extends string>(app: Application, items: RailItem<N
       render()
     })
     button.on("pointertap", () => select(item.name))
-    addTooltip(button, () => ({title: item.label()}))
+    addTooltip(button, () => ({title: item.label()}), {outline: false})
     container.addChild(button)
     const render = () => {
       const active = item.name === selected

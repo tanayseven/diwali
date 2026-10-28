@@ -3,6 +3,7 @@ import {fontFamily} from "./app"
 import {Background, porchFloor} from "./background"
 import {createHud, slotSize} from "./hud"
 import {LL} from "./locale"
+import {setOutline} from "./outline"
 import {addTooltip} from "./tooltip"
 
 // Rangoli powder colours, as drawn on the porch
@@ -134,7 +135,12 @@ const createRangoli = (app: Application, background: Background) => {
   })
   addTooltip(clearSlot.container, () => ({title: tips.clear(), lines: [tips.clearHint()]}))
 
-  const render = () => bar.drawBoxes(tool === "eraser" ? eraserSlot.box : powderSlots[powderNames.indexOf(tool)].box)
+  // What's picked is outlined as well as its box highlighted
+  const render = () => {
+    const picked = tool === "eraser" ? eraserSlot : powderSlots[powderNames.indexOf(tool)]
+    bar.drawBoxes(picked.box)
+    ;[...powderSlots, eraserSlot].forEach(slot => setOutline(slot.container, "selected", slot === picked))
+  }
 
   function select(next: Tool) {
     tool = next
