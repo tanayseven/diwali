@@ -7,9 +7,12 @@
 		"preview": "vite preview",
 		"zip": "npm run build && mkdir -p dist && zip -r dist/game.zip www -x \"**/.DS_Store\"",
 		"check": "tsc",
-		"i18n": "typesafe-i18n"
+		"i18n": "typesafe-i18n",
+		"bench": "vite build && node scripts/bench/run.mjs"
 	},
 	"devDependencies": {
+		"playwright-core": "1.56.1",
+		"source-map-js": "1.2.1",
 		"typescript": "^5.6.3",
 		"vite": "^5.4.10"
 	},

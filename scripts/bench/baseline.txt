@@ -1,0 +1,62 @@
+Benchmark 2026-10-28T17:45:55.598Z (all)
+
+laptop 1600x900 at 1x (51 °C)
+  close-up idle: 60 fps, p95 17 ms, 0% slow
+    main thread 44% busy: (program) 23.9%, pixi/browser 13.7%, skyFireworks.ts 3%, skylineLights.ts 1.4%, lighting.ts 1%, (garbage collector) 0.4%, audioControl.ts 0.1%
+  zoomed out idle: 60 fps, p95 17 ms, 0% slow
+    main thread 52% busy: (program) 26.5%, pixi/browser 19.5%, skyFireworks.ts 3.1%, skylineLights.ts 1.3%, lighting.ts 1.2%, audioControl.ts 0.2%, (garbage collector) 0.1%
+  zoomed out panning: 60 fps, p95 17 ms, 1% slow
+    main thread 69% busy: (program) 28.3%, pixi/browser 24.7%, skylineLights.ts 8.9%, skyline.ts 3.3%, skyFireworks.ts 1.9%, lighting.ts 0.9%, (garbage collector) 0.6%
+  close-up, 7 fireworks lit: 39 fps, p95 33 ms, 53% slow
+    main thread 100% busy: fireworks.ts 50.7%, pixi/browser 26.8%, (program) 17.3%, skylineLights.ts 1.4%, lighting.ts 1.1%, audioControl.ts 0.9%, skyFireworks.ts 0.8%
+  zoomed out, 7 fireworks lit: 49 fps, p95 33 ms, 22% slow
+    main thread 97% busy: pixi/browser 37.6%, fireworks.ts 34.9%, (program) 19%, skyFireworks.ts 1.4%, lighting.ts 1.4%, skylineLights.ts 1%, audioControl.ts 1%
+
+laptop frames a second after the scene starts (59 °C): 60 60 59 60 60 60 11 41 58 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 59
+  stalls over 100 ms: 200, 217, 350, 117, 283, 117, 117, 117, 117, 150, 133, 117, 150, 117, 133, 133, 150, 117, 100, 816, 250
+
+laptop memory: images loaded by 1653 ms; downloaded js 190 KB, svg 856 KB, audio 1138 KB
+  textures 163 MB in 27 (biggest 33, 33, 23, 23, 11, 11 MB), JS heap 21 MB
+
+hidpi 1920x1080 at 2x (57 °C)
+  close-up idle: 52 fps, p95 33 ms, 14% slow
+    main thread 75% busy: (program) 37.9%, pixi/browser 25.9%, skyFireworks.ts 6.4%, skylineLights.ts 2.7%, lighting.ts 1.7%, (garbage collector) 0.5%, audioControl.ts 0.2%
+  zoomed out idle: 56 fps, p95 33 ms, 6% slow
+    main thread 70% busy: (program) 34.4%, pixi/browser 26.1%, skyFireworks.ts 4.7%, skylineLights.ts 1.8%, lighting.ts 1.8%, (garbage collector) 0.4%, audioControl.ts 0.3%
+  zoomed out panning: 53 fps, p95 33 ms, 12% slow
+    main thread 87% busy: (program) 32.3%, pixi/browser 31.5%, skylineLights.ts 8.5%, skyFireworks.ts 5.9%, skyline.ts 4.5%, (garbage collector) 1.7%, lighting.ts 1.3%
+
+hidpi frames a second after the scene starts (84 °C): 60 60 60 60 60 60 9 32 54 54 53 53 53 53 53 53 50 52 53 53 49 52 53 53 53 53 54 52 53 53 53 54
+  stalls over 100 ms: 233, 667, 267, 250, 117, 117, 117, 117, 117, 117, 150, 117, 117, 133, 133, 117, 117, 133, 117, 117, 117, 850, 267
+
+hidpi memory: images loaded by 1745 ms; downloaded js 190 KB, svg 856 KB, audio 1138 KB
+  textures 165 MB in 27 (biggest 33, 33, 23, 23, 11, 11 MB), JS heap 22 MB
+
+monitor 2560x1440 at 1x (72 °C)
+  close-up idle: 60 fps, p95 17 ms, 0% slow
+    main thread 60% busy: (program) 33.4%, pixi/browser 20.3%, skylineLights.ts 2%, skyFireworks.ts 1.8%, lighting.ts 1.6%, (garbage collector) 0.4%, audioControl.ts 0.2%
+  zoomed out idle: 60 fps, p95 17 ms, 1% slow
+    main thread 61% busy: (program) 32.3%, pixi/browser 22.6%, skyFireworks.ts 2%, skylineLights.ts 1.9%, lighting.ts 1.3%, audioControl.ts 0.2%, (garbage collector) 0.2%
+  zoomed out panning: 59 fps, p95 17 ms, 2% slow
+    main thread 79% busy: (program) 31.4%, pixi/browser 26.7%, skylineLights.ts 8.2%, skyline.ts 4.7%, skyFireworks.ts 4.7%, lighting.ts 1.3%, (garbage collector) 1.2%
+
+monitor frames a second after the scene starts (85 °C): 60 60 60 60 60 60 10 38 60 60 59 60 60 60 58 55 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60 60
+  stalls over 100 ms: 183, 300, 267, 117, 217, 117, 117, 117, 117, 133, 117, 133, 133, 133, 150, 150, 117, 117, 133, 133, 117, 117, 833, 267
+
+monitor memory: images loaded by 1623 ms; downloaded js 190 KB, svg 856 KB, audio 1138 KB
+  textures 165 MB in 27 (biggest 33, 33, 23, 23, 11, 11 MB), JS heap 21 MB
+
+phone 412x915 at 2.625x, touch, CPU 4x slower (75 °C)
+  close-up idle: 31 fps, p95 50 ms, 68% slow
+    main thread 99% busy: (program) 45.2%, pixi/browser 36.4%, skylineLights.ts 6.7%, skyFireworks.ts 6.1%, lighting.ts 2.6%, (garbage collector) 0.9%, audioControl.ts 0.5%
+  zoomed out idle: 34 fps, p95 50 ms, 63% slow
+    main thread 99% busy: (program) 43.3%, pixi/browser 39.5%, skylineLights.ts 6.9%, skyFireworks.ts 5.7%, lighting.ts 2.8%, audioControl.ts 0.4%, (garbage collector) 0.2%
+  zoomed out panning: 29 fps, p95 50 ms, 86% slow
+    main thread 99% busy: (program) 46.4%, pixi/browser 37.8%, skylineLights.ts 6.1%, skyFireworks.ts 4.9%, lighting.ts 2.2%, (garbage collector) 0.4%, audioControl.ts 0.4%
+
+phone frames a second after the scene starts (58 °C): 39 60 60 60 60 61 9 2 4 13 34 41 35 37 40 38 39 42 43 39 29 42 40 38 34 33 44 34 34 41 41 34
+  stalls over 100 ms: 750, 1850, 400, 117, 133, 117, 117, 117, 117, 117, 150, 217, 750, 150, 117, 133, 133, 150, 117, 117, 117, 133, 117, 217, 133, 183, 217, 150, 150, 117, 117, 117, 250, 200, 233, 183, 200, 250, 233, 300, 200, 250, 283, 183, 200, 283, 217, 250, 267, 267, 217, 250, 233, 183, 217, 183, 167, 217, 250, 250, 200, 217, 217, 267, 200, 200, 167, 233, 167, 133, 117, 117, 117, 117, 117, 117, 117, 117, 333, 117, 117, 133, 117, 133, 1766, 117, 133, 966, 200
+
+phone memory: images loaded by -Infinity ms; downloaded js 190 KB, svg 857 KB, audio 1138 KB
+  textures 165 MB in 27 (biggest 33, 33, 23, 23, 11, 11 MB), JS heap 22 MB
+
