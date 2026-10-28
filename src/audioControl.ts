@@ -69,30 +69,41 @@ const createAudioControl = () => {
   })
   let current = 0
   // Sound effects playing now, each with its level: the share of the volume it plays at
-  const effects = new Map<HTMLAudioElement, number>()
+  const effects = new Map<object, number>()
   // The share of the volume the music plays at, lowered while effects play
   let duck = 1
   let duckTarget = 1
   let duckFrame: number | undefined
   let duckReleaseTimer: number | undefined
-  // The filter muffled effects go through, made the first time one plays
-  let muffler: {context: AudioContext, filter: BiquadFilterNode} | undefined
-
-  // Sends an effect through the muffler, returning how to take it out again
-  const muffle = (effect: HTMLAudioElement) => {
-    if (!muffler) {
+  // Effects are played from decoded sound, not audio elements, as browsers only allow a
+  // page so many of those and quick repeats would soon run out. They all go through one
+  // gain for the volume and mute setting, and muffled ones through a filter before it.
+  // Made the first time an effect is loaded
+  let mixer: {context: AudioContext, master: GainNode, muffler: BiquadFilterNode} | undefined
+  const getMixer = () => {
+    if (!mixer) {
       const context = new AudioContext()
-      const filter = context.createBiquadFilter()
-      filter.type = "lowpass"
-      filter.frequency.value = muffledCutoff
-      filter.connect(context.destination)
-      muffler = {context, filter}
+      const master = context.createGain()
+      master.connect(context.destination)
+      const muffler = context.createBiquadFilter()
+      muffler.type = "lowpass"
+      muffler.frequency.value = muffledCutoff
+      muffler.connect(master)
+      mixer = {context, master, muffler}
+      renderEffectsVolume()
     }
-    // It starts suspended until there's been a tap, and is resumed once there has
-    muffler.context.resume().catch(() => {})
-    const source = muffler.context.createMediaElementSource(effect)
-    source.connect(muffler.filter)
-    return () => source.disconnect()
+    return mixer
+  }
+  // It starts suspended until there's been a tap, and is resumed once there has
+  const resumeEffects = () => {
+    if (!document.hidden) {
+      mixer?.context.resume().catch(() => {})
+    }
+  }
+  const renderEffectsVolume = () => {
+    if (mixer) {
+      mixer.master.gain.value = settings.muted ? 0 : settings.volume
+    }
   }
 
   const renderMusicVolume = () => players.forEach(player => player.volume = settings.volume * duck)
@@ -171,6 +182,7 @@ const createAudioControl = () => {
     window.removeEventListener("pointerdown", startOnGesture, true)
     window.removeEventListener("keydown", startOnGesture, true)
     play()
+    resumeEffects()
   }
   window.addEventListener("pointerdown", startOnGesture, true)
   window.addEventListener("keydown", startOnGesture, true)
@@ -180,10 +192,10 @@ const createAudioControl = () => {
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       pause()
-      effects.forEach((_, effect) => effect.pause())
+      mixer?.context.suspend().catch(() => {})
     } else {
       play()
-      effects.forEach((_, effect) => effect.play().catch(() => {}))
+      resumeEffects()
     }
   })
 
@@ -244,12 +256,7 @@ const createAudioControl = () => {
     slider.value = String(settings.muted ? 0 : settings.volume)
     renderMusicVolume()
     players.forEach(player => player.muted = settings.muted)
-    effects.forEach((_, effect) => renderEffect(effect))
-  }
-
-  const renderEffect = (effect: HTMLAudioElement) => {
-    effect.volume = Math.min(1, Math.max(0, settings.volume * (effects.get(effect) ?? 1)))
-    effect.muted = settings.muted
+    renderEffectsVolume()
   }
 
   const setSliderOpen = (open: boolean) => {
@@ -353,35 +360,52 @@ const createAudioControl = () => {
   // A sound effect, loaded now and played at the music's volume, following the mute and
   // volume setting while it plays. Each play is a fresh copy of it, so quick repeats
   // overlap instead of cutting off, and can be made quieter or stopped early. A muffled
-  // one sounds far off
+  // one sounds far off. Plays asked for before it's loaded, or while effects can't be
+  // heard yet (before the first tap, or with the tab hidden), are skipped, so they don't
+  // all go off at once later
   const createEffect = (src: string, {muffled = false} = {}) => {
-    const effect = new Audio(src)
-    effect.preload = "auto"
+    const {context, master, muffler} = getMixer()
+    let sound: AudioBuffer | undefined
+    fetch(src)
+      .then(response => response.arrayBuffer())
+      .then(data => context.decodeAudioData(data))
+      .then(decoded => sound = decoded)
+      .catch(error => console.error(`Couldn't load ${src}`, error))
     return () => {
-      const copy = effect.cloneNode() as HTMLAudioElement
-      const unmuffle = muffled ? muffle(copy) : undefined
-      const forget = () => {
-        effects.delete(copy)
-        unmuffle?.()
-        updateDuck()
+      const handle = {}
+      if (!sound || context.state !== "running") {
+        return {setLevel() {}, stop() {}}
       }
-      effects.set(copy, 1)
+      const source = context.createBufferSource()
+      source.buffer = sound
+      const level = context.createGain()
+      source.connect(level)
+      level.connect(muffled ? muffler : master)
+      const forget = () => {
+        if (effects.delete(handle)) {
+          source.disconnect()
+          level.disconnect()
+          updateDuck()
+        }
+      }
+      effects.set(handle, 1)
       updateDuck()
-      copy.addEventListener("ended", forget)
-      renderEffect(copy)
-      copy.play().catch(forget)
+      source.addEventListener("ended", forget)
+      source.start()
       return {
         // Plays it at a share of the volume, from 0 to 1
-        setLevel(level: number) {
-          if (effects.has(copy)) {
-            effects.set(copy, level)
-            renderEffect(copy)
+        setLevel(value: number) {
+          if (effects.has(handle)) {
+            effects.set(handle, value)
+            level.gain.value = Math.max(0, value)
             updateDuck()
           }
         },
         stop() {
-          copy.pause()
-          forget()
+          if (effects.has(handle)) {
+            source.stop()
+            forget()
+          }
         },
       }
     }
