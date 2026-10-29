@@ -35,11 +35,10 @@ const en = {
 		message: "This app can't be shown in portrait mode. Please rotate your device to landscape mode to continue.",
 	},
 	footer: {
-		// {love}, {sweat} and {author} are replaced with the emoji and the author's link,
+		// {love} and {author} are replaced with the emoji and the author's link,
 		// so they can go wherever the sentence needs them
-		credit: "Made with {love} and {sweat} by {author}",
+		credit: "Made with {love} by {author}",
 		love: "Love",
-		sweat: "Sweat",
 	},
 	audio: {
 		mute: "Mute music",

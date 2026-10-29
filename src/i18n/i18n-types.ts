@@ -96,20 +96,15 @@ type RootTranslation = {
 	}
 	footer: {
 		/**
-		 * M​a​d​e​ ​w​i​t​h​ ​{​l​o​v​e​}​ ​a​n​d​ ​{​s​w​e​a​t​}​ ​b​y​ ​{​a​u​t​h​o​r​}
+		 * M​a​d​e​ ​w​i​t​h​ ​{​l​o​v​e​}​ ​b​y​ ​{​a​u​t​h​o​r​}
 		 * @param {unknown} author
 		 * @param {unknown} love
-		 * @param {unknown} sweat
 		 */
-		credit: RequiredParams<'author' | 'love' | 'sweat'>
+		credit: RequiredParams<'author' | 'love'>
 		/**
 		 * L​o​v​e
 		 */
 		love: string
-		/**
-		 * S​w​e​a​t
-		 */
-		sweat: string
 	}
 	audio: {
 		/**
@@ -418,17 +413,13 @@ export type TranslationFunctions = {
 	}
 	footer: {
 		/**
-		 * Made with {love} and {sweat} by {author}
+		 * Made with {love} by {author}
 		 */
-		credit: (arg: { author: unknown, love: unknown, sweat: unknown }) => LocalizedString
+		credit: (arg: { author: unknown, love: unknown }) => LocalizedString
 		/**
 		 * Love
 		 */
 		love: () => LocalizedString
-		/**
-		 * Sweat
-		 */
-		sweat: () => LocalizedString
 	}
 	audio: {
 		/**

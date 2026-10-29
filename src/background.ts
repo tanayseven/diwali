@@ -26,6 +26,10 @@ const skylineTop = skylineFoot - skylineSize.height * skylineScale
 // house does, and the near one this much. Only across, as moving up and down would
 // lift them off the horizon behind the hills
 const skylineDepth = {far: 0.3, near: 0.55}
+// The moon and stars are furthest of all, so they barely slide as the camera pans.
+// The sky is as wide as the scenery and slides by less than the view does, so it
+// still covers the screen wherever the camera goes
+const skyDepth = 0.08
 // The bar and the credit along the bottom of the screen cover the scene behind them,
 // so the camera can go further down than the scene, to bring its bottom up above the
 // bar. Below the scene, the ground carries on this far, and the view clears the bar by
@@ -222,7 +226,9 @@ const createBackground = (app: Application) => {
     const scale = coverScale(width, height) * zoom
     scene.scale.set(scale)
     scene.position.set(width / 2 - centre.x * scale, height / 2 - centre.y * scale)
-    // Each skyline layer follows the camera across part of the way, so it seems further
+    // The sky and each skyline layer follow the camera across part of the way, so they
+    // seem further off
+    sky.x = scenery.left + (centre.x - sceneWidth / 2) * (1 - skyDepth)
     ;(["far", "near"] as const).forEach(layer => {
       skylineLayers[layer].x = skylineLeft + (centre.x - sceneWidth / 2) * (1 - skylineDepth[layer])
     })

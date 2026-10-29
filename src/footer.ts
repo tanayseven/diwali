@@ -79,11 +79,10 @@ const createFooter = () => {
   // link go, so each language can put them wherever its word order needs
   const parts: Record<string, Node> = {
     love: createTip("❤️", LL.footer.love()),
-    sweat: createTip("😓", LL.footer.sweat()),
     author: link,
   }
-  const credit = LL.footer.credit({love: "{love}", sweat: "{sweat}", author: "{author}"})
-  footer.append(...credit.split(/\{(love|sweat|author)\}/)
+  const credit = LL.footer.credit({love: "{love}", author: "{author}"})
+  footer.append(...credit.split(/\{(love|author)\}/)
     .filter(part => part.trim() !== "")
     .map(part => parts[part] ?? part.trim()))
   document.body.appendChild(footer)
