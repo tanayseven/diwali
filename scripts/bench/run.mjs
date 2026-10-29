@@ -95,21 +95,26 @@ const drag = async (page, from, to) => {
   await page.waitForTimeout(250)
 }
 
-// Three anars, two laddis and two chakris dragged onto the porch from the Fireworks bar
-// and each lit with the matchstick. The bar's slots are where they are at 1600 x 900
+// Every firework in the Fireworks bar, all five each of anars, laddis and chakris,
+// dragged onto the porch in a grid and each lit with the matchstick. The rail's button
+// and the bar's slots are where they are at 1600 x 900
+const fireworksEach = 5
+const fireworkKinds = 3
 const lightFireworks = async page => {
-  await page.keyboard.press("2")
+  await page.mouse.click(56, 354)
   await page.waitForTimeout(800)
   const slot = idx => [403 + 88.3 * idx, 797]
-  const spots = [[260, 640], [480, 600], [700, 660], [920, 600], [1140, 650], [1340, 610], [600, 700]]
-  const kinds = [0, 0, 0, 1, 1, 2, 2]
-  for (const [idx, spot] of spots.entries()) {
-    await drag(page, slot(kinds[idx]), spot)
+  // Kinds take turns along each row, so each kind is spread across the porch
+  const spots = Array.from({length: fireworksEach * fireworkKinds}, (_, idx) =>
+    ({kind: idx % fireworkKinds, at: [240 + 280 * (idx % 5), 560 + 80 * Math.floor(idx / 5)]}))
+  for (const {kind, at} of spots) {
+    await drag(page, slot(kind), at)
   }
-  for (const [x, y] of spots) {
-    await drag(page, slot(3), [x, y - 15])
+  for (const {at: [x, y]} of spots) {
+    await drag(page, slot(fireworkKinds), [x, y - 15])
   }
 }
+const fireworkCount = fireworksEach * fireworkKinds
 
 const zoomOut = async page => {
   for (let step = 0; step < 6; step++) {
@@ -152,9 +157,9 @@ const matrix = async (browser, name, size) => {
     const stress = await openGame(browser, size)
     await enterScene(stress.page)
     await lightFireworks(stress.page)
-    await measure(stress, "close-up, 7 fireworks lit", () => stress.page.waitForTimeout(8000))
+    await measure(stress, `close-up, ${fireworkCount} fireworks lit`, () => stress.page.waitForTimeout(8000))
     await zoomOut(stress.page)
-    await measure(stress, "zoomed out, 7 fireworks lit", () => stress.page.waitForTimeout(8000))
+    await measure(stress, `zoomed out, ${fireworkCount} fireworks lit`, () => stress.page.waitForTimeout(8000))
     await stress.context.close()
   }
 }
