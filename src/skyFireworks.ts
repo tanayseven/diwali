@@ -181,11 +181,13 @@ const createSkyFireworks = async (
       || background.hidesSkyline(inScene)
   }
 
-  // Each burst is heard a moment after it's seen, as sound from that far off takes a while
-  const bangLater = () => {
+  // Each burst is heard a moment after it's seen, as sound from that far off takes a
+  // while, from wherever on screen it went off (a point in the skyline's drawing)
+  const bangLater = (at: PointData) => {
     const timer = window.setTimeout(() => {
       bangTimers.delete(timer)
-      bangs[Math.floor(Math.random() * bangs.length)]().setLevel(bangLevel)
+      const pan = background.panOf(background.fromSkyline(at))
+      bangs[Math.floor(Math.random() * bangs.length)](pan).setLevel(bangLevel)
     }, bangDelay)
     bangTimers.add(timer)
   }
@@ -196,7 +198,11 @@ const createSkyFireworks = async (
     const seen = gaps.filter(gap => !isHidden(gap.x, gap.top - burstAbove.max))
     const gap = seen[Math.floor(Math.random() * seen.length)]
     if (!gap) {
-      bangLater()
+      // From over one of the gaps, off screen
+      const unseen = gaps[Math.floor(Math.random() * gaps.length)]
+      if (unseen) {
+        bangLater({x: unseen.x, y: unseen.top - between(burstAbove)})
+      }
       return
     }
     const x = gap.x + random(-gap.spread, gap.spread)
@@ -229,7 +235,7 @@ const createSkyFireworks = async (
     sprite.visible = !background.hidesSkyline(sprite.position)
     background.decorations.addChild(sprite)
     flashes.push({sprite, age: 0})
-    bangLater()
+    bangLater(at)
   }
 
   let nextLaunch = between(launchEvery)

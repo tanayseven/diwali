@@ -1,5 +1,5 @@
 import {Application, Assets, Container, PointData, Rectangle, Sprite, Texture} from "pixi.js"
-import type {createAudioControl} from "./audioControl"
+import {stereoPan, type createAudioControl} from "./audioControl"
 
 type AudioControl = ReturnType<typeof createAudioControl>
 
@@ -56,7 +56,8 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
       match.zIndex = zIndex
       match.eventMode = "none"
       layer.addChild(match)
-      playSound()
+      // Heard from where it's struck on screen
+      playSound(stereoPan(layer.toGlobal(at).x, app.screen.width))
       // Striking runs from the strike frame up to lit, then burning from there to the end
       const strikeEnd = (matchLitFrame - 1) * matchStrikeFrame
       const burnEnd = strikeEnd + (matchFrameUrls.length - 1 - matchLitFrame) * matchBurnFrame

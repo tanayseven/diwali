@@ -22,6 +22,13 @@ const duckRelease = 400
 const readyTimeout = 8000
 // Muffled effects, like bangs from far off, lose everything above this pitch, in Hz
 const muffledCutoff = 600
+// An effect is heard from the side of the screen it's on, but never wholly from one
+// speaker, as a sound off to one side still reaches both ears
+const maxPan = 0.8
+
+// How far left (-1) or right (1) an effect is heard from, for something at x across a
+// screen this wide. Anything off screen is heard from as far as that side goes
+const stereoPan = (x: number, width: number) => Math.max(-1, Math.min(1, 2 * x / width - 1)) * maxPan
 
 // The volume and mute setting are remembered between visits. Storage can be
 // unavailable (private windows, blocked site data), so it's only a convenience
@@ -359,8 +366,8 @@ const createAudioControl = () => {
 
   // A sound effect, loaded now and played at the music's volume, following the mute and
   // volume setting while it plays. Each play is a fresh copy of it, so quick repeats
-  // overlap instead of cutting off, and can be made quieter or stopped early. A muffled
-  // one sounds far off. Plays asked for before it's loaded, or while effects can't be
+  // overlap instead of cutting off, and can be made quieter, moved left or right (from
+  // stereoPan) or stopped early. A muffled one sounds far off. Plays asked for before it's loaded, or while effects can't be
   // heard yet (before the first tap, or with the tab hidden), are skipped, so they don't
   // all go off at once later
   const createEffect = (src: string, {muffled = false} = {}) => {
@@ -371,20 +378,24 @@ const createAudioControl = () => {
       .then(data => context.decodeAudioData(data))
       .then(decoded => sound = decoded)
       .catch(error => console.error(`Couldn't load ${src}`, error))
-    return () => {
+    return (pan = 0) => {
       const handle = {}
       if (!sound || context.state !== "running") {
-        return {setLevel() {}, stop() {}}
+        return {setLevel() {}, setPan() {}, stop() {}}
       }
       const source = context.createBufferSource()
       source.buffer = sound
       const level = context.createGain()
+      const panner = context.createStereoPanner()
+      panner.pan.value = pan
       source.connect(level)
-      level.connect(muffled ? muffler : master)
+      level.connect(panner)
+      panner.connect(muffled ? muffler : master)
       const forget = () => {
         if (effects.delete(handle)) {
           source.disconnect()
           level.disconnect()
+          panner.disconnect()
           updateDuck()
         }
       }
@@ -400,6 +411,10 @@ const createAudioControl = () => {
             level.gain.value = Math.max(0, value)
             updateDuck()
           }
+        },
+        // Moves it to be heard from left (-1) or right (1), as what makes it moves
+        setPan(value: number) {
+          panner.pan.value = value
         },
         stop() {
           if (effects.has(handle)) {
@@ -417,4 +432,4 @@ const createAudioControl = () => {
   return {ready, firstTrack: tracks[0], createEffect}
 }
 
-export {createAudioControl}
+export {createAudioControl, stereoPan}

@@ -1,5 +1,6 @@
 import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {pixelDensity} from "./app"
+import {stereoPan} from "./audioControl"
 import {hudFrame} from "./hud"
 
 // The night sky, with its moon and stars, and the hills and ground in front of it. A
@@ -428,6 +429,9 @@ const createBackground = (app: Application) => {
       const y = Math.floor(point.y)
       return isOpaque(hillsMask, x - scenery.left, y) || isOpaque(houseMask, x - Math.floor(houseLeft), y - Math.floor(houseTop))
     },
+    // How far left (-1) or right (1) something at a point in the scene is heard from,
+    // by where it is on screen
+    panOf: (point: PointData) => stereoPan(scene.x + point.x * scene.scale.x, app.screen.width),
     // Whether a point in the scene is on the porch's floor
     isOnPorchFloor: (point: PointData) => isInside(point, porchFloor),
     destroy() {

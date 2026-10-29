@@ -874,7 +874,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       }
       if (anar.elapsed >= fuseDuration) {
         anar.state = "burning"
-        anar.sound = playAnarSound()
+        anar.sound = playAnarSound(background.panOf(anar.sprite.position))
         for (let idx = 0; idx < catchPuffs; idx++) {
           addSmoke(nozzle.x + random(-6, 6), nozzle.y - random(0, 12))
         }
@@ -883,6 +883,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     if (anar.state === "burning") {
       strength = fountainStrength(anar)
       anar.sound?.setLevel(strength * anarVolume)
+      // Still heard from where it is as the camera pans
+      anar.sound?.setPan(background.panOf(anar.sprite.position))
       anar.sparkDebt += maxSparkRate * strength * dt
       while (anar.sparkDebt >= 1) {
         anar.sparkDebt--
@@ -953,7 +955,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     laddi.brightness = 1
     laddi.lightAt = at
     flash = 1
-    blastSounds[Math.floor(Math.random() * blastSounds.length)]()
+    blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(at))
   }
 
   // Moves a laddi's burn on: the fuse fizzing along, then the crackers going off
@@ -1065,7 +1067,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       if (chakri.elapsed >= chakriFuse.duration) {
         chakri.state = "burning"
         chakri.burnFor = random(chakriBurn.min, chakriBurn.max)
-        chakri.sound = playChakriSound()
+        chakri.sound = playChakriSound(background.panOf(chakri.sprite.position))
       }
     }
     if (chakri.state === "burning") {
@@ -1073,6 +1075,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       const progress = clamp(t / chakri.burnFor)
       strength = spinStrength(chakri)
       chakri.sound?.setLevel(strength)
+      // Heard from where it's skittered to, and as the camera pans
+      chakri.sound?.setPan(background.panOf(chakri.sprite.position))
       // Its drawings burn through the coil, after the whole one with its wick
       const frame = 1 + Math.min(chakriUrls.length - 3, Math.floor(progress * (chakriUrls.length - 2)))
       chakri.sprite.texture = Assets.get<Texture>(chakriUrls[frame])
