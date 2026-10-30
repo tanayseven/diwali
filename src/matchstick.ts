@@ -1,4 +1,4 @@
-import {Application, Assets, Container, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, Graphics, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {stereoPan, type createAudioControl} from "./audioControl"
 
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -20,69 +20,128 @@ const matchSceneLength = 17.28
 const matchScale = matchSceneLength / matchCrop.height
 // Held tilted, with the stick leaning away from what it's lighting
 const matchTilt = -0.45
-// How long each frame of the match shows while striking (unlit to lit), and then
-// while burning down to burnt out, before it fades away
-const matchStrikeFrame = 140
-const matchBurnFrame = 220
+// How long the match is held to a wick or a fuse before it catches, in ms: it's struck
+// and plays out striking, flaring and catching over that time, until it's lit
+const lightTime = 1000
 const matchLitFrame = 4
+// Then it burns down, a frame at a time, and fades away, and a fresh one's in hand
+const matchBurnFrame = 220
 const matchFadeOut = 250
+const burnEnd = (matchFrameUrls.length - 1 - matchLitFrame) * matchBurnFrame
+// A match is only taken out of its slot once it's dragged this far, on screen
+const dragSlop = 6
+// The ring round the match's head that fills as it's held to something, on screen
+const ringRadius = 22
+const ringWidth = 4
+const ringColour = 0xffd700
 
-// A matchstick to drag out of a HUD and strike against something in the scene.
-// Expects matchFrameUrls to have been loaded already
+type Aim = {target: object, light: () => void}
+
+// A matchstick to drag out of a HUD and light things in the scene with by holding it
+// over them. Expects matchFrameUrls to have been loaded already
 const createMatchstick = (app: Application, audio: AudioControl) => {
   const playSound = audio.createEffect(matchSoundUrl)
 
   return {
     // The HUD slot's item for it
     item: {url: matchFrameUrls[0], crop: matchCrop, rotation: Math.PI / 4},
-    // How many scene units a pixel of its drawing spans
-    scale: matchScale,
-    // An unlit match, held by its head, to drag around
-    createSprite() {
-      const sprite = new Sprite(Assets.get<Texture>(matchFrameUrls[0]))
-      sprite.anchor.set(matchHead.x, matchHead.y)
-      sprite.rotation = matchTilt
-      return sprite
-    },
-    // Strikes a match with its head at a point in a layer of the scene, with the sound
-    // of it: it plays out striking and catching, calling onLit as it catches, then burns
-    // down and fades away, calling onDone once it's gone
-    strike(layer: Container, at: PointData, zIndex: number, onLit: () => void, onDone: () => void) {
-      const match = new Sprite(Assets.get<Texture>(matchFrameUrls[1]))
+    // Takes an unlit match in hand at a point on screen, held by its head. Over
+    // something it can light, it's struck, and a ring round its head fills as it flares
+    // and catches; moved off, the ring holds where it's got to until it's over something
+    // again. Once it's full that thing's lit, and the match burns down and goes out in
+    // hand, and a fresh one takes its place
+    hold(at: PointData) {
+      const container = new Container()
+      container.eventMode = "none"
+      container.position.copyFrom(at)
+      const match = new Sprite(Assets.get<Texture>(matchFrameUrls[0]))
       match.anchor.set(matchHead.x, matchHead.y)
-      match.scale.set(matchScale)
       match.rotation = matchTilt
-      match.position.copyFrom(at)
-      match.zIndex = zIndex
-      match.eventMode = "none"
-      layer.addChild(match)
-      // Heard from where it's struck on screen
-      playSound(stereoPan(layer.toGlobal(at).x, app.screen.width))
-      // Striking runs from the strike frame up to lit, then burning from there to the end
-      const strikeEnd = (matchLitFrame - 1) * matchStrikeFrame
-      const burnEnd = strikeEnd + (matchFrameUrls.length - 1 - matchLitFrame) * matchBurnFrame
-      let elapsed = 0
-      let lit = false
-      const tick = () => {
-        elapsed += app.ticker.deltaMS
-        const frame = elapsed < strikeEnd
-          ? 1 + Math.floor(elapsed / matchStrikeFrame)
-          : Math.min(matchFrameUrls.length - 1, matchLitFrame + Math.floor((elapsed - strikeEnd) / matchBurnFrame))
+      const ring = new Graphics()
+      container.addChild(match, ring)
+
+      let aim: Aim | undefined
+      // Unlit and ready, being struck and held to something, or burning down after
+      // lighting it
+      let phase: "ready" | "striking" | "burning" = "ready"
+      // How far it's been struck, from 0 to 1, or how long it's burnt since, in ms
+      let progress = 0
+      let burnt = 0
+      let strikeSound: ReturnType<typeof playSound> | undefined
+
+      const show = (frame: number) => {
         match.texture = Assets.get<Texture>(matchFrameUrls[frame])
-        if (!lit && frame >= matchLitFrame) {
-          lit = true
-          onLit()
-        }
-        match.alpha = elapsed < burnEnd ? 1 : Math.max(0, 1 - (elapsed - burnEnd) / matchFadeOut)
-        if (elapsed >= burnEnd + matchFadeOut) {
-          app.ticker.remove(tick)
-          match.destroy()
-          onDone()
+      }
+      const takeFresh = () => {
+        phase = "ready"
+        progress = 0
+        match.alpha = 1
+        show(0)
+      }
+      const drawRing = () => {
+        ring.clear()
+        if (phase === "striking") {
+          ring.circle(0, 0, ringRadius).stroke({width: ringWidth + 2, color: 0x000000, alpha: 0.45})
+          ring.arc(0, 0, ringRadius, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2)
+            .stroke({width: ringWidth, color: ringColour, cap: "round"})
         }
       }
+      const tick = () => {
+        const dt = app.ticker.deltaMS
+        if (phase === "ready" && aim) {
+          phase = "striking"
+          progress = 0
+          // Heard from where it's struck on screen
+          strikeSound = playSound(stereoPan(container.x, app.screen.width))
+        }
+        if (phase === "striking" && aim) {
+          progress = Math.min(1, progress + dt / lightTime)
+          show(1 + Math.min(matchLitFrame - 1, Math.floor(progress * matchLitFrame)))
+          if (progress >= 1) {
+            const {light} = aim
+            phase = "burning"
+            burnt = 0
+            strikeSound = undefined
+            light()
+          }
+        } else if (phase === "burning") {
+          burnt += dt
+          show(Math.min(matchFrameUrls.length - 1, matchLitFrame + Math.floor(burnt / matchBurnFrame)))
+          match.alpha = burnt < burnEnd ? 1 : Math.max(0, 1 - (burnt - burnEnd) / matchFadeOut)
+          if (burnt >= burnEnd + matchFadeOut) {
+            takeFresh()
+          }
+        }
+        drawRing()
+      }
       app.ticker.add(tick)
+
+      return {
+        container,
+        // Moves it, and sizes it as the scene is shown, in screen pixels per scene unit
+        moveTo(point: PointData, sceneScale: number) {
+          container.position.copyFrom(point)
+          match.scale.set(sceneScale * matchScale)
+        },
+        // What it's over that it could light, and how to light it
+        setAim(next: Aim | undefined) {
+          aim = next
+        },
+        destroy() {
+          strikeSound?.stop()
+          app.ticker.remove(tick)
+          container.destroy({children: true})
+        },
+      }
     },
   }
 }
 
-export {createMatchstick, matchFrameUrls}
+type HeldMatch = ReturnType<ReturnType<typeof createMatchstick>["hold"]>
+
+// Whether a press has been dragged far enough to take something, by default the
+// match out of its slot
+const draggedFrom = (from: PointData, to: PointData, slop = dragSlop) => Math.hypot(to.x - from.x, to.y - from.y) >= slop
+
+export {createMatchstick, draggedFrom, matchFrameUrls}
+export type {HeldMatch}

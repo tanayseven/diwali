@@ -4,7 +4,7 @@ import {createBackground} from "./background"
 import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
-import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 
@@ -19,9 +19,13 @@ const diyaUrls = {
   wickAndOil: "sprites/diya/diya-no-flame-wick-oil.svg",
 }
 // A lit diya is the menu's animated diya, whose flame flickers. It's the same drawing,
-// framed 5 units further right and 6 higher in a canvas of the same size
+// framed 5 units further right and 6 higher in a canvas of the same size. Turned to
+// face the front, it's another animated drawing of it, with its spout towards us
 const animatedDiyaUrl = "sprites/diwali-diya-animated.svg"
 const animatedDiyaOffset = {x: 5, y: -6}
+const frontDiyaUrl = "sprites/diya/diya-front-animated.svg"
+// The animated diyas are preloaded as images rather than textures
+const diyaImages = [animatedDiyaUrl, frontDiyaUrl]
 const wickUrl = "sprites/diya/long-wick.svg"
 const oilBottleUrl = "sprites/diya/oil-bottle.svg"
 const pouringBottleUrl = "sprites/diya/oil-bottle-pouring.svg"
@@ -53,15 +57,32 @@ const litDiyaAnchor = {
   x: diyaAnchor.x + animatedDiyaOffset.x / diyaCanvas.width,
   y: diyaAnchor.y + animatedDiyaOffset.y / diyaCanvas.height,
 }
+// A lit diya can be turned to face either side, its spout to the right as drawn or to
+// the left, mirrored, or to face the front. It turns about the middle of its foot,
+// which is 45.5 units left of where it's held, and is at x 249.5 in the front-facing
+// drawing, standing on the same line. Each way, it's held by the same point, and its
+// flame is that far from there, in its canvas's units
+type Facing = "right" | "front" | "left"
+const turnOrder: Facing[] = ["right", "front", "left"]
+const footFromAnchor = 45.5
+const facings: Record<Facing, {anchor: PointData, flame: PointData}> = {
+  right: {anchor: litDiyaAnchor, flame: {x: 92.5, y: -167}},
+  front: {anchor: {x: (249.5 + footFromAnchor) / diyaCanvas.width, y: diyaAnchor.y}, flame: {x: -65.5, y: -92}},
+  left: {
+    anchor: {x: (189.5 - footFromAnchor) / diyaCanvas.width, y: litDiyaAnchor.y},
+    flame: {x: -92.5, y: -167},
+  },
+}
+// It turns by narrowing to nothing and widening again the new way, in ms
+const turnDuration = 220
+// A press on a placed diya only picks it up once it's dragged this far, on screen;
+// let go before then, it's a tap, which turns a lit one
+const pickUpSlop = 6
 // A placed diya's width in scene units, about a third of a porch chair
 const diyaSceneWidth = 24
 const diyaScale = diyaSceneWidth / diyaCanvas.width
 // Where the bowl's mouth is in a diya's canvas, which the oil is poured into
 const bowlMouth = {x: 165, y: 212}
-// Where the wick's tip is in a diya's canvas, which the match lights
-const wickTip = {x: 322, y: 196}
-// A lit diya's flame in its canvas, a little above the wick's tip
-const flameAt = {x: wickTip.x, y: wickTip.y - 20}
 // A lit diya lights up the porch around it, flickering a little with its flame, and
 // glows at the flame
 const diyaLightColour = 0xffb35c
@@ -97,9 +118,9 @@ const pourFillAt = 600
 // keeps playing, and is drawn onto a canvas every frame for all the lit diyas to share,
 // though only while there are any to show it. Where a browser only draws an animated
 // SVG's first frame, the flames simply stay still
-const createLiveDiyaTexture = (app: Application, isShown: () => boolean) => {
+const createLiveDiyaTexture = (app: Application, url: string, isShown: () => boolean) => {
   const image = document.createElement("img")
-  image.src = animatedDiyaUrl
+  image.src = url
   image.alt = ""
   image.setAttribute("aria-hidden", "true")
   // Browsers stop animating images that are off screen or visibility: hidden, so it
@@ -158,6 +179,10 @@ type PlacedDiya = {
   // Its light on the scene and the glow at its flame, once it's lit
   light?: Light
   glow?: Sprite
+  // Which way it faces, and how far it's turned to face the next way, in ms, while
+  // it's turning
+  facing: Facing
+  turning?: number
 }
 
 type Drag =
@@ -165,22 +190,26 @@ type Drag =
   | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData}
   | {kind: "wick", sprite: Sprite}
   | {kind: "oil", sprite: Sprite}
-  | {kind: "match", sprite: Sprite}
 
 // A bar of inventory slots along the bottom of the screen, holding empty diyas, wicks
 // and an oil bottle, with badges counting how many are left. Empty diyas are dragged
 // into the scene one at a time; placed ones can be picked up and moved, or dropped
 // anywhere on the bar to go back on their stack. A wick dragged onto a placed diya
 // goes into it, and the bottle dragged onto one pours oil into it, in either order.
-// The matchstick dragged onto a diya with both lights it, with the sound of it striking.
+// The matchstick dragged out of the bar and held over a diya with both is struck, and a
+// ring round it fills until the diya lights; it goes back once it's let go.
 // Expects diyaAssets to have been loaded already
 const createDiyaInventory = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
   const {emptyDiyas, wicks, oilBottle} = createItems()
   const matchstick = createMatchstick(app, audio)
-  // Only drawn while a lit diya on the porch is on screen, or one is being carried
-  const litDiya = createLiveDiyaTexture(app, () =>
-    placed.some(diya => diya.lit && background.inView(diya.sprite.x, diya.sprite.y, diyaMargin))
-    || (drag?.kind === "diya" && drag.diya.lit))
+  // Each only drawn while a lit diya on the porch facing its way is on screen, or one
+  // is being carried
+  const shownFacing = (side: boolean) => (diya: PlacedDiya) => diya.lit && (diya.facing !== "front") === side
+  const liveTexture = (url: string, side: boolean) => createLiveDiyaTexture(app, url, () =>
+    placed.some(diya => shownFacing(side)(diya) && background.inView(diya.sprite.x, diya.sprite.y, diyaMargin))
+    || (drag?.kind === "diya" && shownFacing(side)(drag.diya)))
+  const litDiya = liveTexture(animatedDiyaUrl, true)
+  const frontDiya = liveTexture(frontDiyaUrl, false)
   const container = new Container()
   const bar = createHud(app)
   const hud = bar.container
@@ -201,14 +230,23 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // The placed diya a wick or the bottle would go into if let go now
   let target: PlacedDiya | undefined
 
-  // Shows a diya as it is now, held by the middle of its bowl's base either way
+  // Shows a diya as it is now, held by the middle of its bowl's base either way, and
+  // facing the way it's turned, mirrored to face left. Its size is kept
   const showDiya = (diya: PlacedDiya) => {
-    const {wick, oil, lit} = diya
-    diya.sprite.texture = lit ? litDiya.texture : Assets.get<Texture>(
+    const {wick, oil, lit, facing, sprite} = diya
+    sprite.texture = !lit ? Assets.get<Texture>(
       wick && oil ? diyaUrls.wickAndOil : wick ? diyaUrls.wick : oil ? diyaUrls.oil : diyaUrls.empty,
-    )
-    const anchor = lit ? litDiyaAnchor : diyaAnchor
-    diya.sprite.anchor.set(anchor.x, anchor.y)
+    ) : facing === "front" ? frontDiya.texture : litDiya.texture
+    const anchor = lit ? facings[facing].anchor : diyaAnchor
+    sprite.anchor.set(anchor.x, anchor.y)
+    sprite.scale.x = Math.abs(sprite.scale.x) * (lit && facing === "left" ? -1 : 1)
+  }
+
+  // A lit diya turns to face the next way round
+  const turn = (diya: PlacedDiya) => {
+    if (diya.lit && diya.turning === undefined) {
+      diya.turning = 0
+    }
   }
 
 
@@ -225,14 +263,14 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   addTooltip(bottleSlot.container, () => ({title: tips.oil.name(), lines: [tips.oil.hint()]}))
   addTooltip(matchSlot.container, () => ({title: tips.matchstick.name(), lines: [tips.matchstick.diyaHint()]}))
 
-  // What a placed diya still needs, or that it's lit
+  // What a placed diya still needs, or that it's lit and can be turned
   const diyaTooltip = (diya: PlacedDiya) => (): Tooltip => {
     const status = diya.lit ? tips.diya.lit()
       : diya.wick && diya.oil ? tips.diya.ready()
       : diya.wick ? tips.diya.needsOil()
       : diya.oil ? tips.diya.needsWick()
       : tips.diya.needsWickAndOil()
-    return {title: tips.diya.name(), lines: [status, tips.move()]}
+    return {title: tips.diya.name(), lines: diya.lit ? [status, tips.diya.turn(), tips.move()] : [status, tips.move()]}
   }
 
   const render = () => {
@@ -240,7 +278,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     diyaSlot.show()
     wickSlot.show()
     bottleSlot.show(drag?.kind === "oil")
-    matchSlot.show(drag?.kind === "match")
+    matchSlot.show(held !== undefined)
   }
 
   const setOverBar = (value: boolean) => {
@@ -278,8 +316,8 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
 
   const placeDiya = (diya: PlacedDiya, at: PointData) => {
     const {sprite} = diya
-    showDiya(diya)
     sprite.scale.set(diyaScale)
+    showDiya(diya)
     sprite.position.copyFrom(at)
     sprite.zIndex = at.y
     background.decorations.addChild(sprite)
@@ -344,36 +382,24 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     app.ticker.add(tick)
   }
 
-  // Lights a diya: the match is held to the wick and plays out striking and catching,
-  // the diya lights as the match does, and the match burns down and fades away
+  // The held match lights a diya's wick
   const light = (diya: PlacedDiya) => {
-    diya.busy = true
+    diya.lit = true
+    diya.light = lighting.addLight(diyaLightColour)
+    diya.glow = new Sprite(lighting.glowTexture)
+    diya.glow.anchor.set(0.5)
+    diya.glow.tint = 0xffd08a
+    diya.glow.blendMode = "add"
+    diya.glow.width = diya.glow.height = diyaGlowRadius * 2
+    glowLayer.addChild(diya.glow)
+    showDiya(diya)
     makePickable(diya)
-    const at = {
-      x: diya.sprite.x + (wickTip.x - diyaCanvas.width * diyaAnchor.x) * diyaScale,
-      y: diya.sprite.y + (wickTip.y - diyaCanvas.height * diyaAnchor.y) * diyaScale,
-    }
-    // In front of the diya it's lighting
-    matchstick.strike(background.decorations, at, diya.sprite.zIndex + 0.5, () => {
-      diya.lit = true
-      diya.light = lighting.addLight(diyaLightColour)
-      diya.glow = new Sprite(lighting.glowTexture)
-      diya.glow.anchor.set(0.5)
-      diya.glow.tint = 0xffd08a
-      diya.glow.blendMode = "add"
-      diya.glow.width = diya.glow.height = diyaGlowRadius * 2
-      glowLayer.addChild(diya.glow)
-      showDiya(diya)
-    }, () => {
-      diya.busy = false
-      makePickable(diya)
-    })
   }
 
-  const startDrag = (e: FederatedPointerEvent, next: Drag, scale: number) => {
+  const startDrag = (at: PointData, next: Drag, scale: number) => {
     const {sprite} = next
     sprite.scale.set(scale)
-    sprite.position.copyFrom(e.global)
+    sprite.position.copyFrom(at)
     sprite.eventMode = "none"
     dragLayer.addChild(sprite)
     setOutline(sprite, "selected", true)
@@ -382,29 +408,65 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   }
 
   // Diyas are shown while dragged at the size they'll be placed at, so they land as seen
-  const startDiyaDrag = (e: FederatedPointerEvent, diya: PlacedDiya, fromScene?: PointData) => {
+  const startDiyaDrag = (at: PointData, diya: PlacedDiya, fromScene?: PointData) => {
+    startDrag(at, {kind: "diya", sprite: diya.sprite, diya, fromScene}, background.scale() * diyaScale)
     showDiya(diya)
-    startDrag(e, {kind: "diya", sprite: diya.sprite, diya, fromScene}, background.scale() * diyaScale)
+  }
+
+  // The match in hand while it's dragged, where the pointer last was, and where a
+  // press on its slot began, until it's dragged far enough to take it out
+  let held: HeldMatch | undefined
+  const pointer = new Point()
+  let pressedSlotAt: Point | undefined
+
+  // The diyas ready to light under the held match
+  const lightable = (diya: PlacedDiya) => diya.wick && diya.oil && !diya.lit
+
+  // Points the held match at whatever diya ready to light it's over, to light it once
+  // it's been pressed there long enough
+  const aimMatch = () => {
+    if (!held) {
+      return
+    }
+    held.moveTo(pointer, background.scale())
+    const diya = diyaAt(pointer, lightable)
+    setTarget(diya)
+    held.setAim(diya && {target: diya, light: () => {
+      light(diya)
+      // Whatever else is under it now could be lit next
+      aimMatch()
+    }})
+  }
+
+  const putAwayMatch = () => {
+    if (!held) {
+      return
+    }
+    held.destroy()
+    held = undefined
+    setTarget(undefined)
+    placed.forEach(makePickable)
+    render()
   }
 
   diyaSlot.container.on("pointerdown", e => {
-    if (emptyDiyas.count === 0) {
+    if (emptyDiyas.count === 0 || drag) {
       return
     }
     emptyDiyas.count! -= 1
-    const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false}
+    const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false, facing: "right"}
     addTooltip(diya.sprite, diyaTooltip(diya))
-    startDiyaDrag(e, diya)
+    startDiyaDrag(e.global, diya)
   })
 
   wickSlot.container.on("pointerdown", e => {
-    if (wicks.count === 0) {
+    if (wicks.count === 0 || drag) {
       return
     }
     wicks.count! -= 1
     const sprite = new Sprite(cropped(wickUrl, wickCrop))
     sprite.anchor.set(0.5)
-    startDrag(e, {kind: "wick", sprite}, background.scale() * wickSceneLength / wickCrop.width)
+    startDrag(e.global, {kind: "wick", sprite}, background.scale() * wickSceneLength / wickCrop.width)
   })
 
   bottleSlot.container.on("pointerdown", e => {
@@ -413,37 +475,53 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
     const sprite = new Sprite(cropped(oilBottleUrl, bottleCrop))
     sprite.anchor.set(0.5)
-    startDrag(e, {kind: "oil", sprite}, background.scale() * bottleScale)
+    startDrag(e.global, {kind: "oil", sprite}, background.scale() * bottleScale)
   })
 
-  // The match is held by its head, so it's the head that's put to a wick
+  // A press on the match's slot only takes the match out once it's dragged
   matchSlot.container.on("pointerdown", e => {
-    if (drag) {
-      return
+    if (!drag && !held) {
+      pressedSlotAt = e.global.clone()
     }
-    startDrag(e, {kind: "match", sprite: matchstick.createSprite()}, background.scale() * matchstick.scale)
   })
+  const takeMatch = () => {
+    held = matchstick.hold(pointer)
+    dragLayer.addChild(held.container)
+    placed.forEach(makePickable)
+    aimMatch()
+    render()
+  }
 
   // Whether placed diyas can be picked up, and whether the bar is showing to put them back on
   let interactive = false
   let hudShown = false
+  // A placed diya pressed on, and where, until it's dragged far enough to pick it up
+  let pressedDiya: {diya: PlacedDiya, at: Point} | undefined
+
+  const pickUp = (diya: PlacedDiya, at: PointData) => {
+    const {sprite} = diya
+    // It stops turning, whichever way it's got to
+    diya.turning = undefined
+    const fromScene = {x: sprite.x, y: sprite.y}
+    placed.splice(placed.indexOf(diya), 1)
+    sprite.removeFromParent()
+    diya.light?.off()
+    if (diya.glow) {
+      diya.glow.visible = false
+    }
+    startDiyaDrag(at, diya, fromScene)
+  }
 
   // A placed diya can be picked up again to move it or put it back on the stack,
-  // except while it's busy being filled or lit, or while another scene is open
+  // except while it's busy being filled, the match is in hand, or another scene is open.
+  // It's picked up once it's dragged; a lit one tapped instead is turned
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
-    sprite.eventMode = interactive && !diya.busy ? "static" : "none"
-    sprite.cursor = "grab"
+    sprite.eventMode = interactive && !diya.busy && !held ? "static" : "none"
+    sprite.cursor = diya.lit ? "pointer" : "grab"
     sprite.removeAllListeners("pointerdown")
     sprite.on("pointerdown", e => {
-      const fromScene = {x: sprite.x, y: sprite.y}
-      placed.splice(placed.indexOf(diya), 1)
-      sprite.removeFromParent()
-      diya.light?.off()
-      if (diya.glow) {
-        diya.glow.visible = false
-      }
-      startDiyaDrag(e, diya, fromScene)
+      pressedDiya = {diya, at: e.global.clone()}
     })
   }
 
@@ -491,9 +569,6 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     } else if (current.kind === "oil" && into) {
       current.sprite.destroy()
       pour(into)
-    } else if (current.kind === "match" && into) {
-      current.sprite.destroy()
-      light(into)
     } else {
       returnDrag(current)
     }
@@ -509,27 +584,49 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
+    const at = toStage(e)
+    if (pressedDiya && draggedFrom(pressedDiya.at, at, pickUpSlop)) {
+      const {diya} = pressedDiya
+      pressedDiya = undefined
+      pickUp(diya, at)
+    }
     if (!drag) {
+      if (held) {
+        pointer.copyFrom(at)
+        aimMatch()
+      } else if (pressedSlotAt && draggedFrom(pressedSlotAt, at)) {
+        pointer.copyFrom(at)
+        pressedSlotAt = undefined
+        takeMatch()
+      }
       return
     }
-    const at = toStage(e)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
       setOverBar(hudShown && bar.isOver(at))
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(at, diya => !diya.wick))
-    } else if (drag.kind === "oil") {
-      setTarget(diyaAt(at, diya => !diya.oil))
     } else {
-      setTarget(diyaAt(at, diya => diya.wick && diya.oil && !diya.lit))
+      setTarget(diyaAt(at, diya => !diya.oil))
     }
   }
-  const onPointerUp = (e: PointerEvent) => endDrag(toStage(e))
+  // Letting go puts the match back, and a diya pressed and let go without dragging it
+  // is turned
+  const onPointerUp = (e: PointerEvent) => {
+    if (pressedDiya) {
+      turn(pressedDiya.diya)
+      pressedDiya = undefined
+    }
+    pressedSlotAt = undefined
+    putAwayMatch()
+    endDrag(toStage(e))
+  }
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
 
-  // Lit diyas shine where they're placed, but not while they're being carried
+  // Lit diyas shine where they're placed, but not while they're being carried. One
+  // that's turning narrows to nothing, then widens again facing the next way round
   let time = 0
   const shine = () => {
     time += app.ticker.deltaMS / 1000
@@ -537,10 +634,21 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       if (!diya.light || !diya.glow) {
         return
       }
-      const at = {
-        x: diya.sprite.x + (flameAt.x - diyaCanvas.width * diyaAnchor.x) * diyaScale,
-        y: diya.sprite.y + (flameAt.y - diyaCanvas.height * diyaAnchor.y) * diyaScale,
+      if (diya.turning !== undefined) {
+        const before = diya.turning
+        diya.turning += app.ticker.deltaMS
+        if (before < turnDuration / 2 && diya.turning >= turnDuration / 2) {
+          diya.facing = turnOrder[(turnOrder.indexOf(diya.facing) + 1) % turnOrder.length]
+          showDiya(diya)
+        }
+        const t = Math.min(1, diya.turning / turnDuration)
+        diya.sprite.scale.x = Math.sign(diya.sprite.scale.x) * diyaScale * Math.max(0.05, Math.abs(1 - 2 * t))
+        if (t >= 1) {
+          diya.turning = undefined
+        }
       }
+      const {flame} = facings[diya.facing]
+      const at = {x: diya.sprite.x + flame.x * diyaScale, y: diya.sprite.y + flame.y * diyaScale}
       // Each flame flickers in its own time
       const phase = diya.sprite.x
       const flicker = 0.9 + 0.06 * Math.sin(time * 7 + phase) + 0.04 * Math.sin(time * 13 + phase * 1.7)
@@ -557,16 +665,24 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   return {
     container,
     layout: bar.layout,
-    // Shows its bar, while the Diyas tool is the one in use
+    // Shows its bar, while the Diyas tool is the one in use. The match is put away
+    // with the bar
     setHudShown(shown: boolean) {
       hudShown = shown
-      bar.setOpacity(shown ? 1 : 0)
+      bar.setShown(shown)
       bar.setInteractive(shown)
+      if (!shown) {
+        putAwayMatch()
+      }
     },
     setInteractive(value: boolean) {
       interactive = value
       placed.forEach(makePickable)
-      // Leaving the scene mid-drag puts whatever was dragged back where it came from
+      // Leaving the scene puts the match away, and whatever was dragged back where it
+      // came from
+      if (!interactive) {
+        putAwayMatch()
+      }
       if (!interactive && drag) {
         const current = drag
         drag = undefined
@@ -577,6 +693,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       }
     },
     destroy() {
+      putAwayMatch()
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
@@ -584,8 +701,9 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       container.destroy({children: true})
       glowLayer.destroy({children: true})
       litDiya.destroy()
+      frontDiya.destroy()
     },
   }
 }
 
-export {createDiyaInventory, diyaAssets}
+export {createDiyaInventory, diyaAssets, diyaImages}

@@ -39,7 +39,6 @@
     <path d="M35 49V81Q35 89 44 89H76Q85 89 85 81V49Z" fill="url(#round)"/>
     <rect x="35" y="42" width="50" height="14" rx="9" ry="6" fill="url(#top)"/>
     <g clip-path="url(#top-clip)"><rect x="38.2" y="43" width="43.6" height="12" rx="7.8" ry="5" fill="none" stroke="#3D6E2B" stroke-width="1.1"/><rect x="42.68" y="44.4" width="34.64" height="9.2" rx="6.12" ry="3.6" fill="none" stroke="#2F5A22" stroke-width="1.1"/><rect x="47.16" y="45.8" width="25.68" height="6.4" rx="4.44" ry="2.2" fill="none" stroke="#1D3C14" stroke-width="1.1"/><rect x="51.64" y="47.2" width="16.72" height="3.6" rx="2.76" ry="0.8" fill="none" stroke="#24481A" stroke-width="1.1"/><rect x="56.12" y="48.6" width="7.76" height="0.8" rx="1.08" ry="0.5" fill="none" stroke="#2F5A22" stroke-width="1.1"/></g>
-    <path d="M60 55.5Q60.4 72 59.7 88.5" stroke="#D9C79A" stroke-width="1.8" fill="none"/>
-    <path d="M60.5 55.5Q60.9 72 60.2 88.5" stroke="#9C8A60" stroke-width="0.5" fill="none"/><circle cx="60" cy="49" r="1.4" fill="#1A120C"/>
+    <ellipse cx="60" cy="49.3" rx="2" ry="0.9" fill="#0F1F0A"/>
   </g>
 </svg>

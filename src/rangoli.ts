@@ -209,7 +209,7 @@ const createRangoli = (app: Application, background: Background) => {
     pressHandler,
     // Shows its bar, while the Draw Rangoli tool is the one in use
     setHudShown(shown: boolean) {
-      bar.setOpacity(shown ? 1 : 0)
+      bar.setShown(shown)
       bar.setInteractive(shown)
     },
     destroy() {

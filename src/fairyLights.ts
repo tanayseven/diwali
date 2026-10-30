@@ -334,7 +334,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     // Shows its bar, while the Decorate House tool is the one in use
     setHudShown(shown: boolean) {
       hudShown = shown
-      bar.setOpacity(shown ? 1 : 0)
+      bar.setShown(shown)
       bar.setInteractive(shown)
     },
     destroy() {

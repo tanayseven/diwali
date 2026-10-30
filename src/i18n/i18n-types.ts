@@ -150,6 +150,10 @@ type RootTranslation = {
 			 * L​i​t
 			 */
 			lit: string
+			/**
+			 * T​a​p​ ​t​o​ ​t​u​r​n​ ​i​t
+			 */
+			turn: string
 		}
 		wick: {
 			/**
@@ -177,11 +181,11 @@ type RootTranslation = {
 			 */
 			name: string
 			/**
-			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​w​i​t​h​ ​a​ ​w​i​c​k​ ​a​n​d​ ​o​i​l​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​w​i​t​h​ ​a​ ​w​i​c​k​ ​a​n​d​ ​o​i​l​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			diyaHint: string
 			/**
-			 * D​r​a​g​ ​o​n​t​o​ ​a​n​ ​a​n​a​r​,​ ​a​ ​l​a​d​d​i​,​ ​a​ ​c​h​a​k​r​i​ ​o​r​ ​a​ ​s​u​t​l​i​ ​b​o​m​b​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​f​i​r​e​w​o​r​k​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			fireworkHint: string
 		}
@@ -222,6 +226,16 @@ type RootTranslation = {
 			name: string
 			/**
 			 * A​ ​f​i​r​e​c​r​a​c​k​e​r​ ​w​o​u​n​d​ ​t​i​g​h​t​ ​i​n​ ​t​w​i​n​e​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+			 */
+			stack: string
+		}
+		rocket: {
+			/**
+			 * R​o​c​k​e​t
+			 */
+			name: string
+			/**
+			 * A​ ​r​o​c​k​e​t​ ​o​n​ ​a​ ​s​t​i​c​k​,​ ​s​t​o​o​d​ ​i​n​ ​a​n​ ​e​m​p​t​y​ ​b​o​t​t​l​e​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
 			 */
 			stack: string
 		}
@@ -475,6 +489,10 @@ export type TranslationFunctions = {
 			 * Lit
 			 */
 			lit: () => LocalizedString
+			/**
+			 * Tap to turn it
+			 */
+			turn: () => LocalizedString
 		}
 		wick: {
 			/**
@@ -502,11 +520,11 @@ export type TranslationFunctions = {
 			 */
 			name: () => LocalizedString
 			/**
-			 * Drag onto a diya with a wick and oil to light it
+			 * Drag onto a diya with a wick and oil, and hold it there to light it
 			 */
 			diyaHint: () => LocalizedString
 			/**
-			 * Drag onto an anar, a laddi, a chakri or a sutli bomb to light it
+			 * Drag onto a firework, and hold it there to light it
 			 */
 			fireworkHint: () => LocalizedString
 		}
@@ -547,6 +565,16 @@ export type TranslationFunctions = {
 			name: () => LocalizedString
 			/**
 			 * A firecracker wound tight in twine. Drag one onto the porch
+			 */
+			stack: () => LocalizedString
+		}
+		rocket: {
+			/**
+			 * Rocket
+			 */
+			name: () => LocalizedString
+			/**
+			 * A rocket on a stick, stood in an empty bottle. Drag one onto the porch
 			 */
 			stack: () => LocalizedString
 		}

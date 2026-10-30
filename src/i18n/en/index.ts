@@ -55,6 +55,7 @@ const en = {
 			needsOil: "Needs oil",
 			ready: "Ready to light with the matchstick",
 			lit: "Lit",
+			turn: "Tap to turn it",
 		},
 		wick: {
 			name: "Wick",
@@ -66,8 +67,8 @@ const en = {
 		},
 		matchstick: {
 			name: "Matchstick",
-			diyaHint: "Drag onto a diya with a wick and oil to light it",
-			fireworkHint: "Drag onto an anar, a laddi, a chakri or a sutli bomb to light it",
+			diyaHint: "Drag onto a diya with a wick and oil, and hold it there to light it",
+			fireworkHint: "Drag onto a firework, and hold it there to light it",
 		},
 		anar: {
 			name: "Anar",
@@ -84,6 +85,10 @@ const en = {
 		sutli: {
 			name: "Sutli Bomb",
 			stack: "A firecracker wound tight in twine. Drag one onto the porch",
+		},
+		rocket: {
+			name: "Rocket",
+			stack: "A rocket on a stick, stood in an empty bottle. Drag one onto the porch",
 		},
 		noneLeft: "None left",
 		move: "Drag to move it, or onto the bar to put it back",

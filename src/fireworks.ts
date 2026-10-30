@@ -4,7 +4,7 @@ import {createBackground, sceneHeight, sceneWidth} from "./background"
 import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
-import {createMatchstick, matchFrameUrls} from "./matchstick"
+import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {createShownParticles} from "./shownParticles"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
@@ -31,12 +31,20 @@ const sutliUrls = {
   fuse: Array.from({length: 6}, (_, idx) => `sprites/fireworks/sutli-${String(idx + 1).padStart(2, "0")}.svg`),
   spent: "sprites/fireworks/sutli-spent.svg",
 }
+// A rocket stood in an empty bottle, the bottle it leaves behind, and the rocket on its
+// own as it flies
+const rocketUrls = {
+  unlit: "sprites/fireworks/rocket-unlit.svg",
+  bottle: "sprites/fireworks/rocket-bottle.svg",
+  flying: "sprites/fireworks/rocket-flying.svg",
+}
 // Every texture the fireworks need, to be loaded before they're created
 const fireworksAssets = [
-  ...Object.values(anarUrls), ...laddiUrls, ...chakriUrls, ...sutliUrls.fuse, sutliUrls.spent, ...matchFrameUrls,
+  ...Object.values(anarUrls), ...laddiUrls, ...chakriUrls, ...sutliUrls.fuse, sutliUrls.spent,
+  ...Object.values(rocketUrls), ...matchFrameUrls,
 ]
 
-type Kind = "anar" | "laddi" | "chakri" | "sutli"
+type Kind = "anar" | "laddi" | "chakri" | "sutli" | "rocket"
 
 // How each kind of firework's drawings sit in the scene. They're all the same size,
 // showing a frame of their drawing's units at a number of pixels to a unit. The origin
@@ -93,18 +101,33 @@ const chakriShape: Shape = {
   scale: 0.065,
 }
 // The sutli bomb is a squat block of green twine standing on y 89, with a band of red
-// and yellow paper round it. Its wick rises from the middle of its top at (60, 49) to
-// a frayed tip at (61.5, 22). It's a little smaller than an anar
-const sutliWick = {from: {x: 61.5, y: 22}, to: {x: 60, y: 49}}
+// and yellow paper round it. Its short wick rises out of a hole in the middle of its
+// top at (60, 49) to a frayed tip at (61, 36). It's a little smaller than an anar
+const sutliWick = {from: {x: 61, y: 36}, to: {x: 60, y: 49}}
 const sutliShape: Shape = {
   frame: new Rectangle(0, 0, 120, 100),
   density: 4,
   origin: {x: 60, y: 89},
-  area: new Rectangle(32, 20, 56, 71),
+  area: new Rectangle(32, 33, 56, 58),
   fuseAt: sutliWick.from,
   scale: 0.3,
 }
-const shapes: Record<Kind, Shape> = {anar: anarShape, laddi: laddiShape, chakri: chakriShape, sutli: sutliShape}
+// The rocket stands in a green glass bottle on y 152, its striped stick down the neck
+// and its tube above, from its nose at (30, 9.5) to its base at (30, 52), where it
+// fires from. Its fuse curls out of the tube's side, from (41.5, 53) to (34, 47.5).
+// The bottle is a little taller than an anar
+const rocketNozzle = {x: 30, y: 52}
+const rocketShape: Shape = {
+  frame: new Rectangle(0, 0, 60, 160),
+  density: 4,
+  origin: {x: 30, y: 152},
+  area: new Rectangle(16, 8, 28, 146),
+  fuseAt: {x: 41.5, y: 53},
+  scale: 0.34,
+}
+const shapes: Record<Kind, Shape> = {
+  anar: anarShape, laddi: laddiShape, chakri: chakriShape, sutli: sutliShape, rocket: rocketShape,
+}
 // A firework that can be lit grows this much while the match is dragged over it
 const targetGrowth = 1.12
 
@@ -242,6 +265,46 @@ const sutliPuffs = 16
 const sutliHeart = {x: 60, y: 68}
 const sutliShredColours = [0x2f5a22, 0x4c7f36, 0x24481a, 0xc42320, 0xe9be1c, 0xd9c79a]
 
+// A rocket's fuse fizzes into its tube, then it whooshes up out of its bottle, leaning
+// a little, driven hard for a moment and coasting on, trailing a shower of sparks that
+// rain down on the porch and a line of smoke. It climbs about 450, well clear of the
+// roof, and as it slows near the top it pops into a ball of coloured stars that droop
+// and fade. In scene units and seconds
+const rocketFuse = {from: {x: 41.5, y: 53}, to: {x: 34, y: 47.5}, duration: 1.6}
+const rocketThrust = 2000
+const rocketThrustFor = 0.6
+const rocketDrag = 0.5
+const rocketLean = 0.12
+const rocketWobble = 0.03
+// It bursts once it's climbing slower than this, near the top of its climb, however
+// fast it's going sideways
+const rocketBurstSpeed = 60
+const rocketTrailRate = 800
+const rocketTrailSpeed = {min: 60, max: 200}
+const rocketTrailSpread = 0.4
+const rocketCoastTrailRate = 80
+const rocketSmokeRate = 30
+const rocketSoundUrl = "audio/effects/rocket.mp3"
+const rocketStars = {min: 110, max: 150}
+const rocketStarSpeed = {min: 110, max: 220}
+const rocketStarLife = {min: 1, max: 1.6}
+// Stars feel only this share of gravity, so they droop rather than drop, and are
+// drawn this much bigger than a spark
+const rocketStarFall = 0.18
+const rocketStarSize = 1.8
+const rocketBurstSpecks = 40
+const rocketBurstPuffs = 6
+const rocketColours = [0xb48cff, 0xffc861, 0xff6a5a, 0x7dff9a, 0x76a8ff, 0xff7ad9]
+const rocketLightColour = 0xffd8a8
+const rocketLightRadius = {flying: 160, burst: 380}
+const rocketGlowRadius = 14
+const rocketCoreRadius = 5
+// Its burst's light dies away, per second
+const rocketFade = 5
+// A rocket's effects are around it as it flies, and its sparks fall all the way back
+// to the porch
+const rocketReach = {up: 260, side: 260, down: 700}
+
 // A chakri's fuse fizzes to the coil's end, then it spins up, burns and spins down,
 // in seconds. Its drawings go from whole to burnt out over the burn
 const chakriFuse = {from: {x: 186, y: 297}, to: {x: 209, y: 310}, duration: 0.8}
@@ -328,6 +391,14 @@ const paint = (particle: Particle, bgr: number, alpha: number) => {
 // The sparks' colours as they age, worked out once and swapped ready to paint
 const sparkTable = Array.from({length: 256}, (_, idx) => toBgr(sparkColour(idx / 255)))
 const sparkBgr = (t: number) => sparkTable[Math.round(clamp(t) * 255)]
+// A rocket's stars as they age: white hot, then their colour, darkening as they fade
+const starTables = rocketColours.map(colour => Array.from({length: 256}, (_, idx) => {
+  const t = idx / 255
+  const shade = t < 0.06 ? 0xffffff
+    : t < 0.25 ? mixColour(0xffffff, colour, (t - 0.06) / 0.19)
+    : mixColour(colour, 0x301008, 0.6 * (t - 0.25) / 0.75)
+  return toBgr(shade)
+}))
 const whiteBgr = 0xffffff
 const smokeBgr = toBgr(smokeTint)
 
@@ -359,6 +430,11 @@ type Spark = {
   burstAt: number
   // How far down the floor is for this spark, so they land spread out in depth
   floor: number
+  // The share of gravity it feels, how much bigger than a spark it's drawn, and its
+  // colours as it ages, swapped ready to paint
+  fall: number
+  size: number
+  shades: number[]
 }
 
 type Smoke = {particle: Particle, x: number, y: number, vx: number, vy: number, age: number}
@@ -377,13 +453,21 @@ type Shred = {
   floor: number
 }
 
+// A rocket in the air, by its nozzle, and how long its thrust has left
+type Flight = {
+  sprite: Sprite
+  x: number
+  y: number
+  vx: number
+  vy: number
+  thrustLeft: number
+}
+
 type Placed = {
   kind: Kind
   sprite: Sprite
   // Burning is the anar's fountain, or the laddi's crackers going off
   state: "unlit" | "fuse" | "burning" | "spent"
-  // While the match is lighting it, it can't be picked up or lit again
-  busy: boolean
   // Time since its fuse was lit, in seconds
   elapsed: number
   // How brightly it's burning, from 0 to 1, eased so its light never jumps
@@ -415,18 +499,20 @@ type Placed = {
   roamVelocity: PointData
   roamGoal: PointData
   nextRoamAt: number
+  // A rocket once it's left its bottle, until it bursts
+  flight?: Flight
 }
 
-type Drag =
-  // A firework, from its stack or picked up from the scene, and where to put it back
-  | {kind: "firework", sprite: Sprite, firework: Placed, fromScene?: PointData}
-  | {kind: "match", sprite: Sprite}
+// A firework being dragged, from its stack or picked up from the scene, and where to
+// put it back
+type Drag = {sprite: Sprite, firework: Placed, fromScene?: PointData}
 
 // The fireworks scene's HUD and what's set off from it. Anars (flowerpot fireworks)
 // and laddis (strings of firecrackers) are dragged from their stacks onto the porch,
 // and can be picked up to move them or dropped on the bar to put them back; burnt-out
-// ones are cleared away the same way. The matchstick dragged onto an unlit one lights
-// its fuse. An anar's fizzes down to the nozzle; then it throws up a fountain of sparks
+// ones are cleared away the same way. The matchstick dragged out of the bar and held
+// over an unlit one is struck, and a ring round it fills until its fuse catches; it
+// goes back once it's let go. An anar's fizzes down to the nozzle; then it throws up a fountain of sparks
 // that crackle and glitter, shedding embers and smoke and lighting up the porch, and
 // sputters out after a while. A laddi's fizzes along to its crackers, which go off one
 // after another, each with a blast. A chakri's fizzes to its coil, and it spins about
@@ -447,16 +533,18 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     laddi: itemFor(laddiShape, laddiUrls[0]),
     chakri: itemFor(chakriShape, chakriUrls[0]),
     sutli: itemFor(sutliShape, sutliUrls.fuse[0]),
+    rocket: itemFor(rocketShape, rocketUrls.unlit),
   }
   const unlitUrls: Record<Kind, string> = {
-    anar: anarUrls.unlit, laddi: laddiUrls[0], chakri: chakriUrls[0], sutli: sutliUrls.fuse[0],
+    anar: anarUrls.unlit, laddi: laddiUrls[0], chakri: chakriUrls[0], sutli: sutliUrls.fuse[0], rocket: rocketUrls.unlit,
   }
-  const kinds: Kind[] = ["anar", "laddi", "chakri", "sutli"]
+  const kinds: Kind[] = ["anar", "laddi", "chakri", "sutli", "rocket"]
   const matchstick = createMatchstick(app, audio)
   const playAnarSound = audio.createEffect(anarSoundUrl)
   const playChakriSound = audio.createEffect(chakriSoundUrl)
   const blastSounds = blastSoundUrls.map(url => audio.createEffect(url))
   const playSutliSound = audio.createEffect(sutliSoundUrl)
+  const playRocketSound = audio.createEffect(rocketSoundUrl)
   const container = new Container()
   // Over the whole screen, under the HUD, for the blasts' flashes
   const screenFlash = new Graphics()
@@ -475,16 +563,18 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   container.addChild(screenFlash, bar.container, dragLayer)
   const slots = {
     anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),
-    sutli: bar.addItem(3, stacks.sutli),
+    sutli: bar.addItem(3, stacks.sutli), rocket: bar.addItem(4, stacks.rocket),
   }
-  const matchSlot = bar.addItem(4, matchstick.item)
+  const matchSlot = bar.addItem(5, matchstick.item)
 
   const tips = LL.tooltip
   const names: Record<Kind, () => string> = {
     anar: tips.anar.name, laddi: tips.laddi.name, chakri: tips.chakri.name, sutli: tips.sutli.name,
+    rocket: tips.rocket.name,
   }
   const stackHints: Record<Kind, () => string> = {
     anar: tips.anar.stack, laddi: tips.laddi.stack, chakri: tips.chakri.stack, sutli: tips.sutli.stack,
+    rocket: tips.rocket.stack,
   }
   kinds.forEach(kind => addTooltip(slots[kind].container, () => ({
     title: names[kind](),
@@ -572,11 +662,13 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       const particle = new Particle({texture: sparkTexture, anchorX: 0.5, anchorY: 0.5})
       spark = {
         particle, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 0, kind: "spark", grounded: false, burstAt: Infinity, floor: 0,
+        fall: 1, size: 1, shades: sparkTable,
       }
     }
-    Object.assign(spark, {x, y, vx, vy, age: 0, life, kind, floor, grounded})
+    Object.assign(spark, {x, y, vx, vy, age: 0, life, kind, floor, grounded, fall: 1, size: 1, shades: sparkTable})
     spark.burstAt = kind === "spark" && !grounded && Math.random() < glitterShare ? life * random(0.3, 0.7) : Infinity
     sparks.push(spark)
+    return spark
   }
 
   const addSmoke = (x: number, y: number) => {
@@ -668,10 +760,9 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   }
 
   const render = () => {
-    const dragged = drag?.kind === "firework" ? drag.firework.kind : undefined
-    bar.drawBoxes(overBar && dragged ? slots[dragged].box : undefined)
+    bar.drawBoxes(overBar && drag ? slots[drag.firework.kind].box : undefined)
     kinds.forEach(kind => slots[kind].show())
-    matchSlot.show(drag?.kind === "match")
+    matchSlot.show(held !== undefined)
   }
 
   const setOverBar = (value: boolean) => {
@@ -692,7 +783,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const fireworkAt = (point: PointData) => {
     const at = background.toScene(point)
     return placed
-      .filter(firework => firework.state === "unlit" && !firework.busy)
+      .filter(firework => firework.state === "unlit")
       .sort((a, b) => b.sprite.zIndex - a.sprite.zIndex)
       .find(firework => {
         const {origin, area, scale} = shapes[firework.kind]
@@ -717,11 +808,11 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
   }
 
-  // A placed firework can be picked up to move it or put it back, unless it's burning
-  // or being lit, or another scene is open
+  // A placed firework can be picked up to move it or put it back, unless it's burning,
+  // the match is in hand, or another scene is open
   const makePickable = (firework: Placed) => {
     const burning = firework.state === "fuse" || firework.state === "burning"
-    firework.sprite.eventMode = interactive && !firework.busy && !burning ? "static" : "none"
+    firework.sprite.eventMode = interactive && !held && !burning ? "static" : "none"
   }
 
   const createFirework = (kind: Kind): Placed => {
@@ -731,6 +822,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     sprite.cursor = "grab"
     const lightColours: Record<Kind, number> = {
       anar: lightColour, laddi: blastLightColour, chakri: chakriLightColour, sutli: sutliLightColour,
+      rocket: rocketLightColour,
     }
     const light = lighting.addLight(lightColours[kind])
     const glow = new Sprite(glowTexture)
@@ -742,7 +834,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       sprite.visible = false
     })
     const firework: Placed = {
-      kind, sprite, state: "unlit", busy: false, elapsed: 0, brightness: 0, lightAt: {x: 0, y: 0},
+      kind, sprite, state: "unlit", elapsed: 0, brightness: 0, lightAt: {x: 0, y: 0},
       sparkDebt: 0, smokeDebt: 0, spentAt: -Infinity, light, glow, core, blasts: 0, lastBlastAt: 0, nextBlastAt: 0,
       spin: 0, burnFor: 0, home: {x: 0, y: 0}, roam: {x: 0, y: 0}, roamVelocity: {x: 0, y: 0}, roamGoal: {x: 0, y: 0}, nextRoamAt: 0,
     }
@@ -780,6 +872,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       stacks[firework.kind].count! += 1
     }
     firework.sound?.stop()
+    firework.flight?.sprite.destroy()
     firework.sprite.destroy()
     firework.light.destroy()
     firework.glow.destroy()
@@ -787,39 +880,59 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     render()
   }
 
-  // Strikes the match against a firework's fuse; the fuse catches as the match does
+  // The held match catches a firework's fuse
   const light = (firework: Placed) => {
-    firework.busy = true
+    firework.state = "fuse"
+    if (firework.kind === "anar") {
+      firework.sprite.texture = Assets.get<Texture>(anarUrls.lit)
+    }
+    firework.elapsed = 0
     makePickable(firework)
-    const fuseAt = onFirework(firework, shapes[firework.kind].fuseAt)
-    // In front of the firework it's lighting
-    matchstick.strike(background.decorations, fuseAt, firework.sprite.zIndex + 0.5, () => {
-      firework.state = "fuse"
-      if (firework.kind === "anar") {
-        firework.sprite.texture = Assets.get<Texture>(anarUrls.lit)
-      }
-      firework.elapsed = 0
-      makePickable(firework)
-    }, () => {
-      firework.busy = false
-      makePickable(firework)
-    })
-  }
-
-  const startDrag = (e: FederatedPointerEvent, next: Drag) => {
-    const {sprite} = next
-    sprite.position.copyFrom(e.global)
-    sprite.eventMode = "none"
-    dragLayer.addChild(sprite)
-    setOutline(sprite, "selected", true)
-    drag = next
-    render()
   }
 
   // Fireworks are shown while dragged at the size they'll be placed at, so they land as seen
   const startFireworkDrag = (e: FederatedPointerEvent, firework: Placed, fromScene?: PointData) => {
+    const {sprite} = firework
     scaleSprite(firework, background.scale())
-    startDrag(e, {kind: "firework", sprite: firework.sprite, firework, fromScene})
+    sprite.position.copyFrom(e.global)
+    sprite.eventMode = "none"
+    dragLayer.addChild(sprite)
+    setOutline(sprite, "selected", true)
+    drag = {sprite, firework, fromScene}
+    render()
+  }
+
+  // The match in hand while it's dragged, where the pointer last was, and where a
+  // press on its slot began, until it's dragged far enough to take it out
+  let held: HeldMatch | undefined
+  const pointer = new Point()
+  let pressedSlotAt: Point | undefined
+
+  // Points the held match at whatever unlit firework it's over, to light it once it's
+  // been pressed there long enough
+  const aimMatch = () => {
+    if (!held) {
+      return
+    }
+    held.moveTo(pointer, background.scale())
+    const firework = fireworkAt(pointer)
+    setTarget(firework)
+    held.setAim(firework && {target: firework, light: () => {
+      light(firework)
+      // Whatever else is under it now could be lit next
+      aimMatch()
+    }})
+  }
+
+  const putAwayMatch = () => {
+    if (!held) {
+      return
+    }
+    held.destroy()
+    held = undefined
+    setTarget(undefined)
+    placed.forEach(makePickable)
+    render()
   }
 
   kinds.forEach(kind => slots[kind].container.on("pointerdown", e => {
@@ -830,28 +943,28 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     startFireworkDrag(e, createFirework(kind))
   }))
 
-  // The match is held by its head, so it's the head that's put to a fuse
+  // A press on the match's slot only takes the match out once it's dragged
   matchSlot.container.on("pointerdown", e => {
-    if (drag) {
-      return
+    if (!drag && !held) {
+      pressedSlotAt = e.global.clone()
     }
-    const sprite = matchstick.createSprite()
-    sprite.scale.set(background.scale() * matchstick.scale)
-    startDrag(e, {kind: "match", sprite})
   })
+  const takeMatch = () => {
+    held = matchstick.hold(pointer)
+    dragLayer.addChild(held.container)
+    placed.forEach(makePickable)
+    aimMatch()
+    render()
+  }
 
-  // Sends whatever's dragged back where it came from
+  // Sends the dragged firework back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
-    if (current.kind === "firework") {
-      if (current.fromScene) {
-        placeFirework(current.firework, current.fromScene)
-      } else {
-        removeFirework(current.firework)
-      }
+    if (current.fromScene) {
+      placeFirework(current.firework, current.fromScene)
     } else {
-      current.sprite.destroy()
+      removeFirework(current.firework)
     }
   }
 
@@ -860,23 +973,14 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       return
     }
     const current = drag
-    const into = target
     drag = undefined
     setOverBar(false)
-    setTarget(undefined)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
-    if (current.kind === "firework") {
-      if (hudShown && bar.isOver(at)) {
-        removeFirework(current.firework)
-      } else {
-        placeFirework(current.firework, background.toScene(at))
-      }
-    } else if (into) {
-      current.sprite.destroy()
-      light(into)
+    if (hudShown && bar.isOver(at)) {
+      removeFirework(current.firework)
     } else {
-      returnDrag(current)
+      placeFirework(current.firework, background.toScene(at))
     }
     render()
   }
@@ -888,18 +992,25 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
-    if (!drag) {
-      return
-    }
     const at = toStage(e)
-    drag.sprite.position.copyFrom(at)
-    if (drag.kind === "firework") {
+    if (drag) {
+      drag.sprite.position.copyFrom(at)
       setOverBar(hudShown && bar.isOver(at))
-    } else {
-      setTarget(fireworkAt(at))
+    } else if (held) {
+      pointer.copyFrom(at)
+      aimMatch()
+    } else if (pressedSlotAt && draggedFrom(pressedSlotAt, at)) {
+      pointer.copyFrom(at)
+      pressedSlotAt = undefined
+      takeMatch()
     }
   }
-  const onPointerUp = (e: PointerEvent) => endDrag(toStage(e))
+  // Letting go puts the match back
+  const onPointerUp = (e: PointerEvent) => {
+    pressedSlotAt = undefined
+    putAwayMatch()
+    endDrag(toStage(e))
+  }
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
@@ -1336,6 +1447,155 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     core.alpha = clamp(lit * 3)
   }
 
+  // A rocket leaves its bottle, flying from its nozzle
+  const launch = (rocket: Placed) => {
+    const nozzle = onFirework(rocket, rocketNozzle)
+    const sprite = new Sprite(Assets.get<Texture>(rocketUrls.flying))
+    const {frame, density, scale} = rocketShape
+    sprite.anchor.set((rocketNozzle.x - frame.x) / frame.width, (rocketNozzle.y - frame.y) / frame.height)
+    sprite.scale.set(scale / density)
+    sprite.eventMode = "none"
+    // In front of its bottle as it leaves
+    sprite.zIndex = rocket.sprite.zIndex + 0.5
+    const lean = random(-rocketLean, rocketLean)
+    rocket.flight = {sprite, x: nozzle.x, y: nozzle.y, vx: Math.sin(lean) * 40, vy: -Math.cos(lean) * 40, thrustLeft: rocketThrustFor}
+    sprite.position.copyFrom(nozzle)
+    sprite.rotation = lean
+    background.decorations.addChild(sprite)
+    rocket.sprite.texture = Assets.get<Texture>(rocketUrls.bottle)
+    rocket.sound = playRocketSound(background.panOf(nozzle))
+    for (let idx = 0; idx < catchPuffs; idx++) {
+      addSmoke(nozzle.x + random(-4, 4), nozzle.y - random(0, 8))
+    }
+  }
+
+  // A rocket pops into a ball of coloured stars at the top of its climb
+  const burstRocket = (rocket: Placed, flight: Flight) => {
+    const floor = rocket.sprite.y
+    const shades = starTables[Math.floor(Math.random() * starTables.length)]
+    const count = Math.round(random(rocketStars.min, rocketStars.max))
+    for (let idx = 0; idx < count; idx++) {
+      // Spread evenly round, and some coming more towards or away, filling in the middle
+      const angle = random(0, Math.PI * 2)
+      const speed = random(rocketStarSpeed.min, rocketStarSpeed.max) * Math.sqrt(random(0.15, 1))
+      const star = addSpark(flight.x, flight.y, flight.vx * 0.3 + Math.cos(angle) * speed,
+        flight.vy * 0.3 + Math.sin(angle) * speed, random(rocketStarLife.min, rocketStarLife.max), "spark",
+        floor + random(-4, 8))
+      if (star) {
+        star.fall = rocketStarFall
+        star.size = rocketStarSize
+        star.shades = shades
+      }
+    }
+    for (let idx = 0; idx < rocketBurstSpecks; idx++) {
+      const angle = random(0, Math.PI * 2)
+      const speed = random(30, 120)
+      addSpark(flight.x, flight.y, Math.cos(angle) * speed, Math.sin(angle) * speed, random(0.15, 0.4), "speck", floor)
+    }
+    for (let idx = 0; idx < rocketBurstPuffs; idx++) {
+      addSmoke(flight.x + random(-10, 10), flight.y + random(-10, 10))
+    }
+    rocket.brightness = 1
+    rocket.lightAt = {x: flight.x, y: flight.y}
+    flash = 1
+    flashAlpha = screenFlashAlpha
+    flashFade = blastFade
+    blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(rocket.lightAt))
+    rocket.sound?.stop()
+    rocket.sound = undefined
+    flight.sprite.destroy()
+    rocket.flight = undefined
+    rocket.state = "spent"
+    rocket.spentAt = time
+    makePickable(rocket)
+  }
+
+  // Moves a rocket on: the fuse fizzing into its tube, then its flight, and its burst
+  const burnRocket = (rocket: Placed, dt: number) => {
+    let fuseAt: PointData | undefined
+    if (rocket.state === "fuse") {
+      const t = clamp(rocket.elapsed / rocketFuse.duration)
+      const {from, to} = rocketFuse
+      fuseAt = onFirework(rocket, {x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t)})
+      rocket.sparkDebt += 60 * dt
+      while (rocket.sparkDebt >= 1) {
+        rocket.sparkDebt--
+        emitFuseSpark(rocket, fuseAt)
+      }
+      if (rocket.elapsed >= rocketFuse.duration) {
+        rocket.state = "burning"
+        fuseAt = undefined
+        launch(rocket)
+      }
+    }
+    const {flight} = rocket
+    if (rocket.state === "burning" && flight) {
+      // Driven along the way it's heading while its thrust lasts, wobbling a little,
+      // then coasting, slowed by gravity and the air
+      const thrusting = flight.thrustLeft > 0
+      flight.thrustLeft -= dt
+      const heading = Math.atan2(flight.vx, -flight.vy) + Math.sin(time * 17 + rocket.home.x) * rocketWobble
+      const push = thrusting ? rocketThrust : 0
+      const drag = Math.max(0, 1 - rocketDrag * dt)
+      flight.vx = (flight.vx + Math.sin(heading) * push * dt) * drag
+      flight.vy = (flight.vy - Math.cos(heading) * push * dt + gravity * dt) * drag
+      flight.x += flight.vx * dt
+      flight.y += flight.vy * dt
+      flight.sprite.position.set(flight.x, flight.y)
+      flight.sprite.rotation = Math.atan2(flight.vx, -flight.vy)
+      rocket.sound?.setPan(background.panOf(flight))
+
+      // Sparks stream back out of its nozzle, a shower while it's driven and a dribble
+      // as it coasts, and fall back to the porch around its bottle
+      const back = Math.atan2(flight.vy, flight.vx) + Math.PI
+      rocket.sparkDebt += (thrusting ? rocketTrailRate : rocketCoastTrailRate) * dt
+      while (rocket.sparkDebt >= 1) {
+        rocket.sparkDebt--
+        const angle = back + random(-rocketTrailSpread, rocketTrailSpread)
+        const speed = random(rocketTrailSpeed.min, rocketTrailSpeed.max)
+        addSpark(flight.x, flight.y, flight.vx * 0.2 + Math.cos(angle) * speed, flight.vy * 0.2 + Math.sin(angle) * speed,
+          random(0.3, 0.7), thrusting ? "spark" : "ember", rocket.sprite.y + random(-4, 8))
+      }
+      if (thrusting) {
+        rocket.smokeDebt += rocketSmokeRate * dt
+        while (rocket.smokeDebt >= 1) {
+          rocket.smokeDebt--
+          addSmoke(flight.x + random(-2, 2), flight.y + random(0, 6))
+        }
+      }
+      rocket.lightAt = {x: flight.x, y: flight.y}
+      if (!thrusting && flight.vy >= -rocketBurstSpeed) {
+        burstRocket(rocket, flight)
+      }
+    }
+    smoulder(rocket, onFirework(rocket, {x: 30, y: 72}), dt)
+
+    // Its flame lights what it passes while it's driven, and its burst lights up the
+    // porch and dies away
+    const flying = rocket.flight !== undefined
+    const target = fuseAt ? 0.1 : flying ? (rocket.flight!.thrustLeft > 0 ? 0.7 : 0.25) : 0
+    rocket.brightness = flying || fuseAt
+      ? lerp(rocket.brightness, target, clamp(dt * 12))
+      : rocket.brightness * Math.exp(-rocketFade * dt)
+    const {brightness, light, glow, core} = rocket
+    const shining = brightness > 0.01
+    glow.visible = shining
+    core.visible = shining
+    if (!shining) {
+      light.off()
+      return
+    }
+    const at = fuseAt ?? rocket.lightAt
+    const bursting = !flying && !fuseAt
+    light.shine(at, lerp(40, bursting ? rocketLightRadius.burst : rocketLightRadius.flying, brightness), brightness * 1.3)
+    glow.position.copyFrom(at)
+    core.position.copyFrom(at)
+    glow.width = glow.height = (bursting ? sutliGlowRadius : rocketGlowRadius) * 2 * (0.3 + 0.7 * brightness)
+    core.width = core.height = (bursting ? blastCoreRadius : rocketCoreRadius) * 2 * (0.3 + 0.7 * brightness)
+    glow.alpha = clamp(brightness * 1.5)
+    core.alpha = clamp(brightness * 3)
+  }
+
   const tick = () => {
     const dt = Math.min(0.05, app.ticker.deltaMS / 1000)
     time += dt
@@ -1345,14 +1605,17 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       }
       // It still burns, lights the porch and is heard while it's off screen, but throws
       // nothing off unless what it throws would reach the screen
-      const {x, y} = firework.sprite
-      offScreen = !background.overlapsView(x - effectReach.side, y - effectReach.up, x + effectReach.side, y + effectReach.down)
+      const {x, y} = firework.flight ?? firework.sprite
+      const reach = firework.kind === "rocket" ? rocketReach : effectReach
+      offScreen = !background.overlapsView(x - reach.side, y - reach.up, x + reach.side, y + reach.down)
       if (firework.kind === "anar") {
         burnAnar(firework, dt)
       } else if (firework.kind === "laddi") {
         burnLaddi(firework, dt)
       } else if (firework.kind === "sutli") {
         burnSutli(firework, dt)
+      } else if (firework.kind === "rocket") {
+        burnRocket(firework, dt)
       } else {
         burnChakri(firework, dt)
       }
@@ -1391,7 +1654,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       } else {
         const drag = Math.max(0, 1 - airDrag * dt)
         spark.vx *= drag
-        spark.vy = spark.vy * drag + gravity * dt
+        spark.vy = spark.vy * drag + gravity * spark.fall * dt
         spark.x += spark.vx * dt
         spark.y += spark.vy * dt
       }
@@ -1434,11 +1697,11 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       } else {
         // Drawn stretched along its path, the streak a fast spark leaves to the eye
         const speed = Math.hypot(spark.vx, spark.vy)
-        const size = sparkWidth * (1 - 0.4 * t) / sparkTexture.width
+        const size = sparkWidth * spark.size * (1 - 0.4 * t) / sparkTexture.width
         particle.rotation = Math.atan2(spark.vy, spark.vx)
         particle.scaleX = size * (1 + speed * (spark.grounded ? skidStreak : streakLength))
         particle.scaleY = size
-        paint(particle, sparkBgr(t), 1 - t * t)
+        paint(particle, spark.shades[Math.round(t * 255)], 1 - t * t)
       }
     }
 
@@ -1517,32 +1780,43 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   return {
     container,
     layout,
-    // Shows its bar, while the Fireworks tool is the one in use
+    // Shows its bar, while the Fireworks tool is the one in use. The match is put away
+    // with the bar
     setHudShown(shown: boolean) {
       hudShown = shown
-      bar.setOpacity(shown ? 1 : 0)
+      bar.setShown(shown)
       bar.setInteractive(shown)
+      if (!shown) {
+        putAwayMatch()
+      }
     },
     setInteractive(value: boolean) {
       interactive = value
       placed.forEach(makePickable)
-      // Leaving the scene mid-drag puts whatever was dragged back where it came from
+      // Leaving the scene puts the match away, and whatever was dragged back where it
+      // came from
+      if (!interactive) {
+        putAwayMatch()
+      }
       if (!interactive && drag) {
         const current = drag
         drag = undefined
         setOverBar(false)
-        setTarget(undefined)
         returnDrag(current)
         render()
       }
     },
     destroy() {
+      putAwayMatch()
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
       app.ticker.remove(tick)
       container.destroy({children: true})
-      placed.forEach(firework => firework.sprite.destroy())
+      placed.forEach(firework => {
+        firework.flight?.sprite.destroy()
+        firework.sprite.destroy()
+      })
       shredLayer.destroy()
       overlays.forEach(overlay => overlay.destroy({children: true}))
       sparkTexture.destroy(true)

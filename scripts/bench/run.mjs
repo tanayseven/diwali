@@ -95,24 +95,30 @@ const drag = async (page, from, to) => {
   await page.waitForTimeout(250)
 }
 
-// Every firework in the Fireworks bar, all five each of anars, laddis, chakris and
-// sutli bombs, dragged onto the porch in a grid and each lit with the matchstick. The rail's button
+// Every firework in the Fireworks bar, all five each of anars, laddis, chakris, sutli
+// bombs and rockets, dragged onto the porch in a grid, then each lit in turn with the
+// match dragged out of the bar and held over it until it catches. The rail's button
 // and the bar's slots are where they are at 1600 x 900
 const fireworksEach = 5
-const fireworkKinds = 4
+const fireworkKinds = 5
 const lightFireworks = async page => {
   await page.mouse.click(56, 354)
   await page.waitForTimeout(800)
   const slot = idx => [403 + 88.3 * idx, 797]
   // Kinds take turns along each row, so each kind is spread across the porch
   const spots = Array.from({length: fireworksEach * fireworkKinds}, (_, idx) =>
-    ({kind: idx % fireworkKinds, at: [240 + 280 * (idx % 5), 530 + 65 * Math.floor(idx / 5)]}))
+    ({kind: idx % fireworkKinds, at: [240 + 280 * (idx % 5), 520 + 55 * Math.floor(idx / 5)]}))
   for (const {kind, at} of spots) {
     await drag(page, slot(kind), at)
   }
+  await page.mouse.move(...slot(fireworkKinds))
+  await page.mouse.down()
   for (const {at: [x, y]} of spots) {
-    await drag(page, slot(fireworkKinds), [x, y - 15])
+    // Long enough for the last match to burn out and a fresh one to catch
+    await page.mouse.move(x, y - 15, {steps: 6})
+    await page.waitForTimeout(2500)
   }
+  await page.mouse.up()
 }
 const fireworkCount = fireworksEach * fireworkKinds
 

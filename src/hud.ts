@@ -15,6 +15,13 @@ const iconFill = 0.8
 // The count badge in the slot's top-right corner
 const badgeRadius = 13
 const badgeInset = 6
+// A bar fades and drops away as it's hidden, as when the tool changes or the bars are
+// hidden, and fades in rising into place as it's shown, just after the one going away
+// has started to, in ms and screen pixels
+const hideDuration = 160
+const showDelay = 120
+const showDuration = 240
+const slideDistance = 40
 
 type Item = {
   url: string
@@ -77,10 +84,42 @@ const createHud = (app: Application) => {
     return Math.abs(local.x) <= panelWidth / 2 && Math.abs(local.y) <= panelHeight / 2
   }
 
+  // How far it's shown, from 0 to 1, whether it's being shown or hidden, and how long
+  // it's waited to start showing
+  let shown = 0
+  let showing = false
+  let waited = 0
+  const place = () => {
+    const frame = hudFrame(app.screen)
+    const rise = 1 - (1 - shown) ** 3
+    container.position.set(frame.x, frame.y + (1 - rise) * slideDistance)
+    container.alpha = shown
+    container.visible = shown > 0
+  }
+  const animate = () => {
+    if (container.destroyed) {
+      app.ticker.remove(animate)
+      return
+    }
+    const dt = app.ticker.deltaMS
+    if (showing) {
+      waited += dt
+      if (waited >= showDelay) {
+        shown = Math.min(1, shown + dt / showDuration)
+      }
+    } else {
+      shown = Math.max(0, shown - dt / hideDuration)
+    }
+    place()
+    if (shown === (showing ? 1 : 0)) {
+      app.ticker.remove(animate)
+    }
+  }
+
   const layout = () => {
     const frame = hudFrame(app.screen)
     container.scale.set(frame.scale)
-    container.position.set(frame.x, frame.y)
+    place()
     panel.clear()
       .roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 18)
       .fill({color: 0x000000, alpha: 0.55})
@@ -149,9 +188,12 @@ const createHud = (app: Application) => {
     drawBoxes,
     isOver,
     layout,
-    setOpacity(alpha: number) {
-      container.alpha = alpha
-      container.visible = alpha > 0
+    // Shows or hides it, sliding and fading it in or out
+    setShown(value: boolean) {
+      showing = value
+      waited = 0
+      app.ticker.remove(animate)
+      app.ticker.add(animate)
     },
     setInteractive(interactive: boolean) {
       container.eventMode = interactive ? "passive" : "none"

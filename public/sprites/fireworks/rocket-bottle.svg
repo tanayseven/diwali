@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="640" viewBox="0 0 60 160">
+  <title>Rocket — Empty bottle</title>
+  <defs>
+    <linearGradient id="glass" x1="19" y1="0" x2="41" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0E3A22" stop-opacity="0.95"/>
+      <stop offset="0.22" stop-color="#2E7A4C" stop-opacity="0.75"/>
+      <stop offset="0.4" stop-color="#5FB283" stop-opacity="0.55"/>
+      <stop offset="0.7" stop-color="#2A6E44" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#0B3020" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="tube" x1="26" y1="0" x2="34" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000" stop-opacity="0.45"/>
+      <stop offset="0.35" stop-color="#fff" stop-opacity="0.25"/>
+      <stop offset="0.6" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="cone" x1="26" y1="0" x2="34" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8E1408"/>
+      <stop offset="0.4" stop-color="#F0442A"/>
+      <stop offset="1" stop-color="#9A1A0C"/>
+    </linearGradient>
+    <radialGradient id="soot" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#0A0705" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#0A0705" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="tube-clip"><rect x="26" y="26" width="8" height="26"/></clipPath>
+    <clipPath id="stick-clip"><rect x="29.2" y="50" width="1.6" height="99"/></clipPath>
+    <filter id="blur" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="1.2"/></filter>
+  </defs>
+  <g id="rocket">
+    <ellipse cx="30" cy="152" rx="15" ry="2.6" fill="#000" fill-opacity="0.6" filter="url(#blur)"/>
+    <path d="M19 104Q19 98 25 92Q26.5 90 26.5 86V72H33.5V86Q33.5 90 35 92Q41 98 41 104V149Q41 152 37 152H23Q19 152 19 149Z" fill="url(#glass)"/>
+    <path d="M22 106Q22 101 26 96" fill="none" stroke="#C8F0D8" stroke-opacity="0.55" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M22.4 110V146" stroke="#C8F0D8" stroke-opacity="0.35" stroke-width="1.4" stroke-linecap="round"/>
+    <rect x="25.8" y="70" width="8.4" height="3" rx="1" fill="#2F7A4C" stroke="#0B3020" stroke-width="0.4"/>
+    <path d="M19.5 120H40.5V138H19.5Z" fill="#E9DCC0" fill-opacity="0.85"/>
+    <path d="M19.5 124H40.5M19.5 134H40.5" stroke="#B0302A" stroke-width="1"/>
+    <ellipse cx="30" cy="73" rx="7" ry="4" fill="url(#soot)"/><ellipse cx="30" cy="70.5" rx="3" ry="0.9" fill="#120C08"/>
+  </g>
+</svg>

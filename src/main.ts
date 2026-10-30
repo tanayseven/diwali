@@ -2,7 +2,7 @@ import {Container, FederatedPointerEvent, PointData} from "pixi.js"
 import {createApp, loadFont} from "./app"
 import {createAudioControl} from "./audioControl"
 import {addBackgroundAssets, backgroundAssets, createBackground} from "./background"
-import {createDiyaInventory, diyaAssets} from "./diyaInventory"
+import {createDiyaInventory, diyaAssets, diyaImages} from "./diyaInventory"
 import {createHouseLights, fairyLightAssets} from "./fairyLights"
 import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
@@ -61,7 +61,7 @@ const main = async () => {
   addBackgroundAssets()
   const failed = await loadAssets({
     textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...tools.map(tool => tool.icon)],
-    images: ["sprites/diwali-diya-animated.svg", "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
+    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
@@ -105,7 +105,7 @@ const main = async () => {
     container: kandilHud.container,
     layout: kandilHud.layout,
     setHudShown(shown) {
-      kandilHud.setOpacity(shown ? 1 : 0)
+      kandilHud.setShown(shown)
       kandilHud.setInteractive(shown)
     },
   }
