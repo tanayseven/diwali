@@ -17,14 +17,31 @@ const loadFont = () => document.fonts.load(`16px ${fontFamily}`).catch(err => {
   console.error("Couldn't load the font", err)
 })
 
-// The pixel density everything's drawn at: the screen's, so text stays crisp on HiDPI
-// displays, but no more than the GPU can keep up with. Phones and tablets have far
-// fewer pixels across than a desktop screen, so they can go denser
-const maxDensity = {touch: 2, desktop: 1.5}
-const pixelDensity = Math.min(
-  window.devicePixelRatio || 1,
-  window.matchMedia("(pointer: coarse)").matches ? maxDensity.touch : maxDensity.desktop,
-)
+// How much the game asks of the device. Phones and tablets, and machines with little
+// memory or few cores, get a lighter game: fewer particles, fewer shells over the city
+// and the skyline's lights worked out less often. ?quality=low or ?quality=high in the
+// address picks one whatever the device
+const coarsePointer = window.matchMedia("(pointer: coarse)").matches
+const nav = navigator as Navigator & {deviceMemory?: number}
+const lowEnd = coarsePointer || (nav.deviceMemory ?? 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4
+const asked = new URLSearchParams(window.location.search).get("quality")
+const light = asked === "low" || (asked !== "high" && lowEnd)
+
+const quality = {
+  // The most pixels drawn per CSS pixel: the screen's, so text stays crisp on HiDPI
+  // displays, but no more than the GPU can keep up with. Phones and tablets have far
+  // fewer pixels across than a desktop screen, so they can go denser
+  density: Math.min(window.devicePixelRatio || 1, coarsePointer ? 2 : 1.5),
+  // Particles thrown by the fireworks on the porch, as a share of the full count
+  particleScale: light ? 0.6 : 1,
+  // Shells sent up over the city, as a share of the full count
+  skyFireworkRate: light ? 0.6 : 1,
+  // How often the skyline's lights are worked out afresh, in seconds
+  lightRepaintEvery: light ? 1 / 15 : 1 / 20,
+}
+
+// The pixel density everything's drawn at
+const pixelDensity = quality.density
 
 const createApp = async (): Promise<Application> => {
   const app = new Application()
@@ -39,5 +56,5 @@ const createApp = async (): Promise<Application> => {
   return app
 }
 
-export {createApp, fontFamily, loadFont, pixelDensity}
+export {createApp, fontFamily, loadFont, pixelDensity, quality}
 export type {Screen}

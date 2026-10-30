@@ -1,6 +1,6 @@
 // Benchmarks the built game in a real browser window on this machine's graphics card.
 //
-//   node scripts/bench/run.mjs [matrix|timeline|memory|all] [--size WxHxDPR] [--out file]
+//   node scripts/bench/run.mjs [matrix|timeline|memory|all] [--size name|WxHxDPR] [--out file]
 //
 // matrix:   frame rate and main-thread time per source file, idle, panning and with
 //           fireworks lit, at the sizes in `sizes` (or the one given)
@@ -34,9 +34,10 @@ const option = name => {
 const mode = ["matrix", "timeline", "memory"].find(name => args.includes(name)) ?? "all"
 const sizeArg = option("--size")
 const out = option("--out")
-const chosen = sizeArg
-  ? {[sizeArg]: (([width, height, density]) => ({width, height, density}))(sizeArg.split("x").map(Number))}
-  : sizes
+// --size is one of the sizes' names, or WxHxDPR
+const chosen = !sizeArg ? sizes
+  : sizes[sizeArg] ? {[sizeArg]: sizes[sizeArg]}
+  : {[sizeArg]: (([width, height, density]) => ({width, height, density}))(sizeArg.split("x").map(Number))}
 
 const lines = []
 const report = line => {

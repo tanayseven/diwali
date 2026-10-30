@@ -1,4 +1,5 @@
 import {Application, Particle, ParticleContainer, PointData, Rectangle, Sprite} from "pixi.js"
+import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
 import {Background, scenery, skylineUrls} from "./background"
 import {blastSoundUrls, mixColour, paint, toBgr} from "./fireworks"
@@ -14,9 +15,9 @@ const skylineFoot = 420
 // muffled and soft
 const bangDelay = 1000
 const bangLevel = 0.3
-// A shell goes up every 1.2 to 3.5 seconds, and now and then two or three go up
-// together, a moment apart
-const launchEvery = {min: 1.2, max: 3.5}
+// A shell goes up every 1.2 to 3.5 seconds (less often on a lighter game), and now and
+// then two or three go up together, a moment apart
+const launchEvery = {min: 1.2 / quality.skyFireworkRate, max: 3.5 / quality.skyFireworkRate}
 const volleyShare = 0.25
 const volleySize = {min: 2, max: 3}
 const volleyGap = {min: 0.15, max: 0.4}
@@ -215,7 +216,7 @@ const createSkyFireworks = async (
   }
 
   const burst = (at: PointData, colour: number) => {
-    const count = Math.round(between(starCount))
+    const count = Math.round(between(starCount) * quality.particleScale)
     const size = random(0.8, 1.3)
     for (let idx = 0; idx < count; idx++) {
       // A direction on a ball, seen flat

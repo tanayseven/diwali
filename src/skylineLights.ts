@@ -1,4 +1,5 @@
 import {Application, Container, Particle, ParticleContainer, Rectangle} from "pixi.js"
+import {quality} from "./app"
 import {Background, scenery} from "./background"
 import {lightColours} from "./fairyLights"
 import {paint, toBgr} from "./fireworks"
@@ -15,7 +16,7 @@ const blinkPeriod = {min: 1.1, max: 1.6}
 const dimLevel = 0.3
 // Their colours are worked out afresh this often, in seconds, which is smooth enough
 // for a blink this slow and spares redoing thousands of bulbs every frame
-const repaintEvery = 1 / 20
+const repaintEvery = quality.lightRepaintEvery
 // Curtains hang strands this far apart down a building's front, each reaching between
 // these shares of the way down it
 const strandGap = 7

@@ -1,4 +1,5 @@
 import {Application, Assets, Container, FederatedPointerEvent, Graphics, Particle, ParticleContainer, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
 import {createBackground, sceneHeight, sceneWidth} from "./background"
 import {Item, createHud} from "./hud"
@@ -150,7 +151,7 @@ const anarVolume = 0.7
 // height the fastest reach about 170 units up, two fifths as tall as the house
 const gravity = 780
 const airDrag = 1.4
-const maxSparkRate = 1450
+const maxSparkRate = 1450 * quality.particleScale
 const minSparkSpeed = 330
 const maxSparkSpeed = 690
 // How far from straight up a spark can leave, in radians
@@ -171,7 +172,7 @@ const bounce = 0.25
 // Smoke billows up from the fountain and spreads out as it fades, lit warm by the
 // fire while it's close. A puff goes up as the fountain catches, and a wisp lingers
 // after it's burnt out
-const maxSmokeRate = 14
+const maxSmokeRate = 14 * quality.particleScale
 const smokeLife = 4.5
 const smokeAlpha = 0.3
 const smokeTint = 0x7a7a84
@@ -279,11 +280,11 @@ const rocketWobble = 0.03
 // It bursts once it's climbing slower than this, near the top of its climb, however
 // fast it's going sideways
 const rocketBurstSpeed = 60
-const rocketTrailRate = 800
+const rocketTrailRate = 800 * quality.particleScale
 const rocketTrailSpeed = {min: 60, max: 200}
 const rocketTrailSpread = 0.4
-const rocketCoastTrailRate = 80
-const rocketSmokeRate = 30
+const rocketCoastTrailRate = 80 * quality.particleScale
+const rocketSmokeRate = 30 * quality.particleScale
 const rocketSoundUrl = "audio/effects/rocket.mp3"
 const rocketStars = {min: 110, max: 150}
 const rocketStarSpeed = {min: 110, max: 220}
@@ -328,21 +329,21 @@ const chakriJitter = 0.35
 // The burning end of the coil spits jets of fire as it whirls round, which make a
 // ring of flame, fringed like a sunburst. Each lives so briefly it doesn't trail far
 // behind the end, and is drawn as a short streak along the way it's shot
-const flameRate = 4800
+const flameRate = 4800 * quality.particleScale
 const flameLife = {min: 0.06, max: 0.13}
 const flameSpeed = {min: 45, max: 110}
 const flameSize = 1.5
 const flameStreak = 1 / 35
 // It throws sparks all round, flung off its burning end: most skid out across the
 // floor, slowing as they go, and some are thrown up and land further out
-const chakriSkidRate = 1900
-const chakriFlungRate = 560
+const chakriSkidRate = 1900 * quality.particleScale
+const chakriFlungRate = 560 * quality.particleScale
 const skidSpeed = {min: 200, max: 620}
 const skidLife = {min: 0.35, max: 1}
 const skidDrag = 1.6
 // Skidding sparks are drawn with longer streaks than flying ones
 const skidStreak = 1 / 70
-const chakriSmokeRate = 7
+const chakriSmokeRate = 7 * quality.particleScale
 // Its hiss is heard while it spins, at its strength, so it dies away as it slows. The
 // recording runs 18 seconds, as long as the longest burn, and was made louder to match
 // the anar's
@@ -1473,7 +1474,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const burstRocket = (rocket: Placed, flight: Flight) => {
     const floor = rocket.sprite.y
     const shades = starTables[Math.floor(Math.random() * starTables.length)]
-    const count = Math.round(random(rocketStars.min, rocketStars.max))
+    const count = Math.round(random(rocketStars.min, rocketStars.max) * quality.particleScale)
     for (let idx = 0; idx < count; idx++) {
       // Spread evenly round, and some coming more towards or away, filling in the middle
       const angle = random(0, Math.PI * 2)
