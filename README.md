@@ -73,6 +73,33 @@ $ npm run preview
 
 will serve that build locally.
 
+## Android
+
+The app is wrapped for Android with [Capacitor](https://capacitorjs.com) 7 (the newest that runs on Node 20), in `android/`. It always runs in landscape, turning between either way round with the device but never into portrait, on tablets and foldables too, and it can't be put in split screen. It needs the Android SDK, with `ANDROID_HOME` pointing at it, and JDK 21.
+
+```sh
+$ npm run android:build
+```
+
+will build the web app, copy it into the Android project, and build a debug APK at `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+```sh
+$ npm run android:run
+```
+
+will do the same and run it on a connected device or an emulator. After changing only the web app, `npm run android:sync` copies the new build across without building the APK.
+
 ## Deployment
 
 Every push to `main` runs the [Deploy to S3](.github/workflows/deploy.yml) GitHub Actions workflow. It builds the app and copies `dist/` to the `diwali.tanay.tech` S3 bucket, which serves https://diwali.tanay.tech/.
+
+Releases are tagged with the date they're made, as `YYYY.MM.DD`, and not with semantic versions. A second release on the same day adds its number, as `YYYY.MM.DD.2`, then `.3` and so on.
+
+Every night at 11:30 PM IST, the [Nightly release tag](.github/workflows/nightly-tag.yml) workflow tags `main` with the day's date, but only if something that goes into the app has changed since the newest date tag. Changes only to the docs (`README.md`, `CLAUDE.md`, `LICENSE.txt`), the CI workflows, the benchmark in `scripts/` or the editor settings aren't released. It then runs the [Android build](.github/workflows/android.yml) workflow for the tag, which builds the Android app versioned by the tag and attaches the APK to a GitHub release for it. The nightly workflow can be run by hand from the Actions tab too, and pushing a date tag yourself also starts the Android build:
+
+```sh
+$ git tag $(date +%Y.%m.%d)
+$ git push origin $(date +%Y.%m.%d)
+```
+
+The app's version name is the tag, and its version code is the date followed by the release's number that day (`2026.10.30.2` is `2026103002`), so every release installs over the one before. Tags of any other shape don't start the workflow.

@@ -8,15 +8,21 @@
 		"zip": "npm run build && mkdir -p dist && zip -r dist/game.zip www -x \"**/.DS_Store\"",
 		"check": "tsc",
 		"i18n": "typesafe-i18n",
-		"bench": "vite build && node scripts/bench/run.mjs"
+		"bench": "vite build && node scripts/bench/run.mjs",
+		"android:sync": "vite build && cap sync android",
+		"android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
+		"android:run": "npm run android:sync && cap run android"
 	},
 	"devDependencies": {
+		"@capacitor/cli": "^7.6.10",
 		"playwright-core": "1.56.1",
 		"source-map-js": "1.2.1",
 		"typescript": "^5.6.3",
 		"vite": "^5.4.10"
 	},
 	"dependencies": {
+		"@capacitor/android": "^7.6.10",
+		"@capacitor/core": "^7.6.10",
 		"pixi.js": "^8.22.0",
 		"typesafe-i18n": "5.27.1"
 	}

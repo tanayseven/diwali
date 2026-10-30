@@ -1,0 +1,60 @@
+name: Android build
+
+# When a release's date tag is pushed: YYYY.MM.DD, or YYYY.MM.DD.N for the Nth release
+# that day. The build itself rejects any other shape of tag. The nightly release tag
+# workflow calls it too, for the tag it's just made, as tags pushed by a workflow don't
+# start others
+on:
+  push:
+    tags:
+      - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]'
+      - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9].[0-9]*'
+  workflow_call:
+    inputs:
+      tag:
+        description: The date tag to build and release
+        required: true
+        type: string
+
+permissions:
+  contents: write # This is required to create the release and attach the APK to it
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    env:
+      # The tag it was called with, or the one that was pushed
+      TAG: ${{ inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Setup tools with mise
+        uses: jdx/mise-action@v5
+
+      - name: Setup Java for Gradle
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Install dependencies
+        run: npm install
+
+      # The runner comes with the Android SDK, and Gradle fetches any part of it the
+      # build needs that's missing. The tag versions the app
+      - name: Build the APK
+        env:
+          RELEASE_TAG: ${{ env.TAG }}
+        run: npm run android:build
+
+      - name: Attach the APK to a release for the tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk "diwali-$TAG.apk"
+          gh release create "$TAG" "diwali-$TAG.apk" --title "$TAG" --generate-notes

@@ -1,0 +1,66 @@
+name: Nightly release tag
+
+# Every night at 11:30 PM IST (18:00 UTC), main is tagged with the day's date, if
+# what goes into the app has changed since the last date tag, and the Android app is
+# built for it. It can be run by hand too
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write # This is required to push the tag and create the release
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+
+    steps:
+      - name: Checkout code with its tags
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # Date tags are YYYY.MM.DD, or YYYY.MM.DD.N for the Nth release that day, dated in
+      # IST. Nothing is tagged unless something that goes into the app has changed
+      # since the newest of them: changes only to the docs, the CI workflows, the
+      # benchmark or editor settings aren't released. Everything else counts, so
+      # anything new that's built in is never missed
+      - name: Tag main with the date, if the app's changed
+        id: tag
+        run: |
+          not_built=(':!README.md' ':!CLAUDE.md' ':!LICENSE.txt' ':!.github' ':!scripts' ':!.idea' ':!.gitignore')
+          date_tags() {
+            git tag --list | grep -E '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]{1,2})?$' || true
+          }
+          latest=$(date_tags | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | tail -n 1)
+          if [ -n "$latest" ] && git diff --quiet "$latest" HEAD -- . "${not_built[@]}"; then
+            echo "Nothing that goes into the app has changed since $latest, so there's nothing to release"
+            exit 0
+          fi
+          today=$(TZ=Asia/Kolkata date +%Y.%m.%d)
+          tag=$today
+          number=1
+          while git rev-parse -q --verify "refs/tags/$tag" > /dev/null; do
+            number=$((number + 1))
+            tag="$today.$number"
+          done
+          git tag "$tag"
+          git push origin "$tag"
+          echo "Tagged main as $tag, as the app's changed since ${latest:-the start}:"
+          if [ -n "$latest" ]; then
+            git diff --stat "$latest" HEAD -- . "${not_built[@]}"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  # A tag pushed by a workflow doesn't start other workflows, so the Android build is
+  # called from here for it
+  android:
+    needs: tag
+    if: needs.tag.outputs.tag != ''
+    uses: ./.github/workflows/android.yml
+    with:
+      tag: ${{ needs.tag.outputs.tag }}
