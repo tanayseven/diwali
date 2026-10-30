@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="400" viewBox="0 0 120 100">
+  <title>Sutli Bomb — Blown apart</title>
+  <defs>
+    <linearGradient id="side" x1="35" y1="0" x2="85" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#132B0E"/>
+      <stop offset="0.25" stop-color="#2E5A20"/>
+      <stop offset="0.5" stop-color="#4A7F34"/>
+      <stop offset="0.75" stop-color="#2C561F"/>
+      <stop offset="1" stop-color="#10240B"/>
+    </linearGradient>
+    <linearGradient id="round" x1="35" y1="0" x2="85" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000" stop-opacity="0.55"/>
+      <stop offset="0.3" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#fff" stop-opacity="0.08"/>
+      <stop offset="0.8" stop-color="#000" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="top" x1="0" y1="42" x2="0" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3E6F2C"/>
+      <stop offset="1" stop-color="#57903C"/>
+    </linearGradient>
+    <radialGradient id="scorch" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000" stop-opacity="0.85"/>
+      <stop offset="0.6" stop-color="#0A0705" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#0A0705" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="side-clip"><path d="M35 49V81Q35 89 44 89H76Q85 89 85 81V49Z"/></clipPath>
+    <clipPath id="top-clip"><rect x="35" y="42" width="50" height="14" rx="9" ry="6"/></clipPath>
+    <filter id="blur" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="1.5"/></filter>
+    <filter id="blur-scorch" x="-50%" y="-100%" width="200%" height="300%"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <g id="sutli">
+    <ellipse cx="60" cy="89" rx="44" ry="9" fill="url(#scorch)" filter="url(#blur-scorch)"/>
+    <ellipse cx="60" cy="89" rx="20" ry="4.5" fill="#000" fill-opacity="0.7" filter="url(#blur)"/><path d="M44 89L44 85.99L46 86.13L48 84.92L50 82.62L52 79.9L54 83.65L56 81.61L58 80.9L60 83.36L62 79.46L64 80.81L66 80.81L68 80.06L70 81.72L72 84.95L74 84.37L76 84.77L76 89Q60 91 44 89Z" fill="#1C2E14"/><path d="M44 89L44 85.99L46 86.13L48 84.92L50 82.62L52 79.9L54 83.65L56 81.61L58 80.9L60 83.36L62 79.46L64 80.81L66 80.81L68 80.06L70 81.72L72 84.95L74 84.37L76 84.77L76 89Q60 91 44 89Z" fill="#000" fill-opacity="0.35"/><ellipse cx="60" cy="85" rx="10" ry="2.2" fill="#0A0604"/><path d="M56.81 92.92q1.75 -0.72 1.78 0.63" stroke="#24481A" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M77.95 84.2q-0.94 -0.08 1.66 0.47" stroke="#3D6E2B" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M72.9 84.39l2.04 -0.16l-0.58 1.25l-3 0.21Z" fill="#E9BE1C"/><path d="M33.98 89.31q-0.01 -1.63 0.3 -0.8" stroke="#4C7F36" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M95.64 90.05l2.71 0.23l0.2 1.39l-1.75 0.11Z" fill="#C42320"/><path d="M81.4 86.14q-2.82 -1.84 -4 -0.94" stroke="#24481A" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M30.31 85.86q-2.96 -1.92 1.91 0.94" stroke="#3D6E2B" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M88.2 84.12l2.61 -0.14l0.14 0.85l-2.46 0.18Z" fill="#2A1A10"/><path d="M31 88.06l2.46 -0.2l0.27 1.07l-1.72 -0.19Z" fill="#C42320"/><path d="M92.28 90.69l1.8 -0.79l-0.34 0.83l-2.33 0.34Z" fill="#2A1A10"/><path d="M40.06 85.45l1.56 0.2l0.44 1.15l-2.49 -0.03Z" fill="#E9BE1C"/><path d="M48.09 86.2q0.97 -1.84 0.64 0.85" stroke="#3D6E2B" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M99.3 90.02q0.61 -1.93 3.94 0.25" stroke="#2F5A22" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M58.99 95.39q0.1 -1.17 4.63 0.64" stroke="#4C7F36" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M97.45 86.97q-1.39 -0.99 0.39 -0.75" stroke="#1D3C14" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M40.7 86.77q0.67 -0.32 -1.47 -0.77" stroke="#24481A" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M70.51 92.91q2.5 -0.54 1.57 0.67" stroke="#3D6E2B" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M88.92 91.68l1.7 -0.26l-0.16 1.42l-2.01 0.56Z" fill="#E9BE1C"/><path d="M78.89 89.93l2.76 -0.06l-0.46 1.2l-2.33 0.4Z" fill="#E9BE1C"/><path d="M46.45 85.32q-2.42 -1.15 4.37 0.32" stroke="#1D3C14" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M77.06 81.83l2.61 -0.4l0.22 1.4l-1.91 0.21Z" fill="#E9BE1C"/><path d="M38.2 83.71l1.77 0.26l0.27 0.97l-2.44 -0.09Z" fill="#C42320"/><path d="M72.94 85.53q2.22 -0.6 2.41 -0.8" stroke="#2F5A22" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M42.45 82.48q1.39 -1.2 -3.18 -0.96" stroke="#4C7F36" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M64.22 94.53l2.39 -0.04l-0.56 1.14l-2.68 0.57Z" fill="#2A1A10"/><path d="M78.02 91.56l1.92 0.34l-0.41 0.98l-1.75 0.13Z" fill="#C42320"/><path d="M82.92 88.58q1.92 -1.16 -1.28 0.81" stroke="#3D6E2B" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M36.38 83.98l2.01 0.27l0.28 0.8l-2.22 -0.16Z" fill="#C42320"/>
+  </g>
+</svg>

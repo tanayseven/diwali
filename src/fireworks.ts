@@ -25,10 +25,18 @@ const laddiUrls = Array.from({length: 21}, (_, idx) => `sprites/fireworks/pathak
 // A chakri (a ground spinner) whole with its wick, then its coil burning away from the
 // outside in, smeared by its spin, and finally burnt out
 const chakriUrls = Array.from({length: 16}, (_, idx) => `sprites/fireworks/chakri-${String(idx + 1).padStart(2, "0")}.svg`)
+// A sutli bomb (a firecracker wound tight in twine) whole, then with its wick burnt
+// down a step further in each drawing after, and finally blown apart
+const sutliUrls = {
+  fuse: Array.from({length: 6}, (_, idx) => `sprites/fireworks/sutli-${String(idx + 1).padStart(2, "0")}.svg`),
+  spent: "sprites/fireworks/sutli-spent.svg",
+}
 // Every texture the fireworks need, to be loaded before they're created
-const fireworksAssets = [...Object.values(anarUrls), ...laddiUrls, ...chakriUrls, ...matchFrameUrls]
+const fireworksAssets = [
+  ...Object.values(anarUrls), ...laddiUrls, ...chakriUrls, ...sutliUrls.fuse, sutliUrls.spent, ...matchFrameUrls,
+]
 
-type Kind = "anar" | "laddi" | "chakri"
+type Kind = "anar" | "laddi" | "chakri" | "sutli"
 
 // How each kind of firework's drawings sit in the scene. They're all the same size,
 // showing a frame of their drawing's units at a number of pixels to a unit. The origin
@@ -84,7 +92,19 @@ const chakriShape: Shape = {
   fuseAt: {x: 186, y: 297},
   scale: 0.065,
 }
-const shapes: Record<Kind, Shape> = {anar: anarShape, laddi: laddiShape, chakri: chakriShape}
+// The sutli bomb is a squat block of green twine standing on y 89, with a band of red
+// and yellow paper round it. Its wick rises from the middle of its top at (60, 49) to
+// a frayed tip at (61.5, 22). It's a little smaller than an anar
+const sutliWick = {from: {x: 61.5, y: 22}, to: {x: 60, y: 49}}
+const sutliShape: Shape = {
+  frame: new Rectangle(0, 0, 120, 100),
+  density: 4,
+  origin: {x: 60, y: 89},
+  area: new Rectangle(32, 20, 56, 71),
+  fuseAt: sutliWick.from,
+  scale: 0.3,
+}
+const shapes: Record<Kind, Shape> = {anar: anarShape, laddi: laddiShape, chakri: chakriShape, sutli: sutliShape}
 // A firework that can be lit grows this much while the match is dragged over it
 const targetGrowth = 1.12
 
@@ -199,6 +219,28 @@ const shredDrag = 3
 const shredLife = {min: 2.5, max: 4}
 const shredSize = {width: 1.3, height: 0.6}
 const shredColours = [0xb8322a, 0xd8503a, 0x8e2018, 0xf2e6c8]
+
+// A sutli bomb's wick takes its time burning down, then it goes off all at once, much
+// bigger than a laddi's crackers: a great flash and light, sparks flung up and out,
+// scraps of its twine and paper and a cloud of smoke. It's a deep boom, which flashes
+// the screen brighter than a cracker does
+const sutliFuseDuration = 3
+const sutliSoundUrl = "audio/effects/sutli.mp3"
+const sutliFlashAlpha = 0.5
+const sutliLightColour = 0xffd29a
+const sutliLightRadius = 420
+const sutliGlowRadius = 70
+const sutliCoreRadius = 20
+// Its flash and light die away more slowly than a cracker's, per second
+const sutliFade = 6
+const sutliSparks = 360
+const sutliSpecks = 90
+const sutliSparkSpeed = {min: 180, max: 560}
+const sutliShreds = {min: 70, max: 90}
+const sutliPuffs = 16
+// Where it bursts from, in its drawing: the middle of its body
+const sutliHeart = {x: 60, y: 68}
+const sutliShredColours = [0x2f5a22, 0x4c7f36, 0x24481a, 0xc42320, 0xe9be1c, 0xd9c79a]
 
 // A chakri's fuse fizzes to the coil's end, then it spins up, burns and spins down,
 // in seconds. Its drawings go from whole to burnt out over the burn
@@ -387,7 +429,9 @@ type Drag =
 // its fuse. An anar's fizzes down to the nozzle; then it throws up a fountain of sparks
 // that crackle and glitter, shedding embers and smoke and lighting up the porch, and
 // sputters out after a while. A laddi's fizzes along to its crackers, which go off one
-// after another, each with a blast. Expects fireworksAssets to have been loaded
+// after another, each with a blast. A chakri's fizzes to its coil, and it spins about
+// in a ring of fire. A sutli bomb's fizzes slowly down its wick, and it goes off all at
+// once in one great blast. Expects fireworksAssets to have been loaded
 const createFireworks = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
   // A firework's slot shows its unlit drawing, cropped to the area it's picked up by
   const itemFor = (shape: Shape, url: string): Item => ({
@@ -402,33 +446,45 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     anar: itemFor(anarShape, anarUrls.unlit),
     laddi: itemFor(laddiShape, laddiUrls[0]),
     chakri: itemFor(chakriShape, chakriUrls[0]),
+    sutli: itemFor(sutliShape, sutliUrls.fuse[0]),
   }
-  const unlitUrls: Record<Kind, string> = {anar: anarUrls.unlit, laddi: laddiUrls[0], chakri: chakriUrls[0]}
-  const kinds: Kind[] = ["anar", "laddi", "chakri"]
+  const unlitUrls: Record<Kind, string> = {
+    anar: anarUrls.unlit, laddi: laddiUrls[0], chakri: chakriUrls[0], sutli: sutliUrls.fuse[0],
+  }
+  const kinds: Kind[] = ["anar", "laddi", "chakri", "sutli"]
   const matchstick = createMatchstick(app, audio)
   const playAnarSound = audio.createEffect(anarSoundUrl)
   const playChakriSound = audio.createEffect(chakriSoundUrl)
   const blastSounds = blastSoundUrls.map(url => audio.createEffect(url))
+  const playSutliSound = audio.createEffect(sutliSoundUrl)
   const container = new Container()
   // Over the whole screen, under the HUD, for the blasts' flashes
   const screenFlash = new Graphics()
   screenFlash.eventMode = "none"
   screenFlash.visible = false
-  // How bright the screen's flash is now, from 0 to 1
+  // How bright the screen's flash is now, from 0 to 1, how bright it is at its height,
+  // and how quickly it dies away
   let flash = 0
+  let flashAlpha = screenFlashAlpha
+  let flashFade = blastFade
   // Whether the bar is showing, so fireworks can be put back on it
   let hudShown = false
   const bar = createHud(app)
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(screenFlash, bar.container, dragLayer)
-  const slots = {anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri)}
-  const matchSlot = bar.addItem(3, matchstick.item)
+  const slots = {
+    anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),
+    sutli: bar.addItem(3, stacks.sutli),
+  }
+  const matchSlot = bar.addItem(4, matchstick.item)
 
   const tips = LL.tooltip
-  const names: Record<Kind, () => string> = {anar: tips.anar.name, laddi: tips.laddi.name, chakri: tips.chakri.name}
+  const names: Record<Kind, () => string> = {
+    anar: tips.anar.name, laddi: tips.laddi.name, chakri: tips.chakri.name, sutli: tips.sutli.name,
+  }
   const stackHints: Record<Kind, () => string> = {
-    anar: tips.anar.stack, laddi: tips.laddi.stack, chakri: tips.chakri.stack,
+    anar: tips.anar.stack, laddi: tips.laddi.stack, chakri: tips.chakri.stack, sutli: tips.sutli.stack,
   }
   kinds.forEach(kind => addTooltip(slots[kind].container, () => ({
     title: names[kind](),
@@ -536,7 +592,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     smoke.push(puff)
   }
 
-  const addShred = (x: number, y: number, floor: number) => {
+  const addShred = (x: number, y: number, floor: number, colours = shredColours, speedUp = 1) => {
     if (offScreen) {
       return
     }
@@ -550,12 +606,12 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
     // Thrown up and out, more sideways than up
     const angle = -Math.PI / 2 + random(-1.3, 1.3)
-    const speed = random(shredSpeed.min, shredSpeed.max)
+    const speed = random(shredSpeed.min, shredSpeed.max) * speedUp
     Object.assign(shred, {
       x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, spin: random(-14, 14),
       age: 0, life: random(shredLife.min, shredLife.max), floor,
     })
-    shred.colour = toBgr(shredColours[Math.floor(Math.random() * shredColours.length)])
+    shred.colour = toBgr(colours[Math.floor(Math.random() * colours.length)])
     shred.particle.rotation = random(0, Math.PI)
     shreds.push(shred)
   }
@@ -673,7 +729,9 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     const sprite = new Sprite(Assets.get<Texture>(unlitUrls[kind]))
     sprite.anchor.set((origin.x - frame.x) / frame.width, (origin.y - frame.y) / frame.height)
     sprite.cursor = "grab"
-    const lightColours: Record<Kind, number> = {anar: lightColour, laddi: blastLightColour, chakri: chakriLightColour}
+    const lightColours: Record<Kind, number> = {
+      anar: lightColour, laddi: blastLightColour, chakri: chakriLightColour, sutli: sutliLightColour,
+    }
     const light = lighting.addLight(lightColours[kind])
     const glow = new Sprite(glowTexture)
     glow.tint = 0xffd59a
@@ -955,6 +1013,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     laddi.brightness = 1
     laddi.lightAt = at
     flash = 1
+    flashAlpha = screenFlashAlpha
+    flashFade = blastFade
     blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(at))
   }
 
@@ -1197,6 +1257,85 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     core.alpha = clamp(lit * 2.5)
   }
 
+  // A sutli bomb goes off: everything's thrown up and out from its middle, and falls
+  // back to the floor all round where it stood
+  const explode = (sutli: Placed) => {
+    const at = onFirework(sutli, sutliHeart)
+    const floor = sutli.sprite.y
+    for (let idx = 0; idx < sutliSparks; idx++) {
+      // Mostly upwards, as the floor holds the blast down
+      const angle = -Math.PI / 2 + random(-1.6, 1.6)
+      const speed = random(sutliSparkSpeed.min, sutliSparkSpeed.max)
+      addSpark(at.x, at.y, Math.cos(angle) * speed, Math.sin(angle) * speed * 0.8,
+        random(0.25, 0.8), "spark", floor + random(-6, 10))
+    }
+    for (let idx = 0; idx < sutliSpecks; idx++) {
+      const angle = random(0, Math.PI * 2)
+      const speed = random(40, 160)
+      addSpark(at.x, at.y, Math.cos(angle) * speed, Math.sin(angle) * speed - 40, random(0.15, 0.45), "speck", floor + 3)
+    }
+    const shredCount = Math.round(random(sutliShreds.min, sutliShreds.max))
+    for (let idx = 0; idx < shredCount; idx++) {
+      addShred(at.x, at.y, floor + random(-8, 12), sutliShredColours, 1.8)
+    }
+    for (let idx = 0; idx < sutliPuffs; idx++) {
+      addSmoke(at.x + random(-14, 14), at.y - random(0, 30))
+    }
+    sutli.brightness = 1
+    sutli.lightAt = at
+    flash = 1
+    flashAlpha = sutliFlashAlpha
+    flashFade = sutliFade
+    playSutliSound(background.panOf(at))
+  }
+
+  // Moves a sutli bomb's burn on: the fuse fizzing slowly down its wick, then the blast
+  const burnSutli = (sutli: Placed, dt: number) => {
+    let fuseAt: PointData | undefined
+    if (sutli.state === "fuse") {
+      const t = clamp(sutli.elapsed / sutliFuseDuration)
+      const {from, to} = sutliWick
+      fuseAt = onFirework(sutli, {x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t)})
+      // Its drawings burn the wick down as the fuse goes, never quite to nothing
+      const frame = Math.min(sutliUrls.fuse.length - 1, Math.floor(t * (sutliUrls.fuse.length - 1)) + 1)
+      sutli.sprite.texture = Assets.get<Texture>(sutliUrls.fuse[frame])
+      sutli.sparkDebt += 60 * dt
+      while (sutli.sparkDebt >= 1) {
+        sutli.sparkDebt--
+        emitFuseSpark(sutli, fuseAt)
+      }
+      if (sutli.elapsed >= sutliFuseDuration) {
+        fuseAt = undefined
+        explode(sutli)
+        sutli.state = "spent"
+        sutli.spentAt = time
+        sutli.sprite.texture = Assets.get<Texture>(sutliUrls.spent)
+        makePickable(sutli)
+      }
+    }
+    smoulder(sutli, onFirework(sutli, {x: 60, y: 86}), dt)
+
+    // The blast lights the porch and dies away; the fuse barely glows
+    sutli.brightness *= Math.exp(-sutliFade * dt)
+    const {brightness, light, glow, core} = sutli
+    const shining = brightness > 0.01 || fuseAt !== undefined
+    glow.visible = shining
+    core.visible = shining
+    if (!shining) {
+      light.off()
+      return
+    }
+    const lit = Math.max(brightness, fuseAt ? 0.1 : 0)
+    const at = fuseAt ?? sutli.lightAt
+    light.shine(at, lerp(40, sutliLightRadius, lit), lit * 1.4)
+    glow.position.copyFrom(at)
+    core.position.copyFrom(at)
+    glow.width = glow.height = (fuseAt ? blastGlowRadius : sutliGlowRadius) * 2 * (0.3 + 0.7 * lit)
+    core.width = core.height = (fuseAt ? blastCoreRadius : sutliCoreRadius) * 2 * (0.3 + 0.7 * lit)
+    glow.alpha = clamp(lit * 1.5)
+    core.alpha = clamp(lit * 3)
+  }
+
   const tick = () => {
     const dt = Math.min(0.05, app.ticker.deltaMS / 1000)
     time += dt
@@ -1212,6 +1351,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         burnAnar(firework, dt)
       } else if (firework.kind === "laddi") {
         burnLaddi(firework, dt)
+      } else if (firework.kind === "sutli") {
+        burnSutli(firework, dt)
       } else {
         burnChakri(firework, dt)
       }
@@ -1220,8 +1361,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
 
     // The screen's flash dies away as quickly as a blast's light, and only shows while
     // the scene does
-    flash *= Math.exp(-blastFade * dt)
-    screenFlash.alpha = screenFlashAlpha * flash
+    flash *= Math.exp(-flashFade * dt)
+    screenFlash.alpha = flashAlpha * flash
     screenFlash.visible = screenFlash.alpha > 0.002
 
     for (let idx = sparks.length - 1; idx >= 0; idx--) {
