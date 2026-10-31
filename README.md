@@ -17,6 +17,7 @@ Live at: https://diwali.tanay.tech/
 
 ## What's in it
 
+- **Language:** it opens by asking which language to use, from Assamese, Bengali, Dogri, English, Gujarati, Hindi, Hinglish, Kannada, Kashmiri, Konkani, Maithili, Malayalam, Manipuri (in Meetei Mayek), Marathi, Odia, Punjabi, Sanskrit, Santali (in Ol Chiki), Sindhi, Tamil, Telugu and Urdu. Each is listed in its own script with its English name, in alphabetical order. The one picked last time, else the browser's, is highlighted, so Enter picks it.
 - **Loading screen:** a progress bar while the images and the start of the music load.
 - **Photosensitivity warning:** the app has flashing and twinkling lights, so it opens with a warning for people with photosensitive epilepsy. It fades out after a few seconds, or straight away on a tap or key press.
 - **One night scene:** after the warning it goes straight to a house on Diwali night, its porch lit only by what's lit on it. Drag the scenery to pan around, and zoom with the + and − buttons, the `+` and `-` keys, a trackpad pinch (or Ctrl and the wheel), or a two-finger pinch on touch screens.
@@ -30,13 +31,13 @@ Live at: https://diwali.tanay.tech/
 - **Draw Rangoli:** pick a colour of powder and draw on the porch floor, rub parts out with the eraser, or clear it all.
 - **Craft Kandil:** its bar is empty for now.
 - **Tooltips:** hovering over things with a mouse says what they are and what to do with them.
-- **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. Where the browser can share files, as on most phones, it opens the share sheet to send it to any app; otherwise it downloads it.
+- **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; otherwise it downloads it.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 
 The side rail's icons are from [SVG Repo](https://www.svgrepo.com).
 
-All text is set in [Jaini](https://fonts.google.com/specimen/Jaini), loaded from Google Fonts.
+All text is set in [Jaini](https://fonts.google.com/specimen/Jaini), with [Baloo](https://github.com/EkType/Baloo2) for Kannada, Telugu, Malayalam, Tamil, Bengali, Assamese, Gujarati, Odia and Punjabi, and [Noto](https://fonts.google.com/noto) for Urdu, Sindhi and Kashmiri (Naskh), Manipuri (Meetei Mayek) and Santali (Ol Chiki). The fonts are bundled with the app from [Fontsource](https://fontsource.org), so nothing is loaded from elsewhere and the Android app works offline.
 
 ## Development
 

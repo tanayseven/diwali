@@ -23,6 +23,20 @@
 	"dependencies": {
 		"@capacitor/android": "^7.6.10",
 		"@capacitor/core": "^7.6.10",
+		"@capacitor/filesystem": "^7.1.9",
+		"@capacitor/share": "^7.0.4",
+		"@fontsource/baloo-bhai-2": "5.3.0",
+		"@fontsource/baloo-bhaina-2": "5.3.0",
+		"@fontsource/baloo-chettan-2": "5.3.0",
+		"@fontsource/baloo-da-2": "5.3.0",
+		"@fontsource/baloo-paaji-2": "5.3.0",
+		"@fontsource/baloo-tamma-2": "5.3.0",
+		"@fontsource/baloo-tammudu-2": "5.3.0",
+		"@fontsource/baloo-thambi-2": "5.3.0",
+		"@fontsource/jaini": "5.3.0",
+		"@fontsource/noto-naskh-arabic": "5.3.0",
+		"@fontsource/noto-sans-meetei-mayek": "5.3.0",
+		"@fontsource/noto-sans-ol-chiki": "5.3.0",
 		"pixi.js": "^8.22.0",
 		"typesafe-i18n": "5.27.1"
 	}

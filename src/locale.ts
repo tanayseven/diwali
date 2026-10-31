@@ -7,6 +7,9 @@ import {loadLocaleAsync} from "./i18n/i18n-util.async"
 // anything shows text, so everywhere else can read it straight from here
 let LL: TranslationFunctions
 
+// The languages written right to left, in the Arabic script
+const rightToLeft: Locales[] = ["ks", "sd", "ur"]
+
 // The language picked is remembered between visits. Storage can be unavailable
 // (private windows, blocked site data), so it's only a convenience
 const storageKey = "diwali-locale"
@@ -35,6 +38,8 @@ const loadLocale = async (locale: Locales) => {
   await loadLocaleAsync(locale)
   LL = i18nObject(locale)
   document.documentElement.lang = locale
+  // So the text shown over the game, like the warnings and footer, reads the right way
+  document.documentElement.dir = rightToLeft.includes(locale) ? "rtl" : "ltr"
   document.title = LL.title()
 }
 

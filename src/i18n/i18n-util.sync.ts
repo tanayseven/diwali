@@ -5,24 +5,52 @@ import { initFormatters } from './formatters'
 import type { Locales, Translations } from './i18n-types'
 import { loadedFormatters, loadedLocales, locales } from './i18n-util'
 
+import as from './as'
+import bn from './bn'
+import doi from './doi'
 import en from './en'
+import gu from './gu'
 import hi from './hi'
 import hi_Latn from './hi-Latn'
 import kn from './kn'
+import kok from './kok'
+import ks from './ks'
+import mai from './mai'
 import ml from './ml'
+import mni_Mtei from './mni-Mtei'
 import mr from './mr'
+import or from './or'
+import pa from './pa'
+import sa from './sa'
+import sat_Olck from './sat-Olck'
+import sd from './sd'
 import ta from './ta'
 import te from './te'
+import ur from './ur'
 
 const localeTranslations = {
+	as,
+	bn,
+	doi,
 	en,
+	gu,
 	hi,
 	'hi-Latn': hi_Latn,
 	kn,
+	kok,
+	ks,
+	mai,
 	ml,
+	'mni-Mtei': mni_Mtei,
 	mr,
+	or,
+	pa,
+	sa,
+	'sat-Olck': sat_Olck,
+	sd,
 	ta,
 	te,
+	ur,
 }
 
 export const loadLocale = (locale: Locales): void => {

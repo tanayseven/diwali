@@ -1,3 +1,15 @@
+import "@fontsource/jaini/400.css"
+import "@fontsource/baloo-tamma-2/400.css"
+import "@fontsource/baloo-tammudu-2/400.css"
+import "@fontsource/baloo-chettan-2/400.css"
+import "@fontsource/baloo-thambi-2/400.css"
+import "@fontsource/baloo-da-2/400.css"
+import "@fontsource/baloo-bhai-2/400.css"
+import "@fontsource/baloo-bhaina-2/400.css"
+import "@fontsource/baloo-paaji-2/400.css"
+import "@fontsource/noto-naskh-arabic/400.css"
+import "@fontsource/noto-sans-meetei-mayek/400.css"
+import "@fontsource/noto-sans-ol-chiki/400.css"
 import {Application, Container} from "pixi.js"
 
 // A full-screen view that main.ts swaps in and out
@@ -8,16 +20,26 @@ type Screen = {
   onKeyDown?: (e: KeyboardEvent) => void
 }
 
-// Jaini comes from Google Fonts (linked in index.html); the fallback covers it failing to load.
-// It has Latin and Devanagari only, so Kannada, Telugu, Malayalam and Tamil fall back,
-// letter by letter, to the Baloo font for each
-const fontFamily = `Jaini, "Baloo Tamma 2", "Baloo Tammudu 2", "Baloo Chettan 2", "Baloo Thambi 2", sans-serif`
+// The fonts are bundled with the app (imported above), so they're there offline, as in
+// the Android app; the fallback covers them failing to load. Each script's half of a font
+// is only fetched once text in that script shows. Jaini has Latin and Devanagari only,
+// so other scripts fall back, letter by letter, to a font for each: Baloo's for Kannada,
+// Telugu, Malayalam, Tamil, Bengali (and Assamese), Gujarati, Odia and Gurmukhi, and
+// Noto's for the Arabic script (Urdu, Sindhi, Kashmiri, whose extra letters it has, so
+// none of a word's letters come from another font and break their joins), Meetei Mayek
+// and Ol Chiki
+const scriptFonts = [
+  "Baloo Tamma 2", "Baloo Tammudu 2", "Baloo Chettan 2", "Baloo Thambi 2",
+  "Baloo Da 2", "Baloo Bhai 2", "Baloo Bhaina 2", "Baloo Paaji 2",
+  "Noto Naskh Arabic", "Noto Sans Meetei Mayek", "Noto Sans Ol Chiki",
+]
+const fontFamily = `Jaini, ${scriptFonts.map(font => `"${font}"`).join(", ")}, sans-serif`
 
 // Pixi draws text once and won't redraw it when a web font arrives later,
 // so wait for the font before anything draws text. If it fails, text uses the fallback.
-// Google Fonts splits each font by script, so this loads Jaini's Latin, and whatever's
-// needed for the letters of the text given that aren't Latin. Not its Latin letters,
-// or every Baloo font's Latin would load too, unused
+// Each font is split by script, so this loads Jaini's Latin, and whatever's needed for
+// the letters of the text given that aren't Latin. Not its Latin letters, or every other
+// font's Latin would load too, unused
 const loadFont = (text: string) => {
   const notLatin = text.replace(/[\u0000-ɏ]/g, "")
   return Promise.all([

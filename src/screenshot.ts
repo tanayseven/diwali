@@ -1,3 +1,6 @@
+import {Capacitor} from "@capacitor/core"
+import {Directory, Filesystem} from "@capacitor/filesystem"
+import {Share} from "@capacitor/share"
 import {Application, Container, Graphics, Rectangle} from "pixi.js"
 import {fontFamily} from "./app"
 import {LL} from "./locale"
@@ -43,11 +46,39 @@ const takePhoto = (app: Application, scene: Container) => {
     shot.toBlob(blob => blob ? resolve(blob) : reject(new Error("Couldn't make the photo")), "image/png"))
 }
 
-// Shares the photo to whichever app is picked, where the browser can share files, or
-// else saves it as a download
+// The photo as base64, without the data URL's prefix, as the filesystem plugin takes it
+const toBase64 = (blob: Blob) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve((reader.result as string).split(",")[1])
+  reader.onerror = () => reject(reader.error)
+  reader.readAsDataURL(blob)
+})
+
+// In the Android app the web view can't share files, so the photo's written to the app's
+// cache and handed to Android's share sheet
+const shareNatively = async (blob: Blob, title: string, text: string) => {
+  const {uri} = await Filesystem.writeFile({path: fileName, data: await toBase64(blob), directory: Directory.Cache})
+  try {
+    await Share.share({title, text, files: [uri], dialogTitle: title})
+  } catch (error) {
+    // Closing the share sheet without picking anything isn't a failure
+    if (!/cancel/i.test((error as Error).message)) {
+      throw error
+    }
+  }
+}
+
+// Shares the photo to whichever app is picked, through Android's share sheet in the
+// app, or where the browser can share files, or else saves it as a download
 const sharePhoto = async (blob: Blob) => {
+  const title = LL.title()
+  const text = LL.screenshot.shareText({url: siteUrl})
+  if (Capacitor.isNativePlatform()) {
+    await shareNatively(blob, title, text)
+    return
+  }
   const file = new File([blob], fileName, {type: "image/png"})
-  const data = {files: [file], title: LL.title(), text: LL.screenshot.shareText({url: siteUrl})}
+  const data = {files: [file], title, text}
   if (navigator.canShare?.(data)) {
     try {
       await navigator.share(data)
