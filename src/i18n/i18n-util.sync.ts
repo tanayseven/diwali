@@ -6,9 +6,23 @@ import type { Locales, Translations } from './i18n-types'
 import { loadedFormatters, loadedLocales, locales } from './i18n-util'
 
 import en from './en'
+import hi from './hi'
+import hi_Latn from './hi-Latn'
+import kn from './kn'
+import ml from './ml'
+import mr from './mr'
+import ta from './ta'
+import te from './te'
 
 const localeTranslations = {
 	en,
+	hi,
+	'hi-Latn': hi_Latn,
+	kn,
+	ml,
+	mr,
+	ta,
+	te,
 }
 
 export const loadLocale = (locale: Locales): void => {

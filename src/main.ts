@@ -10,7 +10,8 @@ import {createHud} from "./hud"
 import {createHudToggle} from "./hudToggle"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
-import {LL, loadLocale} from "./locale"
+import {showLanguagePicker} from "./languagePicker"
+import {LL, loadLocale, preferredLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {createScreenshotButton} from "./screenshot"
@@ -43,7 +44,11 @@ type ToolControls = Layout & {
 }
 
 const main = async () => {
-  const [app] = await Promise.all([createApp(), loadFont(), loadLocale()])
+  const app = await createApp()
+  // Everything after shows text, so the language comes first
+  await loadLocale(await showLanguagePicker(preferredLocale()))
+  // Only now is it known which script the text is in, so which font it needs
+  await loadFont(LL.title())
   const portraitWarning = createPortraitWarning()
   // Available on every screen, from the loader on
   const audio = createAudioControl()

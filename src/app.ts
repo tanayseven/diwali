@@ -8,14 +8,25 @@ type Screen = {
   onKeyDown?: (e: KeyboardEvent) => void
 }
 
-// Jaini comes from Google Fonts (linked in index.html); the fallback covers it failing to load
-const fontFamily = "Jaini, sans-serif"
+// Jaini comes from Google Fonts (linked in index.html); the fallback covers it failing to load.
+// It has Latin and Devanagari only, so Kannada, Telugu, Malayalam and Tamil fall back,
+// letter by letter, to the Baloo font for each
+const fontFamily = `Jaini, "Baloo Tamma 2", "Baloo Tammudu 2", "Baloo Chettan 2", "Baloo Thambi 2", sans-serif`
 
 // Pixi draws text once and won't redraw it when a web font arrives later,
-// so wait for the font before anything draws text. If it fails, text uses the fallback
-const loadFont = () => document.fonts.load(`16px ${fontFamily}`).catch(err => {
-  console.error("Couldn't load the font", err)
-})
+// so wait for the font before anything draws text. If it fails, text uses the fallback.
+// Google Fonts splits each font by script, so this loads Jaini's Latin, and whatever's
+// needed for the letters of the text given that aren't Latin. Not its Latin letters,
+// or every Baloo font's Latin would load too, unused
+const loadFont = (text: string) => {
+  const notLatin = text.replace(/[\u0000-ɏ]/g, "")
+  return Promise.all([
+    document.fonts.load("16px Jaini"),
+    notLatin && document.fonts.load(`16px ${fontFamily}`, notLatin),
+  ]).catch(err => {
+    console.error("Couldn't load the font", err)
+  })
+}
 
 // How much the game asks of the device. Phones and tablets, and machines with little
 // memory or few cores, get a lighter game: fewer particles, fewer shells over the city

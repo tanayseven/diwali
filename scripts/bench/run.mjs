@@ -65,11 +65,12 @@ const openGame = async (browser, size) => {
 // buffer, so how long it takes varies. Its text is what's looked for
 const warningText = "flashing and twinkling lights"
 // Opens the game, trying again if the load's cut off, which now and then happens as one
-// browser context closes and the next opens
+// browser context closes and the next opens. Picks English, which the warning's text is in
 const open = async page => {
   for (let attempt = 1; ; attempt++) {
     try {
-      return await page.goto(url)
+      await page.goto(url)
+      break
     } catch (error) {
       if (attempt === 3) {
         throw error
@@ -77,6 +78,7 @@ const open = async page => {
       await page.waitForTimeout(1000)
     }
   }
+  await page.getByRole("button", {name: "English"}).click()
 }
 const enterScene = async page => {
   await open(page)
