@@ -8,7 +8,7 @@ const matchFrameUrls = [
   "1-unlit", "2-strike", "3-flare", "4-catch", "5-lit",
   "6-burning-25", "7-burning-50", "8-burning-75", "9-ember", "10-burnt-out",
 ].map(frame => `sprites/diya/matchstick-${frame}.svg`)
-// Heard as a match is struck
+// Heard as a match catches and starts burning down
 const matchSoundUrl = "audio/effects/matchstick-lit.mp3"
 // The stick in its 200 x 320 canvas, cropped to fill a slot
 const matchCrop = new Rectangle(88, 100, 24, 207)
@@ -24,7 +24,8 @@ const matchTilt = -0.45
 // and plays out striking, flaring and catching over that time, until it's lit
 const lightTime = 1000
 const matchLitFrame = 4
-// Then it burns down, a frame at a time, and fades away, and a fresh one's in hand
+// Then a fresh one's in hand at once, and the one that lit it is left where it was to
+// burn down, a frame at a time, and fade away
 const matchBurnFrame = 220
 const matchFadeOut = 250
 const burnEnd = (matchFrameUrls.length - 1 - matchLitFrame) * matchBurnFrame
@@ -37,6 +38,40 @@ const ringColour = 0xffd700
 
 type Aim = {target: object, light: () => void}
 
+// A copy of the match just lit, left in its place to burn down and fade away on its own,
+// below the fresh one in hand, and then let go of
+const burnDown = (app: Application, lit: Sprite, at: Container) => {
+  const parent = at.parent
+  if (!parent) {
+    return
+  }
+  const match = new Sprite(lit.texture)
+  match.eventMode = "none"
+  match.anchor.copyFrom(lit.anchor)
+  match.rotation = lit.rotation
+  match.scale.copyFrom(lit.scale)
+  match.position.copyFrom(at.position)
+  parent.addChildAt(match, parent.getChildIndex(at))
+
+  let burnt = 0
+  const tick = () => {
+    // Gone already if whatever it was in was
+    if (match.destroyed) {
+      app.ticker.remove(tick)
+      return
+    }
+    burnt += app.ticker.deltaMS
+    match.texture = Assets.get<Texture>(matchFrameUrls[Math.min(matchFrameUrls.length - 1, matchLitFrame + Math.floor(burnt / matchBurnFrame))])
+    match.alpha = burnt < burnEnd ? 1 : Math.max(0, 1 - (burnt - burnEnd) / matchFadeOut)
+    if (burnt >= burnEnd + matchFadeOut) {
+      app.ticker.remove(tick)
+      // The frames are shared, so only the sprite goes
+      match.destroy()
+    }
+  }
+  app.ticker.add(tick)
+}
+
 // A matchstick to drag out of a HUD and light things in the scene with by holding it
 // over them. Expects matchFrameUrls to have been loaded already
 const createMatchstick = (app: Application, audio: AudioControl) => {
@@ -48,8 +83,8 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
     // Takes an unlit match in hand at a point on screen, held by its head. Over
     // something it can light, it's struck, and a ring round its head fills as it flares
     // and catches; moved off, the ring holds where it's got to until it's over something
-    // again. Once it's full that thing's lit, and the match burns down and goes out in
-    // hand, and a fresh one takes its place
+    // again. Once it's full that thing's lit, and a fresh match is in hand straight away,
+    // ready for the next, while the one that lit it burns down and goes out where it was
     hold(at: PointData) {
       const container = new Container()
       container.eventMode = "none"
@@ -61,13 +96,10 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
       container.addChild(match, ring)
 
       let aim: Aim | undefined
-      // Unlit and ready, being struck and held to something, or burning down after
-      // lighting it
-      let phase: "ready" | "striking" | "burning" = "ready"
-      // How far it's been struck, from 0 to 1, or how long it's burnt since, in ms
+      // Unlit and ready, or being struck and held to something
+      let phase: "ready" | "striking" = "ready"
+      // How far it's been struck, from 0 to 1
       let progress = 0
-      let burnt = 0
-      let strikeSound: ReturnType<typeof playSound> | undefined
 
       const show = (frame: number) => {
         match.texture = Assets.get<Texture>(matchFrameUrls[frame])
@@ -75,7 +107,6 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
       const takeFresh = () => {
         phase = "ready"
         progress = 0
-        match.alpha = 1
         show(0)
       }
       const drawRing = () => {
@@ -91,25 +122,19 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
         if (phase === "ready" && aim) {
           phase = "striking"
           progress = 0
-          // Heard from where it's struck on screen
-          strikeSound = playSound(stereoPan(container.x, app.screen.width))
         }
         if (phase === "striking" && aim) {
           progress = Math.min(1, progress + dt / lightTime)
           show(1 + Math.min(matchLitFrame - 1, Math.floor(progress * matchLitFrame)))
           if (progress >= 1) {
             const {light} = aim
-            phase = "burning"
-            burnt = 0
-            strikeSound = undefined
-            light()
-          }
-        } else if (phase === "burning") {
-          burnt += dt
-          show(Math.min(matchFrameUrls.length - 1, matchLitFrame + Math.floor(burnt / matchBurnFrame)))
-          match.alpha = burnt < burnEnd ? 1 : Math.max(0, 1 - (burnt - burnEnd) / matchFadeOut)
-          if (burnt >= burnEnd + matchFadeOut) {
+            show(matchLitFrame)
+            burnDown(app, match, container)
+            // Heard as the match left behind starts burning down, from where it is on
+            // screen, and played out whatever happens to the match in hand
+            playSound(stereoPan(container.x, app.screen.width))
             takeFresh()
+            light()
           }
         }
         drawRing()
@@ -128,7 +153,6 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
           aim = next
         },
         destroy() {
-          strikeSound?.stop()
           app.ticker.remove(tick)
           container.destroy({children: true})
         },
