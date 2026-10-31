@@ -3,7 +3,7 @@ import type {BaseTranslation} from "../i18n-types"
 // English, the base locale. Every other locale translates these same keys; run
 // `npm run i18n` after changing them to regenerate the types
 const en = {
-	title: "Diwali this year",
+	title: "Diwali Celebration",
 	loading: "Loading…",
 	// The side rail's tools, each with its own bar of things to use
 	tools: {
@@ -24,7 +24,7 @@ const en = {
 	screenshot: {
 		take: "Take a photo to share",
 		// Sent with the photo when it's shared
-		shareText: "My Diwali this year, at {url}",
+		shareText: "My Diwali Celebration, at {url}",
 	},
 	splashWarning: {
 		heading: "Warning",

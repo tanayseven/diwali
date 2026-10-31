@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Manipuri (Meiteilon), in Meetei Mayek
 const mni = {
-	title: "ꯆꯍꯤ ꯑꯁꯤꯒꯤ ꯗꯤꯋꯥꯂꯤ",
+	title: "ꯗꯤꯋꯥꯂꯤ ꯀꯨꯝꯍꯩ",
 	loading: "ꯂꯣꯗ ꯇꯧꯔꯤ…",
 	tools: {
 		diyas: "ꯊꯥꯎꯃꯩꯁꯤꯡ",
@@ -21,7 +21,7 @@ const mni = {
 	},
 	screenshot: {
 		take: "ꯁꯦꯌꯥꯔ ꯇꯧꯅꯕꯥ ꯐꯣꯇꯣ ꯂꯧꯕꯤꯌꯨ",
-		shareText: "ꯆꯍꯤ ꯑꯁꯤꯒꯤ ꯑꯩꯒꯤ ꯗꯤꯋꯥꯂꯤ, {url} ꯗꯥ",
+		shareText: "ꯑꯩꯒꯤ ꯗꯤꯋꯥꯂꯤ ꯀꯨꯝꯍꯩ, {url} ꯗꯥ",
 	},
 	splashWarning: {
 		heading: "ꯆꯦꯛꯁꯤꯟꯍꯟꯕ",

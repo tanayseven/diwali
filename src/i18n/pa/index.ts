@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Punjabi, in Gurmukhi
 const pa = {
-	title: "ਇਸ ਸਾਲ ਦੀ ਦੀਵਾਲੀ",
+	title: "ਦੀਵਾਲੀ ਦਾ ਜਸ਼ਨ",
 	loading: "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…",
 	tools: {
 		diyas: "ਦੀਵੇ",
@@ -21,7 +21,7 @@ const pa = {
 	},
 	screenshot: {
 		take: "ਸਾਂਝੀ ਕਰਨ ਲਈ ਫ਼ੋਟੋ ਖਿੱਚੋ",
-		shareText: "ਇਸ ਸਾਲ ਦੀ ਮੇਰੀ ਦੀਵਾਲੀ, {url} ਉੱਤੇ",
+		shareText: "ਮੇਰਾ ਦੀਵਾਲੀ ਦਾ ਜਸ਼ਨ, {url} ਉੱਤੇ",
 	},
 	splashWarning: {
 		heading: "ਚੇਤਾਵਨੀ",

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Diwali this year</string>
-    <string name="title_activity_main">Diwali this year</string>
+    <string name="app_name">Diwali Celebration</string>
+    <string name="title_activity_main">Diwali Celebration</string>
     <string name="package_name">tech.tanay.diwali</string>
     <string name="custom_url_scheme">tech.tanay.diwali</string>
 </resources>

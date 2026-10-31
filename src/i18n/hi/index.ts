@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Hindi, in Devanagari
 const hi = {
-	title: "इस साल की दिवाली",
+	title: "दिवाली उत्सव",
 	loading: "लोड हो रहा है…",
 	tools: {
 		diyas: "दीये",
@@ -21,7 +21,7 @@ const hi = {
 	},
 	screenshot: {
 		take: "शेयर करने के लिए फ़ोटो लें",
-		shareText: "इस साल की मेरी दिवाली, {url} पर",
+		shareText: "मेरा दिवाली उत्सव, {url} पर",
 	},
 	splashWarning: {
 		heading: "चेतावनी",

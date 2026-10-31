@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Dogri, in Devanagari
 const doi = {
-	title: "इस साल दी दीवाली",
+	title: "दीवाली उत्सव",
 	loading: "लोड होआ करदा ऐ…",
 	tools: {
 		diyas: "दीये",
@@ -21,7 +21,7 @@ const doi = {
 	},
 	screenshot: {
 		take: "शेयर करने आस्तै फोटो खिच्चो",
-		shareText: "इस साल दी मेरी दीवाली, {url} पर",
+		shareText: "मेरा दीवाली उत्सव, {url} पर",
 	},
 	splashWarning: {
 		heading: "चेतावनी",

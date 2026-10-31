@@ -7,7 +7,7 @@ import {LL} from "./locale"
 
 const siteUrl = "https://diwali.tanay.tech"
 const highlight = "#ffd700"
-const fileName = "diwali-this-year.png"
+const fileName = "diwali-celebration.png"
 // The address printed in the photo's bottom-right corner, sized to the photo
 const urlHeightShare = 0.045
 const urlMargin = 0.025

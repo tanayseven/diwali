@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Sanskrit, in Devanagari
 const sa = {
-	title: "अस्मिन् वर्षे दीपावलिः",
+	title: "दीपावल्युत्सवः",
 	loading: "आरोप्यते…",
 	tools: {
 		diyas: "दीपाः",
@@ -21,7 +21,7 @@ const sa = {
 	},
 	screenshot: {
 		take: "प्रेषणाय चित्रं गृह्णातु",
-		shareText: "अस्मिन् वर्षे मम दीपावलिः, {url} इत्यत्र",
+		shareText: "मम दीपावल्युत्सवः, {url} इत्यत्र",
 	},
 	splashWarning: {
 		heading: "सावधानम्",

@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Odia, in Odia script
 const or = {
-	title: "ଏ ବର୍ଷର ଦୀପାବଳି",
+	title: "ଦୀପାବଳି ଉତ୍ସବ",
 	loading: "ଲୋଡ୍ ହେଉଛି…",
 	tools: {
 		diyas: "ଦୀପ",
@@ -21,7 +21,7 @@ const or = {
 	},
 	screenshot: {
 		take: "ସେୟାର୍ କରିବାକୁ ଫଟୋ ଉଠାନ୍ତୁ",
-		shareText: "ଏ ବର୍ଷ ମୋ ଦୀପାବଳି, {url} ରେ",
+		shareText: "ମୋ ଦୀପାବଳି ଉତ୍ସବ, {url} ରେ",
 	},
 	splashWarning: {
 		heading: "ଚେତାବନୀ",

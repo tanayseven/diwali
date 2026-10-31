@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Hinglish: Hindi written in the Latin alphabet, with English words where people use them
 const hiLatn = {
-	title: "Is saal ki Diwali",
+	title: "Diwali Celebration",
 	loading: "Load ho raha hai…",
 	tools: {
 		diyas: "Diye",
@@ -21,7 +21,7 @@ const hiLatn = {
 	},
 	screenshot: {
 		take: "Share karne ke liye photo lo",
-		shareText: "Meri is saal ki Diwali, {url} pe",
+		shareText: "Mera Diwali Celebration, {url} pe",
 	},
 	splashWarning: {
 		heading: "Warning",

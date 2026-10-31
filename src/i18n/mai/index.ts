@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Maithili, in Devanagari
 const mai = {
-	title: "एहि सालक दिवाली",
+	title: "दिवाली उत्सव",
 	loading: "लोड भ' रहल अछि…",
 	tools: {
 		diyas: "दीया",
@@ -21,7 +21,7 @@ const mai = {
 	},
 	screenshot: {
 		take: "शेयर करबाक लेल फोटो लिअ",
-		shareText: "एहि सालक हमर दिवाली, {url} पर",
+		shareText: "हमर दिवाली उत्सव, {url} पर",
 	},
 	splashWarning: {
 		heading: "चेतावनी",

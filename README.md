@@ -1,4 +1,4 @@
-# Diwali this year
+# Diwali Celebration
 
 A small [PixiJS](https://pixijs.com) web app about celebrating Diwali.
 

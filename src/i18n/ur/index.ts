@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Urdu, in Perso-Arabic (Nastaliq) script
 const ur = {
-	title: "اس سال کی دیوالی",
+	title: "دیوالی کا جشن",
 	loading: "لوڈ ہو رہا ہے…",
 	tools: {
 		diyas: "دیے",
@@ -21,7 +21,7 @@ const ur = {
 	},
 	screenshot: {
 		take: "شیئر کرنے کے لیے تصویر لیں",
-		shareText: "اس سال کی میری دیوالی، {url} پر",
+		shareText: "میرا دیوالی کا جشن، {url} پر",
 	},
 	splashWarning: {
 		heading: "انتباہ",

@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Santali, in Ol Chiki
 const sat = {
-	title: "ᱱᱚᱶᱟ ᱥᱮᱨᱢᱟ ᱨᱮᱭᱟᱜ ᱫᱤᱣᱟᱞᱤ",
+	title: "ᱫᱤᱣᱟᱞᱤ ᱯᱚᱨᱚᱵ",
 	loading: "ᱞᱳᱰ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ…",
 	tools: {
 		diyas: "ᱫᱤᱭᱟ",
@@ -21,7 +21,7 @@ const sat = {
 	},
 	screenshot: {
 		take: "ᱦᱟᱹᱴᱤᱧ ᱞᱟᱹᱜᱤᱫ ᱯᱷᱳᱴᱳ ᱦᱟᱛᱟᱣ ᱢᱮ",
-		shareText: "ᱤᱧᱟᱜ ᱱᱚᱶᱟ ᱥᱮᱨᱢᱟ ᱨᱮᱭᱟᱜ ᱫᱤᱣᱟᱞᱤ, {url} ᱨᱮ",
+		shareText: "ᱤᱧᱟᱜ ᱫᱤᱣᱟᱞᱤ ᱯᱚᱨᱚᱵ, {url} ᱨᱮ",
 	},
 	splashWarning: {
 		heading: "ᱦᱩᱥᱤᱭᱟᱹᱨ",

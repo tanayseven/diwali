@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Telugu
 const te = {
-	title: "ఈ ఏడాది దీపావళి",
+	title: "దీపావళి సంబరాలు",
 	loading: "లోడ్ అవుతోంది…",
 	tools: {
 		diyas: "ప్రమిదలు",
@@ -21,7 +21,7 @@ const te = {
 	},
 	screenshot: {
 		take: "షేర్ చేయడానికి ఫోటో తీయండి",
-		shareText: "ఈ ఏడాది నా దీపావళి, {url} లో",
+		shareText: "నా దీపావళి సంబరాలు, {url} లో",
 	},
 	splashWarning: {
 		heading: "హెచ్చరిక",

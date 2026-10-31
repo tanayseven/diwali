@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Marathi
 const mr = {
-	title: "यंदाची दिवाळी",
+	title: "दिवाळी उत्सव",
 	loading: "लोड होत आहे…",
 	tools: {
 		diyas: "पणत्या",
@@ -21,7 +21,7 @@ const mr = {
 	},
 	screenshot: {
 		take: "शेअर करण्यासाठी फोटो काढा",
-		shareText: "माझी यंदाची दिवाळी, {url} वर",
+		shareText: "माझा दिवाळी उत्सव, {url} वर",
 	},
 	splashWarning: {
 		heading: "इशारा",

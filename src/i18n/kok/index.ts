@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Konkani (Goan), in Devanagari
 const kok = {
-	title: "ह्या वर्साची दिवाळी",
+	title: "दिवाळी उत्सव",
 	loading: "लोड जायत आसा…",
 	tools: {
 		diyas: "पणट्यो",
@@ -21,7 +21,7 @@ const kok = {
 	},
 	screenshot: {
 		take: "शेअर करपाक फोटो काडात",
-		shareText: "म्हजी ह्या वर्साची दिवाळी, {url} चेर",
+		shareText: "म्हजो दिवाळी उत्सव, {url} चेर",
 	},
 	splashWarning: {
 		heading: "इशारो",

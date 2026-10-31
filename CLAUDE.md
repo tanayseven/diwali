@@ -1,4 +1,4 @@
-# Diwali this year
+# Diwali Celebration
 
 See README.md for what the app does and how to run, build and deploy it.
 

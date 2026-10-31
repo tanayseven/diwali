@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Malayalam
 const ml = {
-	title: "ഈ വർഷത്തെ ദീപാവലി",
+	title: "ദീപാവലി ആഘോഷം",
 	loading: "ലോഡ് ചെയ്യുന്നു…",
 	tools: {
 		diyas: "ചിരാതുകൾ",
@@ -21,7 +21,7 @@ const ml = {
 	},
 	screenshot: {
 		take: "പങ്കിടാൻ ഫോട്ടോ എടുക്കൂ",
-		shareText: "ഈ വർഷത്തെ എന്റെ ദീപാവലി, {url} ൽ",
+		shareText: "എന്റെ ദീപാവലി ആഘോഷം, {url} ൽ",
 	},
 	splashWarning: {
 		heading: "മുന്നറിയിപ്പ്",

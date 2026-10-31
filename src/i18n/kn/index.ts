@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Kannada
 const kn = {
-	title: "ಈ ವರ್ಷದ ದೀಪಾವಳಿ",
+	title: "ದೀಪಾವಳಿ ಸಂಭ್ರಮ",
 	loading: "ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
 	tools: {
 		diyas: "ಹಣತೆಗಳು",
@@ -21,7 +21,7 @@ const kn = {
 	},
 	screenshot: {
 		take: "ಹಂಚಿಕೊಳ್ಳಲು ಫೋಟೋ ತೆಗೆಯಿರಿ",
-		shareText: "ಈ ವರ್ಷದ ನನ್ನ ದೀಪಾವಳಿ, {url} ನಲ್ಲಿ",
+		shareText: "ನನ್ನ ದೀಪಾವಳಿ ಸಂಭ್ರಮ, {url} ನಲ್ಲಿ",
 	},
 	splashWarning: {
 		heading: "ಎಚ್ಚರಿಕೆ",

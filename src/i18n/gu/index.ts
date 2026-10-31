@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Gujarati
 const gu = {
-	title: "આ વર્ષની દિવાળી",
+	title: "દિવાળી ઉત્સવ",
 	loading: "લોડ થઈ રહ્યું છે…",
 	tools: {
 		diyas: "કોડિયાં",
@@ -21,7 +21,7 @@ const gu = {
 	},
 	screenshot: {
 		take: "શેર કરવા માટે ફોટો પાડો",
-		shareText: "આ વર્ષની મારી દિવાળી, {url} પર",
+		shareText: "મારો દિવાળી ઉત્સવ, {url} પર",
 	},
 	splashWarning: {
 		heading: "ચેતવણી",

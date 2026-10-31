@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Tamil
 const ta = {
-	title: "இந்த ஆண்டு தீபாவளி",
+	title: "தீபாவளி கொண்டாட்டம்",
 	loading: "ஏற்றப்படுகிறது…",
 	tools: {
 		diyas: "அகல் விளக்குகள்",
@@ -21,7 +21,7 @@ const ta = {
 	},
 	screenshot: {
 		take: "பகிர புகைப்படம் எடுங்கள்",
-		shareText: "இந்த ஆண்டு என் தீபாவளி, {url} இல்",
+		shareText: "என் தீபாவளி கொண்டாட்டம், {url} இல்",
 	},
 	splashWarning: {
 		heading: "எச்சரிக்கை",

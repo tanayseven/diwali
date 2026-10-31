@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Kashmiri, in the Perso-Arabic Kashmiri alphabet
 const ks = {
-	title: "امسالٕچ دیوالی",
+	title: "دیوالی ہُند جشن",
 	loading: "لوڈ سپدان…",
 	tools: {
 		diyas: "ژونٛگ",
@@ -21,7 +21,7 @@ const ks = {
 	},
 	screenshot: {
 		take: "شیئر کرنہٕ خٲطرٕ فوٹو ہیٚیِو",
-		shareText: "امسالٕچ میٲنۍ دیوالی، {url} پیٹھ",
+		shareText: "میون دیوالی ہُند جشن، {url} پیٹھ",
 	},
 	splashWarning: {
 		heading: "خبردار",

@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Bengali, in Bengali script
 const bn = {
-	title: "এ বছরের দীপাবলি",
+	title: "দীপাবলি উৎসব",
 	loading: "লোড হচ্ছে…",
 	tools: {
 		diyas: "প্রদীপ",
@@ -21,7 +21,7 @@ const bn = {
 	},
 	screenshot: {
 		take: "শেয়ার করতে ছবি তুলুন",
-		shareText: "এ বছর আমার দীপাবলি, {url}-এ",
+		shareText: "আমার দীপাবলি উৎসব, {url}-এ",
 	},
 	splashWarning: {
 		heading: "সতর্কতা",

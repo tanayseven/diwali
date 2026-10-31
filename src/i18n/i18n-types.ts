@@ -35,7 +35,7 @@ export type Translations = RootTranslation
 
 type RootTranslation = {
 	/**
-	 * D​i​w​a​l​i​ ​t​h​i​s​ ​y​e​a​r
+	 * D​i​w​a​l​i​ ​C​e​l​e​b​r​a​t​i​o​n
 	 */
 	title: string
 	/**
@@ -90,7 +90,7 @@ type RootTranslation = {
 		 */
 		take: string
 		/**
-		 * M​y​ ​D​i​w​a​l​i​ ​t​h​i​s​ ​y​e​a​r​,​ ​a​t​ ​{​u​r​l​}
+		 * M​y​ ​D​i​w​a​l​i​ ​C​e​l​e​b​r​a​t​i​o​n​,​ ​a​t​ ​{​u​r​l​}
 		 * @param {unknown} url
 		 */
 		shareText: RequiredParams<'url'>
@@ -377,7 +377,7 @@ type RootTranslation = {
 
 export type TranslationFunctions = {
 	/**
-	 * Diwali this year
+	 * Diwali Celebration
 	 */
 	title: () => LocalizedString
 	/**
@@ -432,7 +432,7 @@ export type TranslationFunctions = {
 		 */
 		take: () => LocalizedString
 		/**
-		 * My Diwali this year, at {url}
+		 * My Diwali Celebration, at {url}
 		 */
 		shareText: (arg: { url: unknown }) => LocalizedString
 	}

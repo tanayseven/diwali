@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Sindhi, in the Perso-Arabic Sindhi alphabet
 const sd = {
-	title: "هن سال جي ڏياري",
+	title: "ڏياري جو جشن",
 	loading: "لوڊ ٿي رهيو آهي…",
 	tools: {
 		diyas: "ڏيئا",
@@ -21,7 +21,7 @@ const sd = {
 	},
 	screenshot: {
 		take: "شيئر ڪرڻ لاءِ فوٽو ڪڍو",
-		shareText: "هن سال جي منهنجي ڏياري، {url} تي",
+		shareText: "منهنجو ڏياري جو جشن، {url} تي",
 	},
 	splashWarning: {
 		heading: "خبرداري",

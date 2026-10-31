@@ -2,7 +2,7 @@ import type {Translation} from "../i18n-types"
 
 // Assamese, in Assamese script
 const asm = {
-	title: "এই বছৰৰ দীপাৱলী",
+	title: "দীপাৱলী উৎসৱ",
 	loading: "লোড হৈ আছে…",
 	tools: {
 		diyas: "চাকি",
@@ -21,7 +21,7 @@ const asm = {
 	},
 	screenshot: {
 		take: "শ্বেয়াৰ কৰিবলৈ ফটো তোলক",
-		shareText: "এই বছৰ মোৰ দীপাৱলী, {url}ত",
+		shareText: "মোৰ দীপাৱলী উৎসৱ, {url}ত",
 	},
 	splashWarning: {
 		heading: "সতৰ্কবাণী",
