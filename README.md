@@ -90,6 +90,16 @@ $ npm run android:run
 
 will do the same and run it on a connected device or an emulator. After changing only the web app, `npm run android:sync` copies the new build across without building the APK.
 
+The app's icon and launch screen are the site's diya (`public/favicon.svg`) on black. Their sources in `assets/` are rendered from it, with its flame at rest, by
+
+```sh
+$ node scripts/icons/render.mjs
+$ npx capacitor-assets generate --android
+$ git checkout -- android/app/src/main/AndroidManifest.xml
+```
+
+which then makes every size Android needs into `android/app/src/main/res/`. The generator reformats the manifest without changing it, so the last line puts it back.
+
 ## Deployment
 
 Every push to `main` runs the [Deploy to S3](.github/workflows/deploy.yml) GitHub Actions workflow. It builds the app and copies `dist/` to the `diwali.tanay.tech` S3 bucket, which serves https://diwali.tanay.tech/.

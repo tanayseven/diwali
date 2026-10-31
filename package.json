@@ -14,6 +14,7 @@
 		"android:run": "npm run android:sync && cap run android"
 	},
 	"devDependencies": {
+		"@capacitor/assets": "^4.0.0",
 		"@capacitor/cli": "^7.6.10",
 		"playwright-core": "1.56.1",
 		"source-map-js": "1.2.1",
