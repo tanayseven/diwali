@@ -1,5 +1,5 @@
 import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
-import {pixelDensity} from "./app"
+import {pixelDensity, quality} from "./app"
 import {stereoPan} from "./audioControl"
 import {hudFrame} from "./hud"
 
@@ -94,21 +94,18 @@ const backgroundAssets = [skyUrl, hillsUrl, ...Object.values(skylineUrls), house
 // The SVGs are rasterised once at load, so draw them at the size they'll be shown
 // on this screen to keep them sharp. The house is drawn for the closest zoom; the
 // sky, the hills and the skyline are capped to stay within texture limits, as little
-// of them shows up close
+// of them shows up close. All are kept within quality.maxTextureWidth across
 const addBackgroundAssets = () => {
   const {width, height} = window.screen
   const density = pixelDensity
   const skyResolution = Math.min(3, Math.ceil(density * coverScale(width, height)))
   const houseZoom = fitScale(closestView, width, height) * houseScale
-  // It's kept within 4096 pixels across too
-  const houseResolution = Math.min(4, Math.ceil(density * houseZoom), 4096 / houseSvg.width)
-  // The sky and the hills are wider than the scene, so they're kept within 4096 pixels
-  // across
-  const sceneryResolution = Math.min(skyResolution, 4096 / (scenery.right - scenery.left))
+  const widest = quality.maxTextureWidth
+  const houseResolution = Math.min(4, Math.ceil(density * houseZoom), widest / houseSvg.width)
+  const sceneryResolution = Math.min(skyResolution, widest / (scenery.right - scenery.left))
   Assets.add({alias: skyUrl, src: skyUrl, data: {resolution: sceneryResolution}})
   Assets.add({alias: hillsUrl, src: hillsUrl, data: {resolution: sceneryResolution}})
-  // The skyline is wider than the scene, so it's kept within 4096 pixels across
-  const skylineResolution = Math.min(skyResolution * skylineScale, 4096 / skylineSize.width)
+  const skylineResolution = Math.min(skyResolution * skylineScale, widest / skylineSize.width)
   Object.values(skylineUrls).forEach(url => Assets.add({alias: url, src: url, data: {resolution: skylineResolution}}))
   Assets.add({alias: houseUrl, src: houseUrl, data: {resolution: houseResolution}})
 }

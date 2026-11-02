@@ -62,9 +62,12 @@ const light = asked === "low" || (asked !== "high" && lowEnd)
 
 const quality = {
   // The most pixels drawn per CSS pixel: the screen's, so text stays crisp on HiDPI
-  // displays, but no more than the GPU can keep up with. Phones and tablets have far
-  // fewer pixels across than a desktop screen, so they can go denser
-  density: Math.min(window.devicePixelRatio || 1, coarsePointer ? 2 : 1.5),
+  // displays, but no more than the GPU can keep up with, on phones and tablets too,
+  // where drawing is what costs most
+  density: Math.min(window.devicePixelRatio || 1, 1.5),
+  // The widest the scenery's drawings are rasterised, in pixels. Phones and tablets
+  // have less memory for them, and a page that takes too much is reloaded
+  maxTextureWidth: coarsePointer ? 2048 : 4096,
   // Particles thrown by the fireworks on the porch, as a share of the full count
   particleScale: light ? 0.6 : 1,
   // Shells sent up over the city, as a share of the full count
