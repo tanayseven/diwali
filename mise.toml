@@ -11,6 +11,11 @@ java = "temurin-21.0.13+9.0.LTS"
 gh = "2.103.2"
 # Copies the build to S3 (deploy.yml)
 aws-cli = "2.38.5"
+# The desktop apps for Windows, macOS and Linux: Go, Wails, which builds them around
+# the system's web view, and nfpm, which packages the Linux one (desktop.yml)
+go = "1.27.3"
+"go:github.com/wailsapp/wails/v2/cmd/wails" = "2.17.0"
+"aqua:goreleaser/nfpm" = "2.48.0"
 
 # This project's tools come only from mise.lock: the versions, URLs and checksums
 # recorded there. Only these, so tools in a global config still install as they would
@@ -19,8 +24,9 @@ locked = true
 
 [settings]
 lockfile = true
-# Lockfiles for every platform the tools run on, the CI runners' and Apple silicon Macs
-lockfile_platforms = ["linux-x64", "macos-arm64"]
+# Lockfiles for every platform the tools run on: the CI runners', Linux, Windows and
+# macOS on Apple silicon, which is also what Macs here are
+lockfile_platforms = ["linux-x64", "macos-arm64", "windows-x64"]
 # Checks each download's signatures and provenance again on every install, not only
 # when it was locked
 locked_verify_provenance = true
@@ -49,12 +55,14 @@ description = "Generate the typed translation functions in src/i18n/ from the lo
 run = "npx typesafe-i18n --no-watch"
 
 [tasks."generate:icons"]
-description = "Render the Android app's icon and launch screen from public/favicon.svg, in every size"
+description = "Render the Android and desktop apps' icons and Android's launch screen from public/favicon.svg, in every size"
 run = [
   "node scripts/icons/render.mjs",
   "npx capacitor-assets generate --android",
   # The generator reformats the manifest without changing it
   "git checkout -- android/app/src/main/AndroidManifest.xml",
+  # Wails makes the desktop apps' icons in every size from this one
+  "cp assets/icon-only.png desktop/build/appicon.png",
 ]
 
 [tasks.generate]

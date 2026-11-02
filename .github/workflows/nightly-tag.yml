@@ -1,8 +1,8 @@
 name: Nightly release tag
 
 # Every night at 11:30 PM IST (18:00 UTC), main is tagged with the day's date, if
-# what goes into the app has changed since the last date tag, and the Android app is
-# built for it. It can be run by hand too
+# what goes into the app has changed since the last date tag, and the Android and
+# desktop apps are built for it. It can be run by hand too
 on:
   schedule:
     - cron: '0 18 * * *'
@@ -62,5 +62,12 @@ jobs:
     needs: tag
     if: needs.tag.outputs.tag != ''
     uses: ./.github/workflows/android.yml
+    with:
+      tag: ${{ needs.tag.outputs.tag }}
+
+  desktop:
+    needs: tag
+    if: needs.tag.outputs.tag != ''
+    uses: ./.github/workflows/desktop.yml
     with:
       tag: ${{ needs.tag.outputs.tag }}

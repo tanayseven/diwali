@@ -1,0 +1,119 @@
+name: Desktop build
+
+# The desktop apps for Linux, Windows and macOS, built with Wails around each system's
+# web view, packaged and attached to the release for a date tag: YYYY.MM.DD, or
+# YYYY.MM.DD.N for the Nth release that day. The build rejects any other shape of tag.
+# Like the Android build, it runs when a date tag's pushed, and the nightly release tag
+# workflow calls it for the tag it's just made, as tags pushed by a workflow don't
+# start others
+on:
+  push:
+    tags:
+      - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]'
+      - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9].[0-9]*'
+  workflow_call:
+    inputs:
+      tag:
+        description: The date tag to build and release
+        required: true
+        type: string
+
+permissions:
+  contents: write # This is required to create the release and attach the packages to it
+
+env:
+  # The tag it was called with, or the one that was pushed
+  TAG: ${{ inputs.tag || github.ref_name }}
+  # Every one of mise's protections, which it only takes from the environment
+  MISE_PARANOID: 1
+
+jobs:
+  # Each platform's app is built on that platform: macOS apps can only be built on a
+  # Mac, and the Linux one links against the system's GTK and WebKitGTK
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # A .tar.gz, and .deb, .rpm and Arch Linux packages
+          - platform: linux
+            runner: ubuntu-24.04
+            tools: node go go:github.com/wailsapp/wails/v2/cmd/wails aqua:goreleaser/nfpm
+          # An installer, and portable .zips for x64 and Arm
+          - platform: windows
+            runner: windows-latest
+            tools: node go go:github.com/wailsapp/wails/v2/cmd/wails
+          # A .dmg, and the .app in a .zip, for Intel and Apple silicon both
+          - platform: macos
+            runner: macos-latest
+            tools: node go go:github.com/wailsapp/wails/v2/cmd/wails
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      # Node, Go, Wails and nfpm, as locked in mise.lock: only the ones this platform's
+      # build needs
+      - name: Setup tools with mise
+        uses: jdx/mise-action@v5
+        with:
+          install_args: ${{ matrix.tools }}
+
+      # What the Linux app's built against: GTK and WebKitGTK 4.1
+      - name: Install GTK and WebKitGTK
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      # What the Windows installer's made with, if the runner doesn't have it
+      - name: Install NSIS
+        if: matrix.platform == 'windows'
+        run: |
+          if ! command -v makensis >/dev/null; then
+            choco install nsis --version=3.11 -y --no-progress
+          fi
+          echo "C:/Program Files (x86)/NSIS" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and package the app
+        env:
+          RELEASE_TAG: ${{ env.TAG }}
+        run: desktop/package.sh ${{ matrix.platform }}
+
+      - name: Keep the packages for the release
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: desktop/dist/*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Gather every platform's packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-*
+          path: packages
+          merge-multiple: true
+
+      # The Android build attaches its APK to the same release, so whichever gets there
+      # first makes it, and the other adds to it
+      - name: Attach the packages to a release for the tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" --generate-notes || true
+          fi
+          gh release upload "$TAG" packages/* --clobber

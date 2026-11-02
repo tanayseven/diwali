@@ -34,9 +34,11 @@ jobs:
         with:
           ref: refs/tags/${{ env.TAG }}
 
-      # Node, Java, gh and aws, as locked in mise.lock
+      # Node, Java and gh, as locked in mise.lock: only these, not the desktop apps' tools
       - name: Setup tools with mise
         uses: jdx/mise-action@v5
+        with:
+          install_args: node java gh
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -51,9 +53,14 @@ jobs:
           RELEASE_TAG: ${{ env.TAG }}
         run: npm run android:build
 
+      # The desktop build attaches its packages to the same release, so whichever gets
+      # there first makes it, and the other adds to it
       - name: Attach the APK to a release for the tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk "diwali-$TAG.apk"
-          gh release create "$TAG" "diwali-$TAG.apk" --title "$TAG" --generate-notes
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" --generate-notes || true
+          fi
+          gh release upload "$TAG" "diwali-$TAG.apk" --clobber

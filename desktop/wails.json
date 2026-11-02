@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Diwali Celebration",
+  "outputfilename": "diwali-celebration",
+  "frontend:dir": "..",
+  "frontend:install": "npm ci",
+  "frontend:build": "npm run build:desktop",
+  "wailsjsdir": "./frontend/wailsjs",
+  "author": {
+    "name": "Tanay PrabhuDesai",
+    "email": "contact@tanay.tech"
+  },
+  "info": {
+    "companyName": "Tanay PrabhuDesai",
+    "productName": "Diwali Celebration",
+    "productVersion": "0.0.0",
+    "copyright": "Copyright © Tanay PrabhuDesai, MIT License",
+    "comments": "Light diyas, set off fireworks, hang kandils and draw rangoli on Diwali night"
+  }
+}

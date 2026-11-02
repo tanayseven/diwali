@@ -3,6 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "vite build",
+		"build:desktop": "vite build --outDir desktop/frontend/dist --emptyOutDir",
 		"dev": "vite",
 		"preview": "vite preview",
 		"zip": "npm run build && mkdir -p dist && zip -r dist/game.zip www -x \"**/.DS_Store\"",

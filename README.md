@@ -33,7 +33,7 @@ Live at: https://diwali.tanay.tech/
 - **Craft Kandil:** make akash kandils (paper lanterns) and hang them on the house. Drag a bamboo frame from the bar onto the porch to make it there, or onto the house to hang it by a string from the eave above. Then drag paper onto it to wrap it, in red, orange, blue or mixed colours, then tails to hang below it, in green, red, gold or mixed, and finally the bulb to light it. Lit, it glows and lights up what's around it in its paper's colour. Hung ones hang as pendulums on their strings, also simulated with Matter.js, swinging as they're hung and swaying in the wind. Made or not, one can be dragged between the porch and the house, or back onto the bar to put its frame back on the stack.
 - **Dragging by touch:** on touch screens, a diya, wick, oil bottle, firework or the matchstick being dragged is shown a little above and to the left of the finger, which is marked by a circle, so the finger doesn't hide it. It's put down, or held to a wick or a fuse, where it's shown.
 - **Tooltips:** hovering over things with a mouse says what they are and what to do with them.
-- **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; otherwise it downloads it.
+- **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; in the desktop apps it's saved where it's picked in a save dialog; otherwise it downloads it.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 
@@ -112,7 +112,19 @@ The app's icon and launch screen are the site's diya (`public/favicon.svg`) on b
 $ mise run generate:icons
 ```
 
-which then makes every size Android needs into `android/app/src/main/res/`, and puts back `AndroidManifest.xml`, which the generator reformats without changing.
+which then makes every size Android needs into `android/app/src/main/res/`, puts back `AndroidManifest.xml`, which the generator reformats without changing, and copies the icon to `desktop/build/appicon.png` for the desktop apps.
+
+## Desktop
+
+The app is wrapped for Windows, macOS and Linux with [Wails](https://wails.io) 2, in `desktop/`: a small Go program (`main.go`, `app.go`) that shows the game, built into it, in a window of its own, through the system's web view (WebView2 on Windows, WebKit on macOS and WebKitGTK 4.1 on Linux). In the desktop apps, photos are saved where they're picked in a save dialog. Go, Wails and [nfpm](https://nfpm.goreleaser.com) come from mise. Each platform's app is built and packaged on that platform, into `desktop/dist/`:
+
+```sh
+$ desktop/package.sh linux     # a .tar.gz, and .deb, .rpm and Arch Linux packages
+$ desktop/package.sh windows   # an installer for x64 and Arm PCs, and a portable .zip for each
+$ desktop/package.sh macos     # a .dmg, and the .app in a .zip, for Intel and Apple silicon both
+```
+
+Building on Linux needs GTK 3 and WebKitGTK 4.1 (`libgtk-3-dev` and `libwebkit2gtk-4.1-dev` on Debian and Ubuntu); the Windows installer needs [NSIS](https://nsis.sourceforge.io); and macOS apps can only be built on a Mac. Set `RELEASE_TAG` to a date tag to version them by it; otherwise they're versioned `dev`. The macOS app isn't signed, so the first time it's opened it has to be opened from its menu in Finder (Control-click, then Open).
 
 ## Deployment
 
@@ -120,7 +132,7 @@ Every push to `main` runs the [Deploy to S3](.github/workflows/deploy.yml) GitHu
 
 Releases are tagged with the date they're made, as `YYYY.MM.DD`, and not with semantic versions. A second release on the same day adds its number, as `YYYY.MM.DD.2`, then `.3` and so on.
 
-Every night at 11:30 PM IST, the [Nightly release tag](.github/workflows/nightly-tag.yml) workflow tags `main` with the day's date, but only if something that goes into the app has changed since the newest date tag. Changes only to the docs (`README.md`, `CLAUDE.md`, `LICENSE.txt`), the CI workflows, the benchmark in `scripts/` or the editor settings aren't released. It then runs the [Android build](.github/workflows/android.yml) workflow for the tag, which builds the Android app versioned by the tag and attaches the APK to a GitHub release for it. The nightly workflow can be run by hand from the Actions tab too, and pushing a date tag yourself also starts the Android build:
+Every night at 11:30 PM IST, the [Nightly release tag](.github/workflows/nightly-tag.yml) workflow tags `main` with the day's date, but only if something that goes into the app has changed since the newest date tag. Changes only to the docs (`README.md`, `CLAUDE.md`, `LICENSE.txt`), the CI workflows, the benchmark in `scripts/` or the editor settings aren't released. It then runs the [Android build](.github/workflows/android.yml) and [Desktop build](.github/workflows/desktop.yml) workflows for the tag, which build the Android app and the Windows, macOS and Linux apps versioned by the tag, and attach the APK and the desktop packages to a GitHub release for it. The nightly workflow can be run by hand from the Actions tab too, and pushing a date tag yourself also starts both builds:
 
 ```sh
 $ git tag $(date +%Y.%m.%d)

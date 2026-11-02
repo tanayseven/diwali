@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Diwali Celebration
+Comment=Light diyas, set off fireworks, hang kandils and draw rangoli on Diwali night
+Exec=diwali-celebration
+Icon=diwali-celebration
+Terminal=false
+Categories=Game;
+StartupWMClass=diwali-celebration

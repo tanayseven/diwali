@@ -68,13 +68,24 @@ const shareNatively = async (blob: Blob, title: string, text: string) => {
   }
 }
 
+// What the desktop app (desktop/app.go) offers the game, which Wails puts on the window
+type DesktopApp = {SavePhoto: (name: string, png: string) => Promise<string>}
+const desktopApp = () => (window as Window & {go?: {main?: {App?: DesktopApp}}}).go?.main?.App
+
 // Shares the photo to whichever app is picked, through Android's share sheet in the
-// app, or where the browser can share files, or else saves it as a download
+// app, or where the browser can share files, or else saves it as a download. In the
+// desktop app, whose web view can do neither, it's saved where it's picked in a save
+// dialog
 const sharePhoto = async (blob: Blob) => {
   const title = LL.title()
   const text = LL.screenshot.shareText({url: siteUrl})
   if (Capacitor.isNativePlatform()) {
     await shareNatively(blob, title, text)
+    return
+  }
+  const desktop = desktopApp()
+  if (desktop) {
+    await desktop.SavePhoto(fileName, await toBase64(blob))
     return
   }
   const file = new File([blob], fileName, {type: "image/png"})

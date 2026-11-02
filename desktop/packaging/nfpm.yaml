@@ -1,0 +1,48 @@
+# The Linux app's packages, made by nfpm from the app desktop/package.sh builds:
+# a .deb for Debian and Ubuntu, an .rpm for Fedora and openSUSE, and a package for Arch
+# Linux. Paths are from the repository's root; VERSION is the release's date tag
+name: diwali-celebration
+arch: amd64
+platform: linux
+version: ${VERSION}
+# Date tags aren't semantic versions, and each packager takes them as they are
+version_schema: none
+release: 1
+section: games
+priority: optional
+maintainer: Tanay PrabhuDesai <contact@tanay.tech>
+vendor: Tanay PrabhuDesai
+homepage: https://diwali.tanay.tech
+license: MIT
+description: |-
+  Celebrate Diwali on a house's porch at night.
+  Light diyas, set off fireworks, craft and hang akash kandils, string fairy lights
+  and draw rangoli, while fireworks go off over the city.
+
+contents:
+  - src: desktop/build/bin/diwali-celebration
+    dst: /usr/bin/diwali-celebration
+    file_info:
+      mode: 0755
+  - src: desktop/packaging/diwali-celebration.desktop
+    dst: /usr/share/applications/diwali-celebration.desktop
+  - src: desktop/build/appicon.png
+    dst: /usr/share/pixmaps/diwali-celebration.png
+  - src: LICENSE.txt
+    dst: /usr/share/licenses/diwali-celebration/LICENSE
+
+# The app shows itself in the system's GTK and WebKitGTK 4.1, named as each family of
+# distribution names them
+overrides:
+  deb:
+    depends:
+      - libgtk-3-0t64 | libgtk-3-0
+      - libwebkit2gtk-4.1-0
+  rpm:
+    depends:
+      - gtk3
+      - webkit2gtk4.1
+  archlinux:
+    depends:
+      - gtk3
+      - webkit2gtk-4.1

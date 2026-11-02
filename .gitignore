@@ -1,3 +1,11 @@
 node_modules/
 www/main.js
 dist/
+# The desktop app's build: the game built into it, the bindings Wails generates, the
+# apps and packages, and the platform files Wails makes afresh on every build
+desktop/frontend/
+desktop/build/bin/
+desktop/dist/
+desktop/build/windows/
+desktop/build/darwin/
+desktop/wails.json.orig
