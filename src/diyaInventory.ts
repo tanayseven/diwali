@@ -7,6 +7,7 @@ import {LL} from "./locale"
 import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
+import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -216,6 +217,9 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(hud, dragLayer)
+  // Under whatever's dragged, a circle where a finger dragging it is
+  const touch = createTouchMarker()
+  dragLayer.addChild(touch.marker)
   // Lower diyas are nearer, so they're drawn in front
   background.decorations.sortableChildren = true
   // The flames' glows shine through the night
@@ -396,10 +400,12 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     makePickable(diya)
   }
 
-  const startDrag = (at: PointData, next: Drag, scale: number) => {
+  // Started by a pointer at a point, of a type, which on touch screens shows it beside
+  // the finger instead of under it
+  const startDrag = (at: PointData, pointerType: string, next: Drag, scale: number) => {
     const {sprite} = next
     sprite.scale.set(scale)
-    sprite.position.copyFrom(at)
+    sprite.position.copyFrom(touch.follow(at, pointerType))
     sprite.eventMode = "none"
     dragLayer.addChild(sprite)
     setOutline(sprite, "selected", true)
@@ -408,8 +414,8 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   }
 
   // Diyas are shown while dragged at the size they'll be placed at, so they land as seen
-  const startDiyaDrag = (at: PointData, diya: PlacedDiya, fromScene?: PointData) => {
-    startDrag(at, {kind: "diya", sprite: diya.sprite, diya, fromScene}, background.scale() * diyaScale)
+  const startDiyaDrag = (at: PointData, pointerType: string, diya: PlacedDiya, fromScene?: PointData) => {
+    startDrag(at, pointerType, {kind: "diya", sprite: diya.sprite, diya, fromScene}, background.scale() * diyaScale)
     showDiya(diya)
   }
 
@@ -444,6 +450,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
     held.destroy()
     held = undefined
+    touch.hide()
     setTarget(undefined)
     placed.forEach(makePickable)
     render()
@@ -456,7 +463,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     emptyDiyas.count! -= 1
     const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false, facing: "right"}
     addTooltip(diya.sprite, diyaTooltip(diya))
-    startDiyaDrag(e.global, diya)
+    startDiyaDrag(e.global, e.pointerType, diya)
   })
 
   wickSlot.container.on("pointerdown", e => {
@@ -466,7 +473,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     wicks.count! -= 1
     const sprite = new Sprite(cropped(wickUrl, wickCrop))
     sprite.anchor.set(0.5)
-    startDrag(e.global, {kind: "wick", sprite}, background.scale() * wickSceneLength / wickCrop.width)
+    startDrag(e.global, e.pointerType, {kind: "wick", sprite}, background.scale() * wickSceneLength / wickCrop.width)
   })
 
   bottleSlot.container.on("pointerdown", e => {
@@ -475,7 +482,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
     const sprite = new Sprite(cropped(oilBottleUrl, bottleCrop))
     sprite.anchor.set(0.5)
-    startDrag(e.global, {kind: "oil", sprite}, background.scale() * bottleScale)
+    startDrag(e.global, e.pointerType, {kind: "oil", sprite}, background.scale() * bottleScale)
   })
 
   // A press on the match's slot only takes the match out once it's dragged
@@ -498,7 +505,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // A placed diya pressed on, and where, until it's dragged far enough to pick it up
   let pressedDiya: {diya: PlacedDiya, at: Point} | undefined
 
-  const pickUp = (diya: PlacedDiya, at: PointData) => {
+  const pickUp = (diya: PlacedDiya, at: PointData, pointerType: string) => {
     const {sprite} = diya
     // It stops turning, whichever way it's got to
     diya.turning = undefined
@@ -509,7 +516,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     if (diya.glow) {
       diya.glow.visible = false
     }
-    startDiyaDrag(at, diya, fromScene)
+    startDiyaDrag(at, pointerType, diya, fromScene)
   }
 
   // A placed diya can be picked up again to move it or put it back on the stack,
@@ -544,10 +551,13 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
   }
 
-  const endDrag = (at: PointData) => {
+  // Let go of by a pointer at a point, of a type
+  const endDrag = (finger: PointData, pointerType: string) => {
     if (!drag) {
       return
     }
+    const at = touch.follow(finger, pointerType)
+    touch.hide()
     const current = drag
     const into = target
     drag = undefined
@@ -556,7 +566,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
     if (current.kind === "diya") {
-      if (hudShown && bar.isOver(at)) {
+      if (hudShown && bar.isOver(finger)) {
         placed.push(current.diya)
         returnDiya(current.diya)
       } else {
@@ -584,26 +594,27 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
-    const at = toStage(e)
-    if (pressedDiya && draggedFrom(pressedDiya.at, at, pickUpSlop)) {
+    const finger = toStage(e)
+    if (pressedDiya && draggedFrom(pressedDiya.at, finger, pickUpSlop)) {
       const {diya} = pressedDiya
       pressedDiya = undefined
-      pickUp(diya, at)
+      pickUp(diya, finger, e.pointerType)
     }
     if (!drag) {
       if (held) {
-        pointer.copyFrom(at)
+        pointer.copyFrom(touch.follow(finger, e.pointerType))
         aimMatch()
-      } else if (pressedSlotAt && draggedFrom(pressedSlotAt, at)) {
-        pointer.copyFrom(at)
+      } else if (pressedSlotAt && draggedFrom(pressedSlotAt, finger)) {
+        pointer.copyFrom(touch.follow(finger, e.pointerType))
         pressedSlotAt = undefined
         takeMatch()
       }
       return
     }
+    const at = touch.follow(finger, e.pointerType)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
-      setOverBar(hudShown && bar.isOver(at))
+      setOverBar(hudShown && bar.isOver(finger))
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(at, diya => !diya.wick))
     } else {
@@ -619,7 +630,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
     pressedSlotAt = undefined
     putAwayMatch()
-    endDrag(toStage(e))
+    endDrag(toStage(e), e.pointerType)
   }
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
@@ -686,6 +697,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       if (!interactive && drag) {
         const current = drag
         drag = undefined
+        touch.hide()
         setOverBar(false)
         setTarget(undefined)
         returnDrag(current)

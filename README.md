@@ -30,6 +30,7 @@ Live at: https://diwali.tanay.tech/
 - **Decorate House:** pick a colour of fairy lights (or mixed), then drag from one point on the house to another to hang a string between them. The bulbs twinkle and light up the house around them. Strings can be dragged to move them, or onto the bar to take them down.
 - **Draw Rangoli:** pick a colour of powder and draw on the porch floor, rub parts out with the eraser, or clear it all.
 - **Craft Kandil:** its bar is empty for now.
+- **Dragging by touch:** on touch screens, a diya, wick, oil bottle, firework or the matchstick being dragged is shown a little above and to the left of the finger, which is marked by a circle, so the finger doesn't hide it. It's put down, or held to a wick or a fuse, where it's shown.
 - **Tooltips:** hovering over things with a mouse says what they are and what to do with them.
 - **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; otherwise it downloads it.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.

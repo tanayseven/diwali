@@ -9,6 +9,7 @@ import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchs
 import {createShownParticles} from "./shownParticles"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
+import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -562,6 +563,9 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(screenFlash, bar.container, dragLayer)
+  // Under whatever's dragged, a circle where a finger dragging it is
+  const touch = createTouchMarker()
+  dragLayer.addChild(touch.marker)
   const slots = {
     anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),
     sutli: bar.addItem(3, stacks.sutli), rocket: bar.addItem(4, stacks.rocket),
@@ -895,7 +899,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const startFireworkDrag = (e: FederatedPointerEvent, firework: Placed, fromScene?: PointData) => {
     const {sprite} = firework
     scaleSprite(firework, background.scale())
-    sprite.position.copyFrom(e.global)
+    sprite.position.copyFrom(touch.follow(e.global, e.pointerType))
     sprite.eventMode = "none"
     dragLayer.addChild(sprite)
     setOutline(sprite, "selected", true)
@@ -931,6 +935,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
     held.destroy()
     held = undefined
+    touch.hide()
     setTarget(undefined)
     placed.forEach(makePickable)
     render()
@@ -969,16 +974,19 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
   }
 
-  const endDrag = (at: PointData) => {
+  // Let go of by a pointer at a point, of a type
+  const endDrag = (finger: PointData, pointerType: string) => {
     if (!drag) {
       return
     }
+    const at = touch.follow(finger, pointerType)
+    touch.hide()
     const current = drag
     drag = undefined
     setOverBar(false)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
-    if (hudShown && bar.isOver(at)) {
+    if (hudShown && bar.isOver(finger)) {
       removeFirework(current.firework)
     } else {
       placeFirework(current.firework, background.toScene(at))
@@ -993,15 +1001,15 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
-    const at = toStage(e)
+    const finger = toStage(e)
     if (drag) {
-      drag.sprite.position.copyFrom(at)
-      setOverBar(hudShown && bar.isOver(at))
+      drag.sprite.position.copyFrom(touch.follow(finger, e.pointerType))
+      setOverBar(hudShown && bar.isOver(finger))
     } else if (held) {
-      pointer.copyFrom(at)
+      pointer.copyFrom(touch.follow(finger, e.pointerType))
       aimMatch()
-    } else if (pressedSlotAt && draggedFrom(pressedSlotAt, at)) {
-      pointer.copyFrom(at)
+    } else if (pressedSlotAt && draggedFrom(pressedSlotAt, finger)) {
+      pointer.copyFrom(touch.follow(finger, e.pointerType))
       pressedSlotAt = undefined
       takeMatch()
     }
@@ -1010,7 +1018,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const onPointerUp = (e: PointerEvent) => {
     pressedSlotAt = undefined
     putAwayMatch()
-    endDrag(toStage(e))
+    endDrag(toStage(e), e.pointerType)
   }
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
@@ -1802,6 +1810,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       if (!interactive && drag) {
         const current = drag
         drag = undefined
+        touch.hide()
         setOverBar(false)
         returnDrag(current)
         render()
