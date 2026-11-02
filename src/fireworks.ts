@@ -117,7 +117,8 @@ const sutliShape: Shape = {
 // The rocket stands in a green glass bottle on y 152, its striped stick down the neck
 // and its tube above, from its nose at (30, 9.5) to its base at (30, 52), where it
 // fires from. Its fuse curls out of the tube's side, from (41.5, 53) to (34, 47.5).
-// The bottle is a little taller than an anar
+// The bottle stands about two and a half times as tall as an anar, so the rocket
+// stands out among the fireworks on the floor
 const rocketNozzle = {x: 30, y: 52}
 const rocketShape: Shape = {
   frame: new Rectangle(0, 0, 60, 160),
@@ -125,7 +126,7 @@ const rocketShape: Shape = {
   origin: {x: 30, y: 152},
   area: new Rectangle(16, 8, 28, 146),
   fuseAt: {x: 41.5, y: 53},
-  scale: 0.34,
+  scale: 0.48,
 }
 const shapes: Record<Kind, Shape> = {
   anar: anarShape, laddi: laddiShape, chakri: chakriShape, sutli: sutliShape, rocket: rocketShape,
