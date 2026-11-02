@@ -9,3 +9,8 @@ See README.md for what the app does and how to run, build and deploy it.
 - Tags are made automatically: `.github/workflows/nightly-tag.yml` runs at 11:30 PM IST (18:00 UTC) and tags `main` with the IST date, only if something that goes into the app differs from the newest date tag. Its `not_built` list names what doesn't count (docs, `.github`, `scripts`, `.idea`, `.gitignore`); add to it anything new that isn't built into the app, and everything else counts. It numbers the tag if the day already has one.
 - A tag pushed from a workflow doesn't start other workflows, so the nightly workflow calls `.github/workflows/android.yml` itself. That workflow also runs when a date tag is pushed by hand, builds the Android APK, and attaches it to a GitHub release for the tag. Other tags don't trigger it.
 - The Android version comes from the tag, through `RELEASE_TAG` in `android/app/build.gradle`: the version name is the tag, and the version code is `YYYYMMDD` times 100 plus the day's release number. Builds without a tag are versioned `dev`.
+
+## Tools
+
+- Every tool is pinned to an exact version in `mise.toml` and locked in `mise.lock`, which installs must match. After adding a tool or changing a version, run `mise lock` and commit both files. Keep new versions at least a week old (`minimum_release_age`).
+- Generated files are made with `mise run generate` (or `generate:i18n`, `generate:icons`), not by hand.

@@ -42,12 +42,26 @@ All text is set in [Jaini](https://fonts.google.com/specimen/Jaini), with [Baloo
 
 ## Development
 
-Tool versions are managed with [mise](https://mise.jdx.dev) (see `mise.toml`):
+Every tool it's built, released and deployed with (Node, Java, `gh` and the AWS CLI) is managed with [mise](https://mise.jdx.dev), at exact versions in `mise.toml`:
 
 ```sh
 $ mise install
-$ npm install
+$ npm ci
 ```
+
+Their downloads are locked in `mise.lock`, by URL and checksum for Linux and Apple silicon Macs, and installs fail if they don't match it. mise checks every signature and provenance their publishers provide on every install, only takes versions that have been out a week, and won't use asdf or vfox plugins, which run their own code. After changing a version in `mise.toml`,
+
+```sh
+$ mise lock
+```
+
+records it, and both files are committed. The AWS CLI is the only one without a checksum, as AWS doesn't publish them. CI also runs mise in paranoid mode, which can only be turned on from outside the project; to use it locally too, set `MISE_PARANOID=1` in your shell.
+
+```sh
+$ mise run generate
+```
+
+regenerates everything made from the sources: the translation functions in `src/i18n/` (`mise run generate:i18n`) and the Android app's icons (`mise run generate:icons`, see [Android](#android)).
 
 ```sh
 $ npm run dev
@@ -77,7 +91,7 @@ will serve that build locally.
 
 ## Android
 
-The app is wrapped for Android with [Capacitor](https://capacitorjs.com) 7 (the newest that runs on Node 20), in `android/`. It always runs in landscape, turning between either way round with the device but never into portrait, on tablets and foldables too, and it can't be put in split screen. It needs the Android SDK, with `ANDROID_HOME` pointing at it, and JDK 21.
+The app is wrapped for Android with [Capacitor](https://capacitorjs.com) 7 (the newest that runs on Node 20), in `android/`. It always runs in landscape, turning between either way round with the device but never into portrait, on tablets and foldables too, and it can't be put in split screen. It needs the Android SDK, with `ANDROID_HOME` pointing at it, and JDK 21, which mise installs.
 
 ```sh
 $ npm run android:build
@@ -94,12 +108,10 @@ will do the same and run it on a connected device or an emulator. After changing
 The app's icon and launch screen are the site's diya (`public/favicon.svg`) on black. Their sources in `assets/` are rendered from it, with its flame at rest, by
 
 ```sh
-$ node scripts/icons/render.mjs
-$ npx capacitor-assets generate --android
-$ git checkout -- android/app/src/main/AndroidManifest.xml
+$ mise run generate:icons
 ```
 
-which then makes every size Android needs into `android/app/src/main/res/`. The generator reformats the manifest without changing it, so the last line puts it back.
+which then makes every size Android needs into `android/app/src/main/res/`, and puts back `AndroidManifest.xml`, which the generator reformats without changing.
 
 ## Deployment
 

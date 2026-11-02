@@ -1,2 +1,62 @@
+# Every tool the app is built, released and deployed with, at exact versions. Their
+# downloads' URLs, checksums and provenance are recorded in mise.lock, and installs
+# fail unless they match it. After changing a version here, run `mise lock` (see the
+# README) and commit both files
 [tools]
+# Capacitor 7 is the newest that runs on Node 20
 node = "20.18.0"
+# For Gradle's Android build
+java = "temurin-21.0.13+9.0.LTS"
+# Attaches the APK to a GitHub release (android.yml)
+gh = "2.103.2"
+# Copies the build to S3 (deploy.yml)
+aws-cli = "2.38.5"
+
+# This project's tools come only from mise.lock: the versions, URLs and checksums
+# recorded there. Only these, so tools in a global config still install as they would
+[tool_config]
+locked = true
+
+[settings]
+lockfile = true
+# Lockfiles for every platform the tools run on, the CI runners' and Apple silicon Macs
+lockfile_platforms = ["linux-x64", "macos-arm64"]
+# Checks each download's signatures and provenance again on every install, not only
+# when it was locked
+locked_verify_provenance = true
+# Every check of a download that its publisher makes possible
+slsa = true
+github_attestations = true
+github.slsa = true
+github.github_attestations = true
+aqua.slsa = true
+aqua.cosign = true
+aqua.minisign = true
+aqua.github_attestations = true
+node.verify = true
+node.gpg_verify = true
+# Versions only once they've been out a week, so a compromised release has time to be
+# caught and pulled before it's used
+minimum_release_age = "7d"
+# Plugin backends that run code from their plugins' repositories when they install
+disable_backends = ["asdf", "vfox"]
+# A failed decryption of a secret in [env] is an error, not silently skipped
+age.strict = true
+
+# Regenerates what's made from the sources, to commit along with them
+[tasks."generate:i18n"]
+description = "Generate the typed translation functions in src/i18n/ from the locales"
+run = "npx typesafe-i18n --no-watch"
+
+[tasks."generate:icons"]
+description = "Render the Android app's icon and launch screen from public/favicon.svg, in every size"
+run = [
+  "node scripts/icons/render.mjs",
+  "npx capacitor-assets generate --android",
+  # The generator reformats the manifest without changing it
+  "git checkout -- android/app/src/main/AndroidManifest.xml",
+]
+
+[tasks.generate]
+description = "Regenerate the translations and the Android icons"
+depends = ["generate:i18n", "generate:icons"]

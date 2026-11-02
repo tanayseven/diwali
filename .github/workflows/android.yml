@@ -25,6 +25,8 @@ jobs:
     env:
       # The tag it was called with, or the one that was pushed
       TAG: ${{ inputs.tag || github.ref_name }}
+      # Every one of mise's protections, which it only takes from the environment
+      MISE_PARANOID: 1
 
     steps:
       - name: Checkout the tag
@@ -32,18 +34,15 @@ jobs:
         with:
           ref: refs/tags/${{ env.TAG }}
 
+      # Node, Java, gh and aws, as locked in mise.lock
       - name: Setup tools with mise
         uses: jdx/mise-action@v5
 
-      - name: Setup Java for Gradle
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: gradle
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       # The runner comes with the Android SDK, and Gradle fetches any part of it the
       # build needs that's missing. The tag versions the app
