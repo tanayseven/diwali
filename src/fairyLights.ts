@@ -1,9 +1,12 @@
 import {Application, Assets, Container, Graphics, Point, PointData, Polygon, Rectangle, Sprite, Texture} from "pixi.js"
+import Matter from "matter-js"
+import {quality} from "./app"
 import type {Background} from "./background"
 import {createHud, cropped, iconFill, slotSize} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
+import {accelerate, airFriction, createParticleBody, hangingWorld, place, velocityOf} from "./physics"
 import {addTooltip} from "./tooltip"
 import type {Wind} from "./wind"
 
@@ -47,14 +50,20 @@ const maxSag = 30
 const minLength = 12
 // How far either side of the wire a string can be picked up by
 const grabWidth = 3
-// The wind blows a string's middle sideways, as a share of how far it sags, at most,
-// lifting it a little as it goes, and tilts its bulbs, in radians at most. It follows
-// the wind over about a second, and is only redrawn once it's moved this far
-const windSwing = 0.7
-const windLift = 0.25
+// A hung string is a rope: weights along it about this far apart in scene units, a few
+// to a dozen however long it is (half as many on a lighter game), linked one to the next by lengths of wire, the ends
+// tied where it was hung, hanging under gravity. Its wire is just long enough to sag as
+// far as it's meant to, and its bulbs hang along the smooth curve through its weights.
+// The air slows its swaying by this share a second, and the wind pushes each weight by
+// this share a second of how much faster the wind's going than it is, and tilts the
+// bulbs, in radians at most. A string's only redrawn once a weight's moved this far on
+// screen, in pixels, since it last was, as redrawing its wire is what costs
+const ropeSpacing = 40
+const ropeNodes = {min: 3, max: quality.ropeWeights}
+const redrawPixels = 0.5
+const ropeDamping = 1.5
+const windPush = 2
 const windTilt = 0.35
-const windFollow = 1.2
-const swingStep = 0.04
 
 // A string's slot is one colour, or every colour in turn
 type Choice = Color | "mixed"
@@ -75,11 +84,9 @@ type LightString = {
   container: Container
   wire: Graphics
   bulbs: Bulb[]
-  // How far the wind's blown its middle sideways, now and when it was last drawn, and
-  // its own flutter's offset, so strings don't all move as one
-  swing: number
-  drawnSwing: number
-  phase: number
+  // Its rope's weights, the lengths of wire between them and its ends, and where the
+  // weights were when it was last drawn
+  rope: {bodies: Matter.Body[], links: Matter.Constraint[], drawn: PointData[]}
 }
 
 // Where a quadratic curve is partway along, from 0 to 1
@@ -151,29 +158,84 @@ const createHouseLights = (app: Application, background: Background, lighting: L
 
   const sagOf = ({from, to}: LightString) => Math.min(maxSag, Math.hypot(to.x - from.x, to.y - from.y) * sagShare)
 
-  // A quadratic curve dips halfway to its control point, so this sags by `sag`, and is
-  // blown sideways by the string's swing
+  // A quadratic curve dips halfway to its control point, so this sags by `sag`: how a
+  // string hangs when it's still, which its rope starts out as
   const controlOf = (string: LightString) => {
-    const {from, to, swing} = string
-    const sag = sagOf(string)
-    return {x: (from.x + to.x) / 2 + swing * 2, y: (from.y + to.y) / 2 + sag * 2 - Math.abs(swing) * windLift * 2}
+    const {from, to} = string
+    return {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 + sagOf(string) * 2}
   }
 
-  // Draws a string's wire and puts its bulbs along it as it hangs now, tilted by the
-  // wind
+  // Strings swing with whatever else hangs on the house, touching nothing
+  const ropes = hangingWorld(app)
+
+  // Ties a rope between a string's ends, hanging as it would when still, its wire long
+  // enough to sag that far
+  const tie = (string: LightString) => {
+    const {from, to} = string
+    const control = controlOf(string)
+    const length = Math.hypot(to.x - from.x, to.y - from.y)
+    const count = Math.min(ropeNodes.max, Math.max(ropeNodes.min, Math.round(length / ropeSpacing)))
+    const points = [from, ...Array.from({length: count}, (_, k) => quadratic(from, control, to, (k + 0.5) / count)), to]
+    const bodies = points.slice(1, -1).map(at => {
+      const body = createParticleBody()
+      body.frictionAir = airFriction(ropeDamping)
+      place(body, at.x, at.y, 0, 0)
+      return body
+    })
+    const ends = [{pointA: {...from}}, ...bodies.map(body => ({bodyA: body})), {pointA: {...to}}]
+    const links = ends.slice(1).map((end, k) => Matter.Constraint.create({
+      ...ends[k],
+      ...("bodyA" in end ? {bodyB: end.bodyA} : {pointB: end.pointA}),
+      length: Math.hypot(points[k + 1].x - points[k].x, points[k + 1].y - points[k].y),
+      stiffness: 1,
+      damping: 0,
+    }))
+    ropes.add(...bodies, ...links)
+    string.rope = {bodies, links, drawn: []}
+  }
+
+  const untie = (string: LightString) => {
+    ropes.remove(...string.rope.bodies, ...string.rope.links)
+    string.rope = {bodies: [], links: [], drawn: []}
+  }
+
+  // The smooth curve through a rope's weights, from one end to the other, as a run of
+  // quadratic curves: each from halfway between two weights to halfway between the next
+  // two, bending through the weight between, and straight at the ends
+  const curveOf = ({from, to, rope}: LightString) => {
+    const points = [from, ...rope.bodies.map(body => body.position), to]
+    const halfway = (k: number) => ({x: (points[k].x + points[k + 1].x) / 2, y: (points[k].y + points[k + 1].y) / 2})
+    const pieces = []
+    for (let k = 1; k < points.length - 1; k++) {
+      pieces.push({start: k === 1 ? from : halfway(k - 1), control: points[k], end: halfway(k)})
+    }
+    const last = pieces[pieces.length - 1].end
+    pieces.push({start: last, control: {x: (last.x + to.x) / 2, y: (last.y + to.y) / 2}, end: to})
+    return pieces
+  }
+
+  // Whether any of a rope's weights has moved far enough since it was drawn to see
+  const moved = ({rope}: LightString) => {
+    const step = redrawPixels / background.scale()
+    return rope.drawn.length !== rope.bodies.length || rope.bodies.some(({position}, k) =>
+      Math.abs(position.x - rope.drawn[k].x) > step || Math.abs(position.y - rope.drawn[k].y) > step)
+  }
+
+  // Draws a string's wire along its rope where it's swung to, and hangs its bulbs evenly
+  // along it, tilted by the wind
   const shape = (string: LightString) => {
     restrung = true
-    string.drawnSwing = string.swing
-    const {from, to, wire, bulbs} = string
-    const control = controlOf(string)
-    wire.clear()
-      .moveTo(from.x, from.y)
-      .quadraticCurveTo(control.x, control.y, to.x, to.y)
-      .stroke({width: wireWidth, color: wireColor})
-    const sag = sagOf(string)
-    const tilt = sag > 0 ? -windTilt * string.swing / (sag * windSwing) : 0
+    const {from, to, wire, bulbs, rope} = string
+    rope.drawn = rope.bodies.map(({position}) => ({x: position.x, y: position.y}))
+    const pieces = curveOf(string)
+    wire.clear().moveTo(from.x, from.y)
+    pieces.forEach(({control, end}) => wire.quadraticCurveTo(control.x, control.y, end.x, end.y))
+    wire.stroke({width: wireWidth, color: wireColor})
+    const tilt = -windTilt * wind.at((from.x + to.x) / 2) / wind.strongest
     bulbs.forEach(({sprite, bloom}, k) => {
-      const at = quadratic(from, control, to, (k + 0.5) / bulbs.length)
+      const along = (k + 0.5) / bulbs.length * pieces.length
+      const piece = pieces[Math.min(pieces.length - 1, Math.floor(along))]
+      const at = quadratic(piece.start, piece.control, piece.end, along - Math.floor(along))
       sprite.position.copyFrom(at)
       bloom.position.copyFrom(at)
       sprite.rotation = bloom.rotation = tilt
@@ -187,8 +249,9 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     container.removeChildren().forEach(child => child.destroy())
     string.bulbs.forEach(bulb => bulb.light.destroy())
     string.bulbs = []
+    untie(string)
     const length = Math.hypot(to.x - from.x, to.y - from.y)
-    const control = controlOf({...string, swing: 0})
+    const control = controlOf(string)
     const wire = new Graphics()
     string.wire = wire
     const bulbLayer = new Container()
@@ -210,6 +273,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       // Each bulb lags its neighbour by a frame so the brightness ripples along the string
       string.bulbs.push({sprite, bloom, frames, phase: pingPong.length - (k % pingPong.length), light: lighting.addLight(lightColours[color])})
     }
+    tie(string)
     shape(string)
     // Picked up anywhere along the wire as it hangs still: a band either side of it
     const above: number[] = []
@@ -226,7 +290,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   const createString = (from: PointData, to: PointData, choice: Choice): LightString => {
     const string: LightString = {
       from, to, choice, container: new Container(), wire: new Graphics(), bulbs: [],
-      swing: 0, drawnSwing: 0, phase: Math.random() * Math.PI * 2,
+      rope: {bodies: [], links: [], drawn: []},
     }
     string.container.cursor = "grab"
     stringLayer.addChild(string.container)
@@ -239,6 +303,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       strings.splice(index, 1)
     }
     string.bulbs.forEach(bulb => bulb.light.destroy())
+    untie(string)
     string.container.destroy({children: true})
   }
 
@@ -362,23 +427,17 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       light.shine(sprite.position, lightRadius, lightStrengths[level] * string.container.alpha)
     }))
   }
-  // The wind blows hung strings about, following it over a moment. Only strings on
-  // screen are redrawn, and only once they've moved enough to see
-  const blow = () => {
-    const dt = Math.min(0.1, app.ticker.deltaMS / 1000)
-    strings.forEach(string => {
-      const {from, to} = string
-      const sag = sagOf(string)
-      const blowing = wind.at((from.x + to.x) / 2) / wind.strongest
-      // It flutters a little more the harder it's blowing
-      const flutter = 0.12 * Math.abs(blowing) * Math.sin(elapsed / 1000 * 2.3 + string.phase)
-      const target = (blowing + flutter) * sag * windSwing
-      string.swing += (target - string.swing) * Math.min(1, windFollow * dt)
-      if (string.container.visible && Math.abs(string.swing - string.drawnSwing) > swingStep) {
-        shape(string)
-      }
-    })
-  }
+  // The wind pushes every bulb of every hung string along with it
+  ropes.onStep(() => strings.forEach(({rope}) => rope.bodies.forEach(body => {
+    accelerate(body, (wind.at(body.position.x) - velocityOf(body).x) * windPush * ropes.dt, 0)
+  })))
+  // Strings on screen are drawn where their ropes have swung to, as is one being hung,
+  // once they've moved enough to see
+  const blow = () => (hanging ? [...strings, hanging] : strings).forEach(string => {
+    if (string.container.visible && moved(string)) {
+      shape(string)
+    }
+  })
   const tick = () => {
     elapsed += app.ticker.deltaMS
     blow()

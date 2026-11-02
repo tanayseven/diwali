@@ -1,9 +1,11 @@
 import {Application, Assets, Container, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import Matter from "matter-js"
 import type {Background} from "./background"
 import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {draggedFrom} from "./matchstick"
+import {accelerate, airFriction, createParticleBody, hangingWorld, place as placeBody, velocityOf} from "./physics"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import type {Wind} from "./wind"
@@ -57,16 +59,14 @@ const kandilMargin = lampRadius
 // darkened by the night like the house behind it
 const stringWidth = 0.25
 const stringColour = 0xe8dcd0
-// Hung, it swings from the eave and settles to a gentle sway, in radians and seconds.
-// The longer its string, the less it swings, so it swings about as far sideways
+// Hung, it's a pendulum: its weight is at its lamp, held from where its string's tied
+// by the string and the kandil above the lamp, swinging under gravity. Just hung, it
+// swings by this much, in radians, and the air slows its swing by this share a second.
+// The wind pushes it by this share of how much faster the wind's going than it is, a
+// second, which leans it over in a gust and sets it swaying as the wind changes
 const hangSwing = 0.14
-const restingSway = 0.025
-const swingReach = 25
-const swingDecay = 2.5
-const swayPeriod = 3.2
-// The wind leans a hung one over, in radians at most, following it over a moment
-const windLean = 0.12
-const windFollow = 1.2
+const swingDamping = 0.4
+const windPush = 0.85
 // A press on a placed one only picks it up once it's dragged this far, on screen
 const pickUpSlop = 6
 
@@ -83,11 +83,10 @@ type Kandil = {
   // Where it is: standing on the porch with its foot at a point, or hung, its string
   // tied to the eave above it and hanging that far below it
   place: {on: "porch", at: PointData} | {on: "house", tiedAt: PointData, length: number}
-  // When it was hung, to swing from, and where in its sway it started
-  hungAt: number
+  // Hung, its weight swinging on its string
+  pendulum?: {body: Matter.Body, string: Matter.Constraint}
+  // Its own offset for its bulb's flicker
   phase: number
-  // How far the wind's leaning it over
-  lean: number
 }
 
 type Drag =
@@ -137,6 +136,8 @@ const createKandils = (app: Application, background: Background, lighting: Light
   background.decorations.sortableChildren = true
   background.decorations.addChild(litLayer, stringLayer)
   const placed: Kandil[] = []
+  // Hung ones swing with whatever else hangs on the house, touching nothing
+  const swinging = hangingWorld(app)
   let drag: Drag | undefined
   let pressed: {kandil: Kandil, at: Point} | undefined
   // The placed kandil what's dragged would go onto if let go now
@@ -225,7 +226,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     const string = createString()
     const kandil: Kandil = {
       container: kandilContainer, tailsSprite, paperSprite, glow, string, lit: false,
-      place: {on: "porch", at: {x: 0, y: 0}}, hungAt: 0, phase: 0, lean: 0,
+      place: {on: "porch", at: {x: 0, y: 0}}, phase: Math.random() * Math.PI * 2,
     }
     addTooltip(kandilContainer, kandilTooltip(kandil))
     kandilContainer.on("pointerdown", e => {
@@ -306,9 +307,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     } else {
       sprite.position.set(place.tiedAt.x, place.tiedAt.y + place.length)
       sprite.zIndex = 0
-      // One put back where it was carries on swaying as if it had been there all along
-      kandil.hungAt = swing ? time : time - swingDecay * 10
-      kandil.phase = swing ? 0 : Math.random() * Math.PI * 2
+      hang(kandil, place, swing)
     }
     ;(kandil.lit ? litLayer : background.decorations).addChild(sprite)
     if (!placed.includes(kandil)) {
@@ -317,12 +316,34 @@ const createKandils = (app: Application, background: Background, lighting: Light
     showKandil(kandil)
   }
 
+  // Hangs a kandil's weight from where its string's tied, straight down, or set swinging
+  // just as it's hung
+  const hang = (kandil: Kandil, place: Extract<Kandil["place"], {on: "house"}>, swing: boolean) => {
+    const length = place.length + lampOffset.y * kandilScale
+    const body = createParticleBody()
+    body.frictionAir = airFriction(swingDamping)
+    const gravity = swinging.engine.gravity.scale * 1e6
+    const sideways = swing ? hangSwing * Math.sqrt(gravity * length) * (Math.random() < 0.5 ? -1 : 1) : 0
+    placeBody(body, place.tiedAt.x, place.tiedAt.y + length, sideways, 0)
+    const string = Matter.Constraint.create({pointA: {...place.tiedAt}, bodyB: body, length, stiffness: 1, damping: 0})
+    swinging.add(body, string)
+    kandil.pendulum = {body, string}
+  }
+
+  const unhang = (kandil: Kandil) => {
+    if (kandil.pendulum) {
+      swinging.remove(kandil.pendulum.body, kandil.pendulum.string)
+      kandil.pendulum = undefined
+    }
+  }
+
   // Back on the stack, its frame's used again; its paper, tails and bulb aren't
   const returnKandil = (kandil: Kandil) => {
     const index = placed.indexOf(kandil)
     if (index >= 0) {
       placed.splice(index, 1)
     }
+    unhang(kandil)
     kandil.light?.destroy()
     kandil.string.destroy()
     kandil.container.destroy({children: true})
@@ -425,6 +446,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
 
   const pickUp = (kandil: Kandil, at: PointData) => {
     placed.splice(placed.indexOf(kandil), 1)
+    unhang(kandil)
     startDrag(at, {kind: "kandil", sprite: kandil.container, kandil, from: kandil.place}, background.scale() * kandilScale)
   }
 
@@ -489,22 +511,25 @@ const createKandils = (app: Application, background: Background, lighting: Light
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
 
-  // Hung ones sway from where their strings are tied, swinging more just after they're
-  // hung, and lit ones light up what's round their bulbs. Ones off screen don't, as
-  // their light can't reach the screen from there
+  // The wind pushes each hung one's weight along with it
+  swinging.onStep(() => placed.forEach(({pendulum}) => {
+    if (pendulum) {
+      const {body} = pendulum
+      accelerate(body, (wind.at(body.position.x) - velocityOf(body).x) * windPush * swinging.dt, 0)
+    }
+  }))
+
+  // Hung ones are drawn turned the way their strings hang, from where they're tied, and
+  // lit ones light up what's round their bulbs. Ones off screen don't, as their light
+  // can't reach the screen from there
   const tick = () => {
     const dt = Math.min(0.1, app.ticker.deltaMS / 1000)
     time += dt
     placed.forEach(kandil => {
-      const {container: sprite, place, light, hungAt, phase} = kandil
-      if (place.on === "house") {
-        const since = time - hungAt
-        const reach = 1 + place.length / swingReach
-        const swing = (restingSway + hangSwing * Math.exp(-since / swingDecay)) / reach
-        // Blown downwind, it swings back the other way
-        const lean = -windLean * wind.at(place.tiedAt.x) / wind.strongest / reach
-        kandil.lean += (lean - kandil.lean) * Math.min(1, windFollow * dt)
-        sprite.rotation = kandil.lean + swing * Math.sin(since * Math.PI * 2 / swayPeriod + phase)
+      const {container: sprite, place, light, pendulum, phase} = kandil
+      if (place.on === "house" && pendulum) {
+        const {x, y} = pendulum.body.position
+        sprite.rotation = Math.atan2(place.tiedAt.x - x, y - place.tiedAt.y)
         sprite.position.set(
           place.tiedAt.x - place.length * Math.sin(sprite.rotation),
           place.tiedAt.y + place.length * Math.cos(sprite.rotation),

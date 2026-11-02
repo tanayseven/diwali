@@ -71,6 +71,14 @@ const quality = {
   skyFireworkRate: light ? 0.6 : 1,
   // How often the skyline's lights are worked out afresh, in seconds
   lightRepaintEvery: light ? 1 / 15 : 1 / 20,
+  // The most weights along a string of fairy lights' rope, and how many times a step
+  // ropes and strings are worked out so they don't stretch
+  ropeWeights: light ? 6 : 12,
+  ropeIterations: light ? 3 : 4,
+  // How many steps what hangs on strings catches up after a slow frame. On a lighter
+  // game it doesn't, slowing a moment instead, as catching up on a slow processor makes
+  // the next frame slow too
+  physicsCatchUp: light ? 1 : 2,
 }
 
 // The pixel density everything's drawn at
