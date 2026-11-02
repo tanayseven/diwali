@@ -5,6 +5,7 @@ import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
 import {addTooltip} from "./tooltip"
+import type {Wind} from "./wind"
 
 const colors = ["red", "orange", "yellow", "green", "blue", "white"] as const
 type Color = typeof colors[number]
@@ -46,6 +47,14 @@ const maxSag = 30
 const minLength = 12
 // How far either side of the wire a string can be picked up by
 const grabWidth = 3
+// The wind blows a string's middle sideways, as a share of how far it sags, at most,
+// lifting it a little as it goes, and tilts its bulbs, in radians at most. It follows
+// the wind over about a second, and is only redrawn once it's moved this far
+const windSwing = 0.7
+const windLift = 0.25
+const windTilt = 0.35
+const windFollow = 1.2
+const swingStep = 0.04
 
 // A string's slot is one colour, or every colour in turn
 type Choice = Color | "mixed"
@@ -64,7 +73,13 @@ type LightString = {
   to: PointData
   choice: Choice
   container: Container
+  wire: Graphics
   bulbs: Bulb[]
+  // How far the wind's blown its middle sideways, now and when it was last drawn, and
+  // its own flutter's offset, so strings don't all move as one
+  swing: number
+  drawnSwing: number
+  phase: number
 }
 
 // Where a quadratic curve is partway along, from 0 to 1
@@ -79,7 +94,7 @@ const quadratic = (a: PointData, control: PointData, b: PointData, t: number): P
 // under its weight. Hung strings shine on the night around them, and can be dragged
 // to move them, or dropped on the bar to take them down.
 // Expects fairyLightAssets to have been loaded already
-const createHouseLights = (app: Application, background: Background, lighting: Lighting) => {
+const createHouseLights = (app: Application, background: Background, lighting: Lighting, wind: Wind) => {
   const framesByColor = Object.fromEntries(colors.map(color =>
     [color, frameNames.map(frame => Assets.get<Texture>(frameUrl(color, frame)))])) as Record<Color, Texture[]>
   const container = new Container()
@@ -134,6 +149,37 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   const colorOf = (string: LightString, idx: number): Color =>
     string.choice === "mixed" ? colors[idx % colors.length] : string.choice
 
+  const sagOf = ({from, to}: LightString) => Math.min(maxSag, Math.hypot(to.x - from.x, to.y - from.y) * sagShare)
+
+  // A quadratic curve dips halfway to its control point, so this sags by `sag`, and is
+  // blown sideways by the string's swing
+  const controlOf = (string: LightString) => {
+    const {from, to, swing} = string
+    const sag = sagOf(string)
+    return {x: (from.x + to.x) / 2 + swing * 2, y: (from.y + to.y) / 2 + sag * 2 - Math.abs(swing) * windLift * 2}
+  }
+
+  // Draws a string's wire and puts its bulbs along it as it hangs now, tilted by the
+  // wind
+  const shape = (string: LightString) => {
+    restrung = true
+    string.drawnSwing = string.swing
+    const {from, to, wire, bulbs} = string
+    const control = controlOf(string)
+    wire.clear()
+      .moveTo(from.x, from.y)
+      .quadraticCurveTo(control.x, control.y, to.x, to.y)
+      .stroke({width: wireWidth, color: wireColor})
+    const sag = sagOf(string)
+    const tilt = sag > 0 ? -windTilt * string.swing / (sag * windSwing) : 0
+    bulbs.forEach(({sprite, bloom}, k) => {
+      const at = quadratic(from, control, to, (k + 0.5) / bulbs.length)
+      sprite.position.copyFrom(at)
+      bloom.position.copyFrom(at)
+      sprite.rotation = bloom.rotation = tilt
+    })
+  }
+
   // Lays out a string's wire and bulbs between its ends, sagging in the middle
   const build = (string: LightString) => {
     restrung = true
@@ -142,36 +188,30 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     string.bulbs.forEach(bulb => bulb.light.destroy())
     string.bulbs = []
     const length = Math.hypot(to.x - from.x, to.y - from.y)
-    const sag = Math.min(maxSag, length * sagShare)
-    // A quadratic curve dips halfway to its control point, so this sags by `sag`
-    const control = {x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 + sag * 2}
+    const control = controlOf({...string, swing: 0})
     const wire = new Graphics()
-      .moveTo(from.x, from.y)
-      .quadraticCurveTo(control.x, control.y, to.x, to.y)
-      .stroke({width: wireWidth, color: wireColor})
+    string.wire = wire
     const bulbLayer = new Container()
     // Above every bulb, so a bright bulb's light also falls on the wire and its neighbours
     const bloomLayer = new Container()
     container.addChild(wire, bulbLayer, bloomLayer)
     const count = Math.max(2, Math.round(length / bulbSpacing))
     for (let k = 0; k < count; k++) {
-      const at = quadratic(from, control, to, (k + 0.5) / count)
       const color = colorOf(string, k)
       const frames = framesByColor[color]
       const sprite = new Sprite(frames[0])
       sprite.anchor.set(beadAnchor.x, beadAnchor.y)
       sprite.scale.set(bulbScale)
-      sprite.position.copyFrom(at)
       bulbLayer.addChild(sprite)
       const bloom = new Sprite({texture: frames[0], blendMode: "add"})
       bloom.anchor.copyFrom(sprite.anchor)
       bloom.scale.set(bulbScale * bloomScale)
-      bloom.position.copyFrom(at)
       bloomLayer.addChild(bloom)
       // Each bulb lags its neighbour by a frame so the brightness ripples along the string
       string.bulbs.push({sprite, bloom, frames, phase: pingPong.length - (k % pingPong.length), light: lighting.addLight(lightColours[color])})
     }
-    // Picked up anywhere along the wire: a band either side of it
+    shape(string)
+    // Picked up anywhere along the wire as it hangs still: a band either side of it
     const above: number[] = []
     const below: number[] = []
     for (let k = 0; k <= 16; k++) {
@@ -184,7 +224,10 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   }
 
   const createString = (from: PointData, to: PointData, choice: Choice): LightString => {
-    const string: LightString = {from, to, choice, container: new Container(), bulbs: []}
+    const string: LightString = {
+      from, to, choice, container: new Container(), wire: new Graphics(), bulbs: [],
+      swing: 0, drawnSwing: 0, phase: Math.random() * Math.PI * 2,
+    }
     string.container.cursor = "grab"
     stringLayer.addChild(string.container)
     return string
@@ -319,8 +362,26 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       light.shine(sprite.position, lightRadius, lightStrengths[level] * string.container.alpha)
     }))
   }
+  // The wind blows hung strings about, following it over a moment. Only strings on
+  // screen are redrawn, and only once they've moved enough to see
+  const blow = () => {
+    const dt = Math.min(0.1, app.ticker.deltaMS / 1000)
+    strings.forEach(string => {
+      const {from, to} = string
+      const sag = sagOf(string)
+      const blowing = wind.at((from.x + to.x) / 2) / wind.strongest
+      // It flutters a little more the harder it's blowing
+      const flutter = 0.12 * Math.abs(blowing) * Math.sin(elapsed / 1000 * 2.3 + string.phase)
+      const target = (blowing + flutter) * sag * windSwing
+      string.swing += (target - string.swing) * Math.min(1, windFollow * dt)
+      if (string.container.visible && Math.abs(string.swing - string.drawnSwing) > swingStep) {
+        shape(string)
+      }
+    })
+  }
   const tick = () => {
     elapsed += app.ticker.deltaMS
+    blow()
     twinkle()
   }
   app.ticker.add(tick)

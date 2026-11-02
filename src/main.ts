@@ -6,8 +6,8 @@ import {createDiyaInventory, diyaAssets, diyaImages} from "./diyaInventory"
 import {createHouseLights, fairyLightAssets} from "./fairyLights"
 import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
-import {createHud} from "./hud"
 import {createHudToggle} from "./hudToggle"
+import {createKandils, kandilAssets} from "./kandil"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
 import {showLanguagePicker} from "./languagePicker"
@@ -18,6 +18,8 @@ import {createScreenshotButton} from "./screenshot"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
+import {createWind} from "./wind"
+import {createWindBlown} from "./windBlown"
 import {showSplashWarning} from "./splashWarning"
 import {addTooltip} from "./tooltip"
 import {buttonRadius, createZoomControls} from "./zoomControls"
@@ -65,7 +67,10 @@ const main = async () => {
   screens = [loader]
   addBackgroundAssets()
   const failed = await loadAssets({
-    textures: [...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...tools.map(tool => tool.icon)],
+    textures: [
+      ...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...kandilAssets,
+      ...tools.map(tool => tool.icon),
+    ],
     images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
@@ -90,6 +95,10 @@ const main = async () => {
   createSkyline(app, background, lighting).catch(error => console.error("Couldn't light the skyline", error))
   // Fireworks going up all over the city, bursting just above its buildings
   createSkyFireworks(app, background, lighting, audio).catch(error => console.error("Couldn't set off the city's fireworks", error))
+  // A light breeze with now and then a gust, carrying leaves and petals past the house
+  // and blowing the fireworks' smoke and sparks, the fairy lights and the kandils about
+  const wind = createWind(app)
+  createWindBlown(app, background, lighting, wind)
 
   // Each tool has a bar of things to use, shown while it's the one picked. What's
   // placed in the scene stays there, and can be picked up again, whichever tool is picked
@@ -100,22 +109,15 @@ const main = async () => {
     controls.diyas = diyas
   }
   if (loaded(fireworksAssets)) {
-    const fireworks = createFireworks(app, background, lighting, audio)
+    const fireworks = createFireworks(app, background, lighting, audio, wind)
     fireworks.setInteractive(true)
     controls.fireworks = fireworks
   }
-  // Nothing to craft a kandil with yet, so its bar is empty
-  const kandilHud = createHud(app)
-  controls.kandil = {
-    container: kandilHud.container,
-    layout: kandilHud.layout,
-    setHudShown(shown) {
-      kandilHud.setShown(shown)
-      kandilHud.setInteractive(shown)
-    },
+  if (loaded(kandilAssets)) {
+    controls.kandil = createKandils(app, background, lighting, wind)
   }
   if (loaded(fairyLightAssets)) {
-    controls.decorate = createHouseLights(app, background, lighting)
+    controls.decorate = createHouseLights(app, background, lighting, wind)
   }
   controls.rangoli = createRangoli(app, background)
 

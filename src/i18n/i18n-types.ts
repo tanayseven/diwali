@@ -260,6 +260,96 @@ type RootTranslation = {
 			 */
 			stack: string
 		}
+		kandil: {
+			/**
+			 * A​k​a​s​h​ ​K​a​n​d​i​l
+			 */
+			name: string
+			/**
+			 * N​e​e​d​s​ ​p​a​p​e​r
+			 */
+			needsPaper: string
+			/**
+			 * N​e​e​d​s​ ​t​a​i​l​s
+			 */
+			needsTails: string
+			/**
+			 * R​e​a​d​y​ ​f​o​r​ ​a​ ​b​u​l​b
+			 */
+			ready: string
+			/**
+			 * L​i​t
+			 */
+			lit: string
+			/**
+			 * D​r​a​g​ ​t​o​ ​m​o​v​e​ ​i​t​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h​ ​o​r​ ​t​h​e​ ​h​o​u​s​e​,​ ​o​r​ ​o​n​t​o​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​t​o​ ​p​u​t​ ​i​t​s​ ​f​r​a​m​e​ ​b​a​c​k
+			 */
+			move: string
+			frame: {
+				/**
+				 * K​a​n​d​i​l​ ​f​r​a​m​e
+				 */
+				name: string
+				/**
+				 * A​ ​b​a​m​b​o​o​ ​f​r​a​m​e​ ​f​o​r​ ​a​n​ ​a​k​a​s​h​ ​k​a​n​d​i​l​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h​ ​t​o​ ​m​a​k​e​ ​i​t​ ​t​h​e​r​e​,​ ​o​r​ ​o​n​t​o​ ​t​h​e​ ​h​o​u​s​e​ ​t​o​ ​h​a​n​g​ ​i​t
+				 */
+				stack: string
+			}
+			paper: {
+				/**
+				 * R​e​d​ ​p​a​p​e​r
+				 */
+				red: string
+				/**
+				 * O​r​a​n​g​e​ ​p​a​p​e​r
+				 */
+				orange: string
+				/**
+				 * B​l​u​e​ ​p​a​p​e​r
+				 */
+				blue: string
+				/**
+				 * M​i​x​e​d​ ​p​a​p​e​r
+				 */
+				mixed: string
+				/**
+				 * D​r​a​g​ ​o​n​t​o​ ​a​ ​k​a​n​d​i​l​ ​f​r​a​m​e​ ​t​o​ ​w​r​a​p​ ​i​t
+				 */
+				hint: string
+			}
+			tails: {
+				/**
+				 * G​r​e​e​n​ ​t​a​i​l​s
+				 */
+				green: string
+				/**
+				 * R​e​d​ ​t​a​i​l​s
+				 */
+				red: string
+				/**
+				 * G​o​l​d​ ​t​a​i​l​s
+				 */
+				gold: string
+				/**
+				 * M​i​x​e​d​ ​t​a​i​l​s
+				 */
+				mixed: string
+				/**
+				 * D​r​a​g​ ​o​n​t​o​ ​a​ ​k​a​n​d​i​l​ ​w​r​a​p​p​e​d​ ​i​n​ ​p​a​p​e​r​ ​t​o​ ​h​a​n​g​ ​t​h​e​m​ ​b​e​l​o​w​ ​i​t
+				 */
+				hint: string
+			}
+			bulb: {
+				/**
+				 * B​u​l​b
+				 */
+				name: string
+				/**
+				 * D​r​a​g​ ​o​n​t​o​ ​a​ ​k​a​n​d​i​l​ ​w​i​t​h​ ​i​t​s​ ​p​a​p​e​r​ ​a​n​d​ ​t​a​i​l​s​ ​t​o​ ​l​i​g​h​t​ ​i​t
+				 */
+				hint: string
+			}
+		}
 		/**
 		 * N​o​n​e​ ​l​e​f​t
 		 */
@@ -598,6 +688,96 @@ export type TranslationFunctions = {
 			 * A rocket on a stick, stood in an empty bottle. Drag one onto the porch
 			 */
 			stack: () => LocalizedString
+		}
+		kandil: {
+			/**
+			 * Akash Kandil
+			 */
+			name: () => LocalizedString
+			/**
+			 * Needs paper
+			 */
+			needsPaper: () => LocalizedString
+			/**
+			 * Needs tails
+			 */
+			needsTails: () => LocalizedString
+			/**
+			 * Ready for a bulb
+			 */
+			ready: () => LocalizedString
+			/**
+			 * Lit
+			 */
+			lit: () => LocalizedString
+			/**
+			 * Drag to move it onto the porch or the house, or onto the Craft Kandil bar to put its frame back
+			 */
+			move: () => LocalizedString
+			frame: {
+				/**
+				 * Kandil frame
+				 */
+				name: () => LocalizedString
+				/**
+				 * A bamboo frame for an akash kandil. Drag one onto the porch to make it there, or onto the house to hang it
+				 */
+				stack: () => LocalizedString
+			}
+			paper: {
+				/**
+				 * Red paper
+				 */
+				red: () => LocalizedString
+				/**
+				 * Orange paper
+				 */
+				orange: () => LocalizedString
+				/**
+				 * Blue paper
+				 */
+				blue: () => LocalizedString
+				/**
+				 * Mixed paper
+				 */
+				mixed: () => LocalizedString
+				/**
+				 * Drag onto a kandil frame to wrap it
+				 */
+				hint: () => LocalizedString
+			}
+			tails: {
+				/**
+				 * Green tails
+				 */
+				green: () => LocalizedString
+				/**
+				 * Red tails
+				 */
+				red: () => LocalizedString
+				/**
+				 * Gold tails
+				 */
+				gold: () => LocalizedString
+				/**
+				 * Mixed tails
+				 */
+				mixed: () => LocalizedString
+				/**
+				 * Drag onto a kandil wrapped in paper to hang them below it
+				 */
+				hint: () => LocalizedString
+			}
+			bulb: {
+				/**
+				 * Bulb
+				 */
+				name: () => LocalizedString
+				/**
+				 * Drag onto a kandil with its paper and tails to light it
+				 */
+				hint: () => LocalizedString
+			}
 		}
 		/**
 		 * None left

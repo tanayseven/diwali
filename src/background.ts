@@ -63,6 +63,15 @@ const porchFloor: PointData[] = [
   fromHouseSvg(131.386, 815.426),
 ]
 
+// The bottom edges of the roofs' eaves, which things can hang from: the upper storey's,
+// the porch roof's and the two wings', each from its left end to its right
+const eaves = [
+  [fromHouseSvg(629, 220), fromHouseSvg(1194, 220)],
+  [fromHouseSvg(610, 442), fromHouseSvg(1210, 442)],
+  [fromHouseSvg(205, 487), fromHouseSvg(655, 487)],
+  [fromHouseSvg(1143, 487), fromHouseSvg(1593, 487)],
+]
+
 type View = {x: number, y: number, width: number, height: number}
 
 // What the camera frames to begin with: the house from its porch floor, kept clear of
@@ -434,6 +443,13 @@ const createBackground = (app: Application) => {
     panOf: (point: PointData) => stereoPan(scene.x + point.x * scene.scale.x, app.screen.width),
     // Whether a point in the scene is on the porch's floor
     isOnPorchFloor: (point: PointData) => isInside(point, porchFloor),
+    // How high the nearest eave straight above a point in the scene is, if there's one
+    eaveAbove(point: PointData) {
+      const above = eaves
+        .filter(([left, right]) => point.x >= left.x && point.x <= right.x && left.y < point.y)
+        .map(([left]) => left.y)
+      return above.length ? Math.max(...above) : undefined
+    },
     destroy() {
       window.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("pointermove", onPointerMove)

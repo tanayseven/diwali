@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="960" viewBox="0 0 200 480">
+  <title>Akash kandil — Bamboo frame</title>
+  <path d="M100 0 V20" stroke="#F4ECE4" stroke-width="1.6"/>
+  <path d="M55 58 L145 58 L185 121.5 L145 185 L55 185 L15 121.5 L55 58 M55 58 L100 110 L145 185 M145 58 L100 110 L55 185 M55 20 L145 20 L145 57 L55 57 L55 20 M55 186 L145 186 L145 222 L55 222 L55 186" fill="none" stroke="#7A4E22" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M55 58 L145 58 L185 121.5 L145 185 L55 185 L15 121.5 L55 58 M55 58 L100 110 L145 185 M145 58 L100 110 L55 185 M55 20 L145 20 L145 57 L55 57 L55 20 M55 186 L145 186 L145 222 L55 222 L55 186" fill="none" stroke="#C99251" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M55 58 L145 58 L185 121.5 L145 185 L55 185 L15 121.5 L55 58 M55 58 L100 110 L145 185 M145 58 L100 110 L55 185 M55 20 L145 20 L145 57 L55 57 L55 20 M55 186 L145 186 L145 222 L55 222 L55 186" fill="none" stroke="#EBC488" stroke-width="0.6" stroke-linejoin="round" stroke-linecap="round" transform="translate(-0.4 -0.4)"/>
+  <g fill="#5A3414"><rect x="53" y="56" width="4" height="4" rx="1.2"/><rect x="143" y="56" width="4" height="4" rx="1.2"/><rect x="13" y="119.5" width="4" height="4" rx="1.2"/><rect x="183" y="119.5" width="4" height="4" rx="1.2"/><rect x="53" y="183" width="4" height="4" rx="1.2"/><rect x="143" y="183" width="4" height="4" rx="1.2"/><rect x="98" y="108" width="4" height="4" rx="1.2"/><rect x="53" y="18" width="4" height="4" rx="1.2"/><rect x="143" y="18" width="4" height="4" rx="1.2"/><rect x="53" y="220" width="4" height="4" rx="1.2"/><rect x="143" y="220" width="4" height="4" rx="1.2"/></g>
+</svg>

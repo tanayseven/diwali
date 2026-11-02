@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="180" viewBox="0 0 60 90">
+  <title>Akash kandil — Bulb</title>
+  <path d="M30 6 C14 6 6 18 6 30 C6 41 14 47 19 54 C21 57 21 60 21 63 H39 C39 60 39 57 41 54 C46 47 54 41 54 30 C54 18 46 6 30 6 Z" fill="#FFE58A" stroke="#E0A93A" stroke-width="1.5"/>
+  <path d="M16 22 C18 15 23 12 28 11" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M25 63 V44 L28 38 L30 44 L32 38 L35 44 V63" stroke="#B5752A" stroke-width="1.2" fill="none"/>
+  <rect x="20" y="63" width="20" height="16" rx="2" fill="#B9BEC6"/>
+  <path d="M20 67 H40 M20 71 H40 M20 75 H40" stroke="#7D838C" stroke-width="1.2"/>
+  <path d="M24 79 H36 L33 85 H27 Z" fill="#4A4E55"/>
+</svg>

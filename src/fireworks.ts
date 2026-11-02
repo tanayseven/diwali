@@ -10,6 +10,7 @@ import {createShownParticles} from "./shownParticles"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
+import type {Wind} from "./wind"
 
 type Background = ReturnType<typeof createBackground>
 type AudioControl = ReturnType<typeof createAudioControl>
@@ -153,6 +154,11 @@ const anarVolume = 0.7
 // height the fastest reach about 170 units up, two fifths as tall as the house
 const gravity = 780
 const airDrag = 1.4
+// How much of the wind's speed what's thrown up is carried at, in time: sparks are
+// heavy and fast, and only drift a little; smoke and scraps of paper go with the air
+const sparkWindShare = 0.5
+const smokeWindShare = 0.8
+const shredWindShare = 0.7
 const maxSparkRate = 1450 * quality.particleScale
 const minSparkSpeed = 330
 const maxSparkSpeed = 690
@@ -521,7 +527,7 @@ type Drag = {sprite: Sprite, firework: Placed, fromScene?: PointData}
 // after another, each with a blast. A chakri's fizzes to its coil, and it spins about
 // in a ring of fire. A sutli bomb's fizzes slowly down its wick, and it goes off all at
 // once in one great blast. Expects fireworksAssets to have been loaded
-const createFireworks = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
+const createFireworks = (app: Application, background: Background, lighting: Lighting, audio: AudioControl, wind: Wind) => {
   // A firework's slot shows its unlit drawing, cropped to the area it's picked up by
   const itemFor = (shape: Shape, url: string): Item => ({
     url,
@@ -1662,8 +1668,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         spark.y += spark.vy * dt
         spark.floor = spark.y
       } else {
+        // Air drags it back towards moving with the wind, which carries it a little
         const drag = Math.max(0, 1 - airDrag * dt)
-        spark.vx *= drag
+        const carried = wind.at(spark.x) * sparkWindShare
+        spark.vx = carried + (spark.vx - carried) * drag
         spark.vy = spark.vy * drag + gravity * spark.fall * dt
         spark.x += spark.vx * dt
         spark.y += spark.vy * dt
@@ -1726,7 +1734,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
         continue
       }
       const t = puff.age / smokeLife
-      puff.x += puff.vx * dt
+      // Smoke goes wherever the air does
+      puff.x += (puff.vx + wind.at(puff.x) * smokeWindShare) * dt
       puff.y += puff.vy * dt
       if (!background.inView(puff.x, puff.y, smokeMargin)) {
         continue
@@ -1757,7 +1766,8 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       // Paper flutters down slowly, and stops still once it's landed
       if (shred.y < shred.floor || shred.vy < 0) {
         const drag = Math.max(0, 1 - shredDrag * dt)
-        shred.vx *= drag
+        const carried = wind.at(shred.x) * shredWindShare
+        shred.vx = carried + (shred.vx - carried) * drag
         shred.vy = shred.vy * drag + shredGravity * dt
         shred.x += shred.vx * dt
         shred.y = Math.min(shred.floor, shred.y + shred.vy * dt)
