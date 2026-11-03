@@ -8,7 +8,13 @@
 # Each is built on its own platform, as desktop.yml does: macOS apps can only be built on
 # a Mac, and the Windows installer needs NSIS. RELEASE_TAG versions it, as it does the
 # Android app; without one it's versioned dev. Run from anywhere, with the tools from
-# mise.toml (Go, Wails, nfpm) on the path
+# mise.toml (Go, Wails, nfpm) on the path.
+#
+# The macOS app's signed with the Developer ID that APPLE_SIGNING_IDENTITY names, from
+# the keychain, and notarized by Apple with APPLE_ID, APPLE_TEAM_ID and
+# APPLE_APP_PASSWORD (an app-specific password), when they're set, which takes an Apple
+# Developer Program membership. Without them it's signed ad hoc, which isn't trusted,
+# but lets it be opened from Privacy & Security instead of being called damaged
 set -euo pipefail
 
 platform=${1:?Pass linux, windows or macos}
@@ -100,13 +106,42 @@ case $platform in
     # One app for Intel Macs and Apple silicon both
     build -platform darwin/universal
     app="build/bin/Diwali Celebration.app"
+    identity=${APPLE_SIGNING_IDENTITY:-}
+    notarizing=$([[ -n $identity && -n ${APPLE_ID:-} && -n ${APPLE_TEAM_ID:-} && -n ${APPLE_APP_PASSWORD:-} ]] && echo yes || echo)
+    # Sent to Apple to be checked, waiting for its verdict, then the ticket it gives
+    # stapled on, so it opens without asking Apple first, offline too
+    notarize() {
+      xcrun notarytool submit "$1" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
+        --password "$APPLE_APP_PASSWORD" --wait
+    }
+    if [[ -n $identity ]]; then
+      # With the hardened runtime and a secure timestamp, as notarizing needs
+      codesign --force --deep --options runtime --timestamp --sign "$identity" "$app"
+    else
+      codesign --force --deep --sign - "$app"
+    fi
+    codesign --verify --deep --strict --verbose=2 "$app"
+    if [[ -n $notarizing ]]; then
+      submission=$(mktemp -d)/app.zip
+      ditto -c -k --keepParent "$app" "$submission"
+      notarize "$submission"
+      xcrun stapler staple "$app"
+    fi
     ditto -c -k --keepParent "$app" "$out/$name-$version-macos.zip"
-    # A disk image to drag it from into Applications
+    # A disk image to drag it from into Applications, signed and notarized as the app is
     image=$(mktemp -d)
     cp -R "$app" "$image/"
     ln -s /Applications "$image/Applications"
-    hdiutil create -volname "Diwali Celebration" -srcfolder "$image" -ov -format UDZO "$out/$name-$version-macos.dmg"
+    dmg="$out/$name-$version-macos.dmg"
+    hdiutil create -volname "Diwali Celebration" -srcfolder "$image" -ov -format UDZO "$dmg"
     rm -rf "$image"
+    if [[ -n $identity ]]; then
+      codesign --force --timestamp --sign "$identity" "$dmg"
+    fi
+    if [[ -n $notarizing ]]; then
+      notarize "$dmg"
+      xcrun stapler staple "$dmg"
+    fi
     ;;
   *)
     echo "Pass linux, windows or macos, not $platform" >&2

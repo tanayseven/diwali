@@ -125,7 +125,18 @@ $ desktop/package.sh windows   # an installer for x64 and Arm PCs, and a portabl
 $ desktop/package.sh macos     # a .dmg, and the .app in a .zip, for Intel and Apple silicon both
 ```
 
-Building on Linux needs GTK 3 and WebKitGTK 4.1 (`libgtk-3-dev` and `libwebkit2gtk-4.1-dev` on Debian and Ubuntu); the Windows installer needs [NSIS](https://nsis.sourceforge.io); and macOS apps can only be built on a Mac. Set `RELEASE_TAG` to a date tag to version them by it; otherwise they're versioned `dev`. The macOS app isn't signed, so the first time it's opened it has to be opened from its menu in Finder (Control-click, then Open).
+Building on Linux needs GTK 3 and WebKitGTK 4.1 (`libgtk-3-dev` and `libwebkit2gtk-4.1-dev` on Debian and Ubuntu); the Windows installer needs [NSIS](https://nsis.sourceforge.io); and macOS apps can only be built on a Mac. Set `RELEASE_TAG` to a date tag to version them by it; otherwise they're versioned `dev`. The macOS app is signed and notarized when the [Desktop build](.github/workflows/desktop.yml) workflow has these GitHub secrets, all of which take an [Apple Developer Program](https://developer.apple.com/programs/) membership:
+
+| Secret | What it is |
+| --- | --- |
+| `APPLE_CERTIFICATE` | The Developer ID Application certificate and its private key, exported from Keychain Access as a `.p12`, as base64 (`base64 -i certificate.p12`) |
+| `APPLE_CERTIFICATE_PASSWORD` | The password the `.p12` was exported with |
+| `APPLE_SIGNING_IDENTITY` | The certificate's name, as `Developer ID Application: Your Name (TEAMID)` |
+| `APPLE_ID` | The Apple Account the membership's under |
+| `APPLE_TEAM_ID` | The membership's ten-character Team ID |
+| `APPLE_APP_PASSWORD` | An [app-specific password](https://support.apple.com/102654) for that Apple Account |
+
+`desktop/package.sh` takes the last four from the environment too, with the certificate in the login keychain. Without them, the app's signed ad hoc, which macOS doesn't trust, so the first time it's opened macOS blocks it: open it once, then in System Settings → Privacy & Security, choose Open Anyway. Or take it out of quarantine with `xattr -dr com.apple.quarantine "/Applications/Diwali Celebration.app"`.
 
 ## Deployment
 

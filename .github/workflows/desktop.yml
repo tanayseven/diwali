@@ -82,12 +82,43 @@ jobs:
           fi
           echo "C:/Program Files (x86)/NSIS" >> "$GITHUB_PATH"
 
+      # The Developer ID certificate the macOS app's signed with, from the
+      # APPLE_CERTIFICATE secret (a .p12, as base64) and its password, put in a keychain
+      # of its own for this run. Without it, the app's signed ad hoc
+      - name: Import the macOS signing certificate
+        if: matrix.platform == 'macos'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_CERTIFICATE" ]; then
+            echo "No signing certificate, so the app will be signed ad hoc"
+            exit 0
+          fi
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password=$(openssl rand -base64 24)
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          echo "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security import "$RUNNER_TEMP/certificate.p12" -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          rm "$RUNNER_TEMP/certificate.p12"
+          security set-key-partition-list -S apple-tool:,apple: -k "$password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+
       - name: Install dependencies
         run: npm ci
 
+      # The macOS app's signed with the Developer ID that APPLE_SIGNING_IDENTITY names
+      # and notarized with APPLE_ID, APPLE_TEAM_ID and APPLE_APP_PASSWORD, when they're
+      # set as secrets, which only the macOS build is given
       - name: Build and package the app
         env:
           RELEASE_TAG: ${{ env.TAG }}
+          APPLE_SIGNING_IDENTITY: ${{ matrix.platform == 'macos' && secrets.APPLE_SIGNING_IDENTITY || '' }}
+          APPLE_ID: ${{ matrix.platform == 'macos' && secrets.APPLE_ID || '' }}
+          APPLE_TEAM_ID: ${{ matrix.platform == 'macos' && secrets.APPLE_TEAM_ID || '' }}
+          APPLE_APP_PASSWORD: ${{ matrix.platform == 'macos' && secrets.APPLE_APP_PASSWORD || '' }}
         run: desktop/package.sh ${{ matrix.platform }}
 
       - name: Keep the packages for the release
