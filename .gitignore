@@ -7,5 +7,7 @@ desktop/frontend/
 desktop/build/bin/
 desktop/dist/
 desktop/build/windows/
-desktop/build/darwin/
+desktop/build/darwin/*
+# Except the macOS app's details, as Wails would make it with another app's identifier
+!desktop/build/darwin/Info.plist
 desktop/wails.json.orig
