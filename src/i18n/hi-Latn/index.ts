@@ -27,6 +27,10 @@ const hiLatn = {
 		heading: "Warning",
 		message: "Is app mein chamakti aur timtimati lights hain, jinse photosensitive epilepsy wale logon ko seizures aa sakte hain. Agar aapko epilepsy hai ya pehle kabhi seizure aaya hai, toh ise use karte waqt dhyaan rakhein, aur tabiyat theek na lage toh turant band kar dein.",
 	},
+	soundSplash: {
+		heading: "Stereo sound use karein",
+		message: "Behtar experience ke liye headphones ya stereo sound system use karein. Har awaaz wahin se sunaai deti hai jahaan se woh aati hai, aapke left ya right.",
+	},
 	portraitWarning: {
 		heading: "Portrait mode support nahi hai",
 		message: "Yeh app portrait mode mein nahi dikh sakta. Aage badhne ke liye apna device ghuma ke landscape mode mein karein.",

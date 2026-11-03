@@ -20,7 +20,7 @@ import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
 import {createWind} from "./wind"
 import {createWindBlown} from "./windBlown"
-import {showSplashWarning} from "./splashWarning"
+import {showSoundSplash, showSplashWarning} from "./splashWarning"
 import {addTooltip} from "./tooltip"
 import {buttonRadius, createZoomControls} from "./zoomControls"
 
@@ -71,13 +71,14 @@ const main = async () => {
       ...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...kandilAssets,
       ...tools.map(tool => tool.icon),
     ],
-    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg"],
+    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
   loader.destroy()
   screens = []
   await showSplashWarning()
+  await showSoundSplash()
   createFooter()
 
   // Without the background there's nowhere to put anything, so nothing more to show

@@ -105,6 +105,16 @@ type RootTranslation = {
 		 */
 		message: string
 	}
+	soundSplash: {
+		/**
+		 * U​s​e​ ​s​t​e​r​e​o​ ​s​o​u​n​d
+		 */
+		heading: string
+		/**
+		 * F​o​r​ ​a​ ​b​e​t​t​e​r​ ​e​x​p​e​r​i​e​n​c​e​,​ ​u​s​e​ ​h​e​a​d​p​h​o​n​e​s​ ​o​r​ ​a​ ​s​t​e​r​e​o​ ​s​o​u​n​d​ ​s​y​s​t​e​m​.​ ​E​a​c​h​ ​s​o​u​n​d​ ​i​s​ ​h​e​a​r​d​ ​f​r​o​m​ ​w​h​e​r​e​ ​i​t​ ​i​s​,​ ​t​o​ ​y​o​u​r​ ​l​e​f​t​ ​o​r​ ​r​i​g​h​t​.
+		 */
+		message: string
+	}
 	portraitWarning: {
 		/**
 		 * P​o​r​t​r​a​i​t​ ​m​o​d​e​ ​i​s​n​'​t​ ​s​u​p​p​o​r​t​e​d
@@ -533,6 +543,16 @@ export type TranslationFunctions = {
 		heading: () => LocalizedString
 		/**
 		 * This app contains flashing and twinkling lights that may trigger seizures in people with photosensitive epilepsy. If you have epilepsy or have had seizures before, please take care while using it, and stop at once if you feel unwell.
+		 */
+		message: () => LocalizedString
+	}
+	soundSplash: {
+		/**
+		 * Use stereo sound
+		 */
+		heading: () => LocalizedString
+		/**
+		 * For a better experience, use headphones or a stereo sound system. Each sound is heard from where it is, to your left or right.
 		 */
 		message: () => LocalizedString
 	}

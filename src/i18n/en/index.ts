@@ -30,6 +30,11 @@ const en = {
 		heading: "Warning",
 		message: "This app contains flashing and twinkling lights that may trigger seizures in people with photosensitive epilepsy. If you have epilepsy or have had seizures before, please take care while using it, and stop at once if you feel unwell.",
 	},
+	// Shown after the warning, as sounds are heard from where they are in the scene
+	soundSplash: {
+		heading: "Use stereo sound",
+		message: "For a better experience, use headphones or a stereo sound system. Each sound is heard from where it is, to your left or right.",
+	},
 	portraitWarning: {
 		heading: "Portrait mode isn't supported",
 		message: "This app can't be shown in portrait mode. Please rotate your device to landscape mode to continue.",

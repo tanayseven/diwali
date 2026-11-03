@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A pair of over-ear headphones, a silhouette used as a mask and filled in gold, like
+     the caution signs. The band arches over the top into the two ear cups, each with
+     its cushion on the inside -->
+<svg width="512px" height="512px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+	<!-- The headband, and the arms down to the cups -->
+	<path fill="none" stroke="#000000" stroke-width="36" stroke-linecap="round" d="M100 312 V256 A156 156 0 0 1 412 256 V312"/>
+	<!-- The left cup and its cushion -->
+	<rect x="60" y="284" width="72" height="176" rx="30" fill="#000000"/>
+	<rect x="140" y="304" width="34" height="136" rx="17" fill="#000000"/>
+	<!-- The right cup and its cushion -->
+	<rect x="380" y="284" width="72" height="176" rx="30" fill="#000000"/>
+	<rect x="338" y="304" width="34" height="136" rx="17" fill="#000000"/>
+</svg>

@@ -5,11 +5,13 @@ import {LL} from "./locale"
 const fadeDuration = 800
 // Long enough to read the message at a comfortable pace
 const holdDuration = 5000
+// The advice on sound is shorter, so it's held for less
+const soundHoldDuration = 3500
 
-// A photosensitivity warning that fades in over everything, holds, then fades out.
-// Tapping or pressing a key once it's shown skips straight to the fade out.
-// Resolves once it's gone
-const showSplashWarning = () => new Promise<void>(resolve => {
+// A full-screen splash with an icon, a heading and a message, that fades in over
+// everything, holds, then fades out. Tapping or pressing a key once it's shown skips
+// straight to the fade out. Resolves once it's gone
+const showSplash = (iconUrl: string, heading: string, message: string, hold: number) => new Promise<void>(resolve => {
   const overlay = document.createElement("div")
   overlay.setAttribute("role", "alert")
   Object.assign(overlay.style, {
@@ -30,20 +32,19 @@ const showSplashWarning = () => new Promise<void>(resolve => {
     transition: `opacity ${fadeDuration}ms ease-in-out`,
   })
 
-  // The caution sign with the flashing-light symbol in place of its "!"
-  const icon = createCautionIcon(96, "sprites/caution-flasher.svg")
+  const icon = createCautionIcon(96, iconUrl)
   // Shrink the icon and heading on short landscape phones so everything still fits
   icon.style.width = icon.style.height = "min(96px, 18vh)"
 
-  const heading = document.createElement("p")
-  heading.textContent = LL.splashWarning.heading()
-  Object.assign(heading.style, {margin: "0", fontSize: "min(80px, 16vh)", lineHeight: "1.1", color: "#ffd700"})
+  const title = document.createElement("p")
+  title.textContent = heading
+  Object.assign(title.style, {margin: "0", fontSize: "min(80px, 16vh)", lineHeight: "1.1", color: "#ffd700"})
 
-  const message = document.createElement("p")
-  message.textContent = LL.splashWarning.message()
-  Object.assign(message.style, {margin: "0", fontSize: "22px", lineHeight: "1.4", maxWidth: "600px"})
+  const text = document.createElement("p")
+  text.textContent = message
+  Object.assign(text.style, {margin: "0", fontSize: "22px", lineHeight: "1.4", maxWidth: "600px"})
 
-  overlay.append(icon, heading, message)
+  overlay.append(icon, title, text)
   document.body.appendChild(overlay)
 
   let holdTimer: number | undefined
@@ -70,9 +71,19 @@ const showSplashWarning = () => new Promise<void>(resolve => {
     setTimeout(() => {
       window.addEventListener("keydown", fadeOut)
       overlay.addEventListener("pointerdown", fadeOut)
-      holdTimer = setTimeout(fadeOut, holdDuration)
+      holdTimer = setTimeout(fadeOut, hold)
     }, fadeDuration)
   }))
 })
 
-export {showSplashWarning}
+// A photosensitivity warning, with the flashing-light symbol in place of the caution
+// sign's "!"
+const showSplashWarning = () =>
+  showSplash("sprites/caution-flasher.svg", LL.splashWarning.heading(), LL.splashWarning.message(), holdDuration)
+
+// Advice to listen on headphones or stereo speakers, as sounds are heard from where
+// they are in the scene
+const showSoundSplash = () =>
+  showSplash("sprites/headphones.svg", LL.soundSplash.heading(), LL.soundSplash.message(), soundHoldDuration)
+
+export {showSoundSplash, showSplashWarning}
