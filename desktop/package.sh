@@ -2,7 +2,7 @@
 # Builds the desktop app for one platform and packages it, into desktop/dist/:
 #
 #   desktop/package.sh linux     # a .tar.gz, and .deb, .rpm and Arch Linux packages
-#   desktop/package.sh windows   # an installer, and a portable .zip for x64 and for Arm
+#   desktop/package.sh windows   # an installer and a portable .zip, for x64 and for Arm
 #   desktop/package.sh macos     # a .dmg, and the .app in a .zip, for Intel and Apple silicon
 #
 # Each is built on its own platform, as desktop.yml does: macOS apps can only be built on
@@ -81,13 +81,13 @@ case $platform in
     done
     ;;
   windows)
-    # For x64 and Arm PCs, in one installer that installs whichever the PC is, and each
+    # For x64 and Arm PCs, each with an installer, which Wails makes one of for each, and
     # on its own to run without installing
     build -platform windows/amd64,windows/arm64 -nsis
-    cp build/bin/$name-*-installer.exe "$out/$name-$version-windows-setup.exe" 2>/dev/null \
-      || cp build/bin/*installer*.exe "$out/$name-$version-windows-setup.exe"
     for arch in amd64 arm64; do
       label=$([[ $arch == amd64 ]] && echo x64 || echo arm64)
+      # Named after the app, as "Diwali Celebration-amd64-installer.exe"
+      cp build/bin/*-$arch-installer.exe "$out/$name-$version-windows-$label-setup.exe"
       portable="$out/$name-$version-windows-$label"
       mkdir -p "$portable"
       cp build/bin/$name-$arch.exe "$portable/$name.exe"
