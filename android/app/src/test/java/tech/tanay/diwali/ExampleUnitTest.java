@@ -1,4 +1,4 @@
-package com.getcapacitor.myapp;
+package tech.tanay.diwali;
 
 import static org.junit.Assert.*;
 
