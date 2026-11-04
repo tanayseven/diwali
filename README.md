@@ -151,7 +151,7 @@ Every push to `main` runs the [Deploy to S3](.github/workflows/deploy.yml) GitHu
 
 Releases are tagged with the date they're made, as `YYYY.MM.DD`, and not with semantic versions. A second release on the same day adds its number, as `YYYY.MM.DD.2`, then `.3` and so on.
 
-Every night at 11:30 PM IST, the [Nightly release tag](.github/workflows/nightly-tag.yml) workflow tags `main` with the day's date, but only if something that goes into the app has changed since the newest date tag. Changes only to the docs (`README.md`, `CLAUDE.md`, `LICENSE.txt`), the CI workflows, the benchmark in `scripts/` or the editor settings aren't released. It then runs the [Android build](.github/workflows/android.yml) and [Desktop build](.github/workflows/desktop.yml) workflows for the tag, which build the Android app and the Windows, macOS and Linux apps versioned by the tag, and attach the APK and the desktop packages to a GitHub release for it. The nightly workflow can be run by hand from the Actions tab too, and pushing a date tag yourself also starts both builds:
+Every night at 11:30 PM IST, the [Nightly release tag](.github/workflows/nightly-tag.yml) workflow tags `main` with the day's date, but only if something that goes into the app has changed since the newest date tag. Changes only to the docs (`README.md`, `CLAUDE.md`, `LICENSE.txt`), the CI workflows, the benchmark in `scripts/` or the editor settings aren't released. It then runs the [Android build](.github/workflows/android.yml) and [Desktop build](.github/workflows/desktop.yml) workflows for the tag, which build the Android app and the Windows, macOS and Linux apps versioned by the tag, and attach the APK, the Google Play app bundle (when the upload key is in the secrets, see [Android](#android)) and the desktop packages to a GitHub release for it. The nightly workflow can be run by hand from the Actions tab too, and pushing a date tag yourself also starts both builds:
 
 ```sh
 $ git tag $(date +%Y.%m.%d)
@@ -159,3 +159,5 @@ $ git push origin $(date +%Y.%m.%d)
 ```
 
 The app's version name is the tag, and its version code is the date followed by the release's number that day (`2026.10.30.2` is `2026103002`), so every release installs over the one before. Tags of any other shape don't start the workflow.
+
+The Desktop build can also be run by hand from the Actions tab with a date tag, to build and release that tag's desktop apps again; without one, it builds the branch it's run on, versioned `dev`, and keeps the packages with the run to try them out.
