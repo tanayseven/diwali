@@ -64,6 +64,8 @@ jobs:
     uses: ./.github/workflows/android.yml
     with:
       tag: ${{ needs.tag.outputs.tag }}
+    # The upload key the Google Play bundle's signed with, when it's set
+    secrets: inherit
 
   desktop:
     needs: tag

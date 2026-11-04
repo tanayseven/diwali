@@ -33,8 +33,24 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Google Play takes the release bundle signed with its upload key, a keystore kept
+    // out of the repository, which these name. Without them the release is unsigned
+    def uploadKey = System.getenv("ANDROID_UPLOAD_KEYSTORE")
+    signingConfigs {
+        if (uploadKey) {
+            upload {
+                storeFile file(uploadKey)
+                storePassword System.getenv("ANDROID_UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_UPLOAD_KEY_ALIAS") ?: "upload"
+                keyPassword System.getenv("ANDROID_UPLOAD_KEY_PASSWORD") ?: System.getenv("ANDROID_UPLOAD_KEYSTORE_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            if (uploadKey) {
+                signingConfig signingConfigs.upload
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

@@ -108,6 +108,12 @@ $ npm run android:run
 
 will do the same and run it on a connected device or an emulator. After changing only the web app, `npm run android:sync` copies the new build across without building the APK.
 
+```sh
+$ RELEASE_TAG=2026.11.04 ANDROID_UPLOAD_KEYSTORE=path/to/upload-keystore.jks ANDROID_UPLOAD_KEYSTORE_PASSWORD=... npm run android:bundle
+```
+
+will build the release app bundle for Google Play at `android/app/build/outputs/bundle/release/app-release.aab`, versioned by the tag and signed with the upload key, which is kept out of the repository. The key's alias is `upload` unless `ANDROID_UPLOAD_KEY_ALIAS` says otherwise, and its password is the keystore's unless `ANDROID_UPLOAD_KEY_PASSWORD` is set.
+
 The app's icon and launch screen are the site's diya (`public/favicon.svg`) on black. Their sources in `assets/` are rendered from it, with its flame at rest, by
 
 ```sh

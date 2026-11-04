@@ -17,7 +17,7 @@ on:
         type: string
 
 permissions:
-  contents: write # This is required to create the release and attach the APK to it
+  contents: write # This is required to create the release and attach the APK and bundle to it
 
 jobs:
   android:
@@ -53,9 +53,27 @@ jobs:
           RELEASE_TAG: ${{ env.TAG }}
         run: npm run android:build
 
+      # The release bundle for Google Play, signed with its upload key, which the secrets
+      # hold: the keystore in base64 and its password. Without them it's skipped
+      - name: Build the app bundle for Google Play
+        env:
+          RELEASE_TAG: ${{ env.TAG }}
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$UPLOAD_KEYSTORE_BASE64" ]; then
+            echo "No upload key in the secrets, so no app bundle"
+            exit 0
+          fi
+          export ANDROID_UPLOAD_KEYSTORE="$RUNNER_TEMP/upload-keystore.jks"
+          echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_UPLOAD_KEYSTORE"
+          (cd android && ./gradlew bundleRelease)
+          rm "$ANDROID_UPLOAD_KEYSTORE"
+          cp android/app/build/outputs/bundle/release/app-release.aab "diwali-$TAG.aab"
+
       # The desktop build attaches its packages to the same release, so whichever gets
       # there first makes it, and the other adds to it
-      - name: Attach the APK to a release for the tag
+      - name: Attach the APK and the app bundle to a release for the tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -63,4 +81,8 @@ jobs:
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --title "$TAG" --generate-notes || true
           fi
-          gh release upload "$TAG" "diwali-$TAG.apk" --clobber
+          files=("diwali-$TAG.apk")
+          if [ -f "diwali-$TAG.aab" ]; then
+            files+=("diwali-$TAG.aab")
+          fi
+          gh release upload "$TAG" "${files[@]}" --clobber
