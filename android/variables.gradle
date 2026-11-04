@@ -1,5 +1,6 @@
 ext {
-    minSdkVersion = 23
+    // Android 7.0, the oldest Google Play's automatic protection supports
+    minSdkVersion = 24
     compileSdkVersion = 36
     targetSdkVersion = 36
     androidxActivityVersion = '1.9.2'
