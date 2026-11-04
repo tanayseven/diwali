@@ -38,6 +38,7 @@ const asm = {
 	footer: {
 		credit: "{author} দ্বাৰা {love} সহকাৰে নিৰ্মিত",
 		love: "মৰম",
+		privacy: "গোপনীয়তা",
 	},
 	audio: {
 		mute: "সংগীত বন্ধ কৰক",

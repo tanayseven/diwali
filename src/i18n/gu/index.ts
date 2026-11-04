@@ -38,6 +38,7 @@ const gu = {
 	footer: {
 		credit: "{author} દ્વારા {love} સાથે બનાવેલું",
 		love: "પ્રેમ",
+		privacy: "ગોપનીયતા",
 	},
 	audio: {
 		mute: "સંગીત બંધ કરો",

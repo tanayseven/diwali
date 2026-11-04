@@ -38,6 +38,7 @@ const ml = {
 	footer: {
 		credit: "{author} {love} യോടെ ഉണ്ടാക്കിയത്",
 		love: "സ്നേഹം",
+		privacy: "സ്വകാര്യത",
 	},
 	audio: {
 		mute: "സംഗീതം നിർത്തൂ",

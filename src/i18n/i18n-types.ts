@@ -136,6 +136,10 @@ type RootTranslation = {
 		 * L​o​v​e
 		 */
 		love: string
+		/**
+		 * P​r​i​v​a​c​y
+		 */
+		privacy: string
 	}
 	audio: {
 		/**
@@ -575,6 +579,10 @@ export type TranslationFunctions = {
 		 * Love
 		 */
 		love: () => LocalizedString
+		/**
+		 * Privacy
+		 */
+		privacy: () => LocalizedString
 	}
 	audio: {
 		/**

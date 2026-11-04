@@ -38,6 +38,7 @@ const mr = {
 	footer: {
 		credit: "{author} ने {love} सह बनवले",
 		love: "प्रेम",
+		privacy: "गोपनीयता",
 	},
 	audio: {
 		mute: "संगीत बंद करा",

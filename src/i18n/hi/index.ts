@@ -38,6 +38,7 @@ const hi = {
 	footer: {
 		credit: "{author} ने {love} से बनाया",
 		love: "प्यार",
+		privacy: "गोपनीयता",
 	},
 	audio: {
 		mute: "संगीत बंद करें",

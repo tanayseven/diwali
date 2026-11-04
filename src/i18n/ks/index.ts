@@ -38,6 +38,7 @@ const ks = {
 	footer: {
 		credit: "{author} سٕنٛدِ طرفہٕ {love} سٟتۍ بنومُت",
 		love: "لۄل",
+		privacy: "رازداری",
 	},
 	audio: {
 		mute: "موسیقی بنٛد کٔرِو",

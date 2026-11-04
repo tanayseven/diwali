@@ -38,6 +38,7 @@ const sat = {
 	footer: {
 		credit: "{author} {love} ᱥᱟᱶ ᱵᱮᱱᱟᱣ ᱠᱟᱫᱟᱭ",
 		love: "ᱫᱩᱞᱟᱹᱨ",
+		privacy: "ᱯᱨᱟᱭᱣᱮᱥᱤ",
 	},
 	audio: {
 		mute: "ᱥᱮᱨᱮᱧ ᱵᱚᱸᱫᱽ ᱢᱮ",

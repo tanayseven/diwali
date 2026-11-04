@@ -38,6 +38,7 @@ const pa = {
 	footer: {
 		credit: "{author} ਨੇ {love} ਨਾਲ ਬਣਾਇਆ",
 		love: "ਪਿਆਰ",
+		privacy: "ਪਰਦੇਦਾਰੀ",
 	},
 	audio: {
 		mute: "ਸੰਗੀਤ ਬੰਦ ਕਰੋ",

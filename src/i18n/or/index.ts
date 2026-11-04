@@ -38,6 +38,7 @@ const or = {
 	footer: {
 		credit: "{author} ଙ୍କ ଦ୍ୱାରା {love} ସହ ତିଆରି",
 		love: "ଭଲପାଇବା",
+		privacy: "ଗୋପନୀୟତା",
 	},
 	audio: {
 		mute: "ସଙ୍ଗୀତ ବନ୍ଦ କରନ୍ତୁ",

@@ -38,6 +38,7 @@ const mai = {
 	footer: {
 		credit: "{author} द्वारा {love} सँ बनाओल",
 		love: "प्रेम",
+		privacy: "गोपनीयता",
 	},
 	audio: {
 		mute: "संगीत बंद करू",

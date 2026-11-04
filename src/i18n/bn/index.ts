@@ -38,6 +38,7 @@ const bn = {
 	footer: {
 		credit: "{love} দিয়ে বানিয়েছেন {author}",
 		love: "ভালোবাসা",
+		privacy: "গোপনীয়তা",
 	},
 	audio: {
 		mute: "গান বন্ধ করুন",

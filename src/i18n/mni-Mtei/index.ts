@@ -38,6 +38,7 @@ const mni = {
 	footer: {
 		credit: "{author} ꯅꯥ {love} ꯒꯥ ꯂꯣꯌꯅꯅꯥ ꯁꯦꯃꯈꯤ",
 		love: "ꯅꯨꯡꯁꯤꯕ",
+		privacy: "ꯄ꯭ꯔꯥꯏꯚꯦꯁꯤ",
 	},
 	audio: {
 		mute: "ꯏꯁꯩ ꯂꯦꯞꯄꯤꯌꯨ",

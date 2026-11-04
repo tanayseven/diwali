@@ -38,6 +38,7 @@ const kn = {
 	footer: {
 		credit: "{author} ಅವರು {love} ದಿಂದ ಮಾಡಿದ್ದು",
 		love: "ಪ್ರೀತಿ",
+		privacy: "ಗೌಪ್ಯತೆ",
 	},
 	audio: {
 		mute: "ಸಂಗೀತ ನಿಲ್ಲಿಸಿ",

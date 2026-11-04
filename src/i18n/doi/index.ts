@@ -38,6 +38,7 @@ const doi = {
 	footer: {
 		credit: "{author} ने {love} कन्नै बनाया",
 		love: "प्यार",
+		privacy: "निजता",
 	},
 	audio: {
 		mute: "संगीत बंद करो",

@@ -38,6 +38,7 @@ const ur = {
 	footer: {
 		credit: "{author} نے {love} سے بنایا",
 		love: "محبت",
+		privacy: "رازداری",
 	},
 	audio: {
 		mute: "موسیقی بند کریں",

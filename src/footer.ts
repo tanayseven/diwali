@@ -3,6 +3,7 @@ import {LL} from "./locale"
 
 const highlight = "#ffd700"
 const footerHeight = 40
+const privacyUrl = "https://diwali.tanay.tech/privacy"
 
 // Tooltips are styled in a stylesheet, as inline styles can't reach ::after or :hover
 const style = `
@@ -45,6 +46,29 @@ const createTip = (emoji: string, tip: string) => {
   return span
 }
 
+// What the desktop app's Wails runtime puts on the window, to open links in the browser
+type DesktopRuntime = {BrowserOpenURL: (url: string) => void}
+const desktopRuntime = () => (window as Window & {runtime?: DesktopRuntime}).runtime
+
+// A link that opens in a new tab, or in the browser from the Android app, which opens
+// other sites' pages there, or from the desktop app, whose window can't open tabs
+const createLink = (href: string, text: string) => {
+  const link = document.createElement("a")
+  link.href = href
+  link.target = "_blank"
+  link.rel = "noopener"
+  link.textContent = text
+  Object.assign(link.style, {color: highlight, textDecoration: "none"})
+  link.addEventListener("click", event => {
+    const runtime = desktopRuntime()
+    if (runtime) {
+      event.preventDefault()
+      runtime.BrowserOpenURL(href)
+    }
+  })
+  return link
+}
+
 // A bar along the bottom of the screen crediting who made it
 const createFooter = () => {
   const stylesheet = document.createElement("style")
@@ -68,12 +92,7 @@ const createFooter = () => {
     fontSize: "20px",
   })
 
-  const link = document.createElement("a")
-  link.href = "https://blog.tanay.tech"
-  link.target = "_blank"
-  link.rel = "noopener"
-  link.textContent = "Tanay PrabhuDesai"
-  Object.assign(link.style, {color: highlight, textDecoration: "none"})
+  const link = createLink("https://blog.tanay.tech", "Tanay PrabhuDesai")
 
   // The sentence is translated as a whole, with placeholders where the emoji and the
   // link go, so each language can put them wherever its word order needs
@@ -85,6 +104,8 @@ const createFooter = () => {
   footer.append(...credit.split(/\{(love|author)\}/)
     .filter(part => part.trim() !== "")
     .map(part => parts[part] ?? part.trim()))
+  // The privacy policy, which app stores ask to be linked to from within the app
+  footer.append("·", createLink(privacyUrl, LL.footer.privacy()))
   document.body.appendChild(footer)
 
   return {

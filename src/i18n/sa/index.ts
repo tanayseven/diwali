@@ -38,6 +38,7 @@ const sa = {
 	footer: {
 		credit: "{author} द्वारा {love} सह रचितम्",
 		love: "प्रेम",
+		privacy: "गोपनीयता",
 	},
 	audio: {
 		mute: "सङ्गीतं स्थगयतु",

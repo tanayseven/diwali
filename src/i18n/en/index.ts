@@ -44,6 +44,8 @@ const en = {
 		// so they can go wherever the sentence needs them
 		credit: "Made with {love} by {author}",
 		love: "Love",
+		// The link to the privacy policy
+		privacy: "Privacy",
 	},
 	audio: {
 		mute: "Mute music",

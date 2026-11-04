@@ -38,6 +38,7 @@ const ta = {
 	footer: {
 		credit: "{love} உடன் உருவாக்கியவர் {author}",
 		love: "அன்பு",
+		privacy: "தனியுரிமை",
 	},
 	audio: {
 		mute: "இசையை நிறுத்து",

@@ -38,6 +38,7 @@ const sd = {
 	footer: {
 		credit: "{author} پاران {love} سان ٺاهيل",
 		love: "پيار",
+		privacy: "رازداري",
 	},
 	audio: {
 		mute: "موسيقي بند ڪريو",

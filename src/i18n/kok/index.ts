@@ -38,6 +38,7 @@ const kok = {
 	footer: {
 		credit: "{author} हाणें {love} सयत केलां",
 		love: "मोग",
+		privacy: "गोपनीयता",
 	},
 	audio: {
 		mute: "संगीत बंद करात",

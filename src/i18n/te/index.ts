@@ -38,6 +38,7 @@ const te = {
 	footer: {
 		credit: "{love} తో {author} తయారు చేశారు",
 		love: "ప్రేమ",
+		privacy: "గోప్యత",
 	},
 	audio: {
 		mute: "సంగీతం ఆపండి",

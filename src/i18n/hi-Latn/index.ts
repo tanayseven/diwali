@@ -38,6 +38,7 @@ const hiLatn = {
 	footer: {
 		credit: "{author} ne {love} se banaya",
 		love: "Pyaar",
+		privacy: "Privacy",
 	},
 	audio: {
 		mute: "Music band karo",
