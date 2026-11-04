@@ -2,8 +2,10 @@ apply plugin: 'com.android.application'
 
 // Releases are tagged with their date, YYYY.MM.DD, or YYYY.MM.DD.N for the Nth release
 // that day, and CI passes the tag in as RELEASE_TAG. It's the app's version name, and
-// its version code is the date and the release's number that day, so each release is
-// higher than the one before. Builds without a tag are versioned "dev", below them all
+// its version code is the days since 1 January 2026 times 100, plus the release's
+// number that day, so each release is higher than the one before, while staying far
+// below Google Play's limit of 2,100,000,000. Builds without a tag are versioned "dev",
+// below them all
 def releaseVersion = {
     def tag = System.getenv("RELEASE_TAG")
     if (!tag) {
@@ -14,7 +16,9 @@ def releaseVersion = {
         throw new GradleException("RELEASE_TAG must be a date tag like 2026.10.30, or 2026.10.30.2 for a second release that day, not ${tag}")
     }
     def number = date.group(4) ? date.group(4).toInteger() : 1
-    return [code: (date.group(1) + date.group(2) + date.group(3)).toInteger() * 100 + number, name: tag]
+    def day = java.time.LocalDate.of(date.group(1).toInteger(), date.group(2).toInteger(), date.group(3).toInteger())
+    def days = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.of(2026, 1, 1), day)
+    return [code: (days * 100 + number) as int, name: tag]
 }()
 
 android {

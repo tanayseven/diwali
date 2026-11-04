@@ -158,6 +158,6 @@ $ git tag $(date +%Y.%m.%d)
 $ git push origin $(date +%Y.%m.%d)
 ```
 
-The app's version name is the tag, and its version code is the date followed by the release's number that day (`2026.10.30.2` is `2026103002`), so every release installs over the one before. Tags of any other shape don't start the workflow.
+The app's version name is the tag, and its version code is the number of days since 1 January 2026 times 100, plus the release's number that day (`2026.10.30.2` is `30202`), which keeps it far below Google Play's limit of 2,100,000,000, so every release installs over the one before. Tags of any other shape don't start the workflow.
 
 The Desktop build can also be run by hand from the Actions tab with a date tag, to build and release that tag's desktop apps again; without one, it builds the branch it's run on, versioned `dev`, and keeps the packages with the run to try them out.
