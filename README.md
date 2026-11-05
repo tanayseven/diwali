@@ -2,7 +2,7 @@
 
 A small [PixiJS](https://pixijs.com) web app about celebrating Diwali.
 
-Live at: https://diwali.tanay.tech/
+Live at: https://diwali.tanay.tech/, and the game itself at https://diwali.tanay.tech/play
 
 [![PixiJS](https://img.shields.io/badge/PixiJS-8.22-E91E63?style=for-the-badge)](https://pixijs.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -37,6 +37,7 @@ Live at: https://diwali.tanay.tech/
 - **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; in the desktop apps it's saved where it's picked in a save dialog; otherwise it downloads it.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Privacy policy:** at https://diwali.tanay.tech/privacy (`privacy.html`, built as a page of its own), linked from the footer as app stores require. The game collects nothing; it only remembers the language and music settings on the device.
+- **Home page, on the website only:** https://diwali.tanay.tech/ opens on a home page (`home.html`) with screenshots, what's in the game, and where to download the apps, which links to the game at `/play`. Only the website's build (`npm run build:web`) has it. The Android and desktop apps open straight into the game, with all its images, sounds and fonts inside them, and load nothing over the internet.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 
 The side rail's icons are from [SVG Repo](https://www.svgrepo.com).
@@ -165,7 +166,7 @@ Building on Linux needs GTK 3 and WebKitGTK 4.1 (`libgtk-3-dev` and `libwebkit2g
 
 ## Deployment
 
-Every push to `main` runs the [Deploy to S3](.github/workflows/deploy.yml) GitHub Actions workflow. It builds the app and copies `dist/` to the `diwali.tanay.tech` S3 bucket, which serves https://diwali.tanay.tech/.
+Every push to `main` runs the [Deploy to S3](.github/workflows/deploy.yml) GitHub Actions workflow. It builds the website (`npm run build:web`: the game, with the home page) and copies `dist/` to the `diwali.tanay.tech` S3 bucket, which serves the home page at https://diwali.tanay.tech/, the game at `/play` and the privacy policy at `/privacy`.
 
 Releases are tagged with the date they're made, as `YYYY.MM.DD`, and not with semantic versions. A second release on the same day adds its number, as `YYYY.MM.DD.2`, then `.3` and so on.
 

@@ -32,7 +32,7 @@ jobs:
       - name: Tag main with the date, if the app's changed
         id: tag
         run: |
-          not_built=(':!README.md' ':!CLAUDE.md' ':!LICENSE.txt' ':!.github' ':!scripts' ':!.idea' ':!.gitignore')
+          not_built=(':!README.md' ':!CLAUDE.md' ':!LICENSE.txt' ':!.github' ':!scripts' ':!.idea' ':!.gitignore' ':!home.html' ':!src/home.ts')
           date_tags() {
             git tag --list | grep -E '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]{1,2})?$' || true
           }

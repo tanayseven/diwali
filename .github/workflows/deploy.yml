@@ -30,7 +30,8 @@ jobs:
         run: npm ci
 
       - name: Build project
-        run: npm run build
+        # With the website's home page, which the apps don't have
+        run: npm run build:web
 
       - name: Configure AWS Credentials OIDC login
         uses: aws-actions/configure-aws-credentials@v6
@@ -40,7 +41,10 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 cp dist/ s3://diwali.tanay.tech/ --recursive
-          # CloudFront serves the bucket as it is, without S3's website hosting, so the
-          # privacy policy's address, /privacy, is a page of its own, without the .html
+          aws s3 cp dist/ s3://diwali.tanay.tech/ --recursive --exclude index.html --exclude home.html
+          # CloudFront serves the bucket as it is, without S3's website hosting, so each page's
+          # address is a key of its own: the home page at /, the game at /play, and the
+          # privacy policy at /privacy. The game's index.html is only its name in the build
+          aws s3 cp dist/home.html s3://diwali.tanay.tech/index.html --content-type "text/html; charset=utf-8"
+          aws s3 cp dist/index.html s3://diwali.tanay.tech/play --content-type "text/html; charset=utf-8"
           aws s3 cp dist/privacy.html s3://diwali.tanay.tech/privacy --content-type "text/html; charset=utf-8"
