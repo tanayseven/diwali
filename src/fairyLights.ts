@@ -129,7 +129,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   }
 
   const slots = choices.map((choice, idx) => {
-    const slot = bar.addSlot(idx)
+    const slot = bar.addSlot(idx, true)
     // A mixed string's slot shows three bulbs side by side
     const shown = choice === "mixed" ? ["red", "green", "blue"] as Color[] : [choice]
     shown.forEach((color, k) => {
