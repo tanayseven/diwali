@@ -1,0 +1,44 @@
+Categories:
+  - Games
+License: MIT
+AuthorName: Tanay PrabhuDesai
+WebSite: https://diwali.tanay.tech
+SourceCode: https://github.com/tanayseven/diwali
+IssueTracker: https://github.com/tanayseven/diwali/issues
+
+AutoName: Diwali Celebration
+
+RepoType: git
+Repo: https://github.com/tanayseven/diwali.git
+
+Builds:
+  - versionName: 2026.11.06
+    versionCode: 30901
+    commit: 2026.11.06
+    subdir: android/app
+    sudo:
+      - apt-get update
+      - apt-get install -y xz-utils
+    init:
+      - curl -Lo node.tar.gz https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz
+      - echo "24a5d58a1d4c2903478f4b7c3cfd2eeb5cea2cae3baee11a4dc6a1fed25fec6c  node.tar.gz"
+        | sha256sum -c -
+      - tar xzf node.tar.gz
+      - rm node.tar.gz
+    gradle:
+      - yes
+    prebuild:
+      - export PATH=$PWD/../../node-v20.18.0-linux-x64/bin:$PATH
+      - cd ../..
+      - npm ci
+      - npm run build
+      - npx cap sync android
+    scandelete:
+      - node_modules
+      - node-v20.18.0-linux-x64
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^\d{4}\.\d{2}\.\d{2}(\.\d+)?$
+UpdateCheckData: android/version.properties|versionCode=(\d+)|android/version.properties|versionName=(.+)
+CurrentVersion: 2026.11.06
+CurrentVersionCode: 30901
