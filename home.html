@@ -134,6 +134,15 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
     gap: 1rem;
   }
+  /* Each card's button at its bottom, so they line up whatever the text above them */
+  .platform {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .platform .button {
+    margin-top: auto;
+  }
   .platform h3 {
     margin: 0 0 0.25rem;
     font-size: 1.15rem;
