@@ -38,7 +38,7 @@ Live at: https://diwali.tanay.tech/, and the game itself at https://diwali.tanay
 - **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; in the desktop apps it's saved where it's picked in a save dialog; otherwise it downloads it.
 - **Background music:** two tracks play on a loop, starting on the first tap or key press as browsers require. It dips while sound effects play. The speaker button in the top-right corner mutes on click, and opens a volume slider on hover or a press and hold. The setting is remembered.
 - **Privacy policy:** at https://diwali.tanay.tech/privacy (`privacy.html`, built as a page of its own), linked from the footer as app stores require. The game collects nothing; it only remembers the language and music settings on the device.
-- **Home page, on the website only:** https://diwali.tanay.tech/ opens on a home page (`home.html`) with screenshots, what's in the game, and where to download the apps, which links to the game at `/play`. Only the website's build (`npm run build:web`) has it. The Android and desktop apps open straight into the game, with all its images, sounds and fonts inside them, and load nothing over the internet.
+- **Home page, on the website only:** https://diwali.tanay.tech/ opens on a home page (`home.html`) with screenshots, what's in the game, and where to download the apps, which links to the game at `/play`. Only the website's build (`npm run build:web`) has it. The Android and desktop apps open straight into the game, with all its images, sounds and fonts inside them, and load nothing over the internet. The Android app doesn't even have the internet permission, so it can't; its links open in the browser.
 - **Landscape only:** in portrait mode (on a phone, or a desktop window taller than it is wide) it shows a notice asking to rotate the device instead.
 
 The side rail's icons are from [SVG Repo](https://www.svgrepo.com).
@@ -96,7 +96,7 @@ will serve that build locally.
 
 ## Android
 
-The app is wrapped for Android with [Capacitor](https://capacitorjs.com) 7 (the newest that runs on Node 20), in `android/`. It always runs in landscape, turning between either way round with the device but never into portrait, on tablets and foldables too, and it can't be put in split screen. It needs the Android SDK, with `ANDROID_HOME` pointing at it, and JDK 21, which mise installs.
+The app is wrapped for Android with [Capacitor](https://capacitorjs.com) 7 (the newest that runs on Node 20), in `android/`. It always runs in landscape, turning between either way round with the device but never into portrait, on tablets and foldables too, and it can't be put in split screen. It has no internet permission: the manifest removes it, so no plugin can add it back. It needs the Android SDK, with `ANDROID_HOME` pointing at it, and JDK 21, which mise installs.
 
 ```sh
 $ npm run android:build
