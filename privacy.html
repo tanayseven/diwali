@@ -52,12 +52,24 @@
   li + li {
     margin-top: 0.4rem;
   }
+  #close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.4rem 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--highlight);
+    color: #000000;
+    font: inherit;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 <main>
 <h1>Privacy Policy</h1>
-<p class="updated">Diwali Celebration · Last updated 4 November 2026</p>
+<p class="updated">Diwali Celebration · Last updated 6 November 2026</p>
 
 <p>Diwali Celebration is a game about celebrating Diwali on a house's porch at night. This policy covers every version of it: the website at <a href="https://diwali.tanay.tech">diwali.tanay.tech</a>, the Android app (<code>tech.tanay.diwali</code>), and the desktop apps for Windows, macOS and Linux. It's made by Tanay PrabhuDesai, who is responsible for it ("I" below).</p>
 
@@ -78,7 +90,7 @@
 <p>The camera button takes a photo of the scene. The photo is made on your device and isn't uploaded anywhere. It's only shared with the app you pick from your device's share sheet, or saved where you choose. Once you share it, that app's own privacy policy applies to it.</p>
 
 <h2>Permissions</h2>
-<p>The Android app asks for no permissions that need your approval. It has Android's internet permission, which <a href="https://capacitorjs.com">Capacitor</a>, the framework it's built with, includes by default, but the game doesn't send or load anything over the internet: its images, sounds and fonts are all part of the app, and it works offline. Links in it, such as the one to this policy, open in your browser.</p>
+<p>The Android app asks for no permissions at all, not even Android's internet permission, so it can't send or load anything over the internet: its images, sounds and fonts are all part of the app, and it works offline. This policy is part of the app too. Other links in it, like the one to the author's blog, open in your browser.</p>
 
 <h2>The website's hosting</h2>
 <p>The website is hosted on Amazon Web Services (Amazon S3 and CloudFront). Like any web server, AWS may log the requests your browser makes to load the site, such as your IP address, browser type and the time of the request, to deliver it and keep it secure. I don't use these logs to identify or track anyone. AWS handles them under the <a href="https://aws.amazon.com/privacy/">AWS Privacy Notice</a>. The Android and desktop apps don't load anything from the website.</p>
@@ -98,5 +110,17 @@
 <h2>Contact</h2>
 <p>For any questions about this policy or your privacy, email <a href="mailto:contact@tanay.tech">contact@tanay.tech</a>.</p>
 </main>
+<button id="close" type="button" hidden>Close</button>
+<script>
+  // In the Android app, the policy is shown over the game in a frame, with a button that
+  // tells the game to close it. Its links are opened from the game's page rather than the
+  // frame, so the app sends them to the browser
+  if (window.parent !== window) {
+    document.head.appendChild(Object.assign(document.createElement("base"), {target: "_top"}))
+    const close = document.getElementById("close")
+    close.hidden = false
+    close.addEventListener("click", () => window.parent.postMessage("close-privacy", location.origin))
+  }
+</script>
 </body>
 </html>
