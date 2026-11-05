@@ -16,6 +16,12 @@ aws-cli = "2.38.5"
 go = "1.27.3"
 "go:github.com/wailsapp/wails/v2/cmd/wails" = "2.17.0"
 "aqua:goreleaser/nfpm" = "2.48.0"
+# Sets up Google Play's publishing in Google Cloud: its API, and the service account
+# android.yml publishes with. mise has it only through a vfox plugin, which runs the
+# plugin's own code from its repository as it installs, outside the lockfile's checks
+# It runs on Python, which its archives don't include
+python = "3.13.18"
+gcloud = "591.0.0"
 
 # This project's tools come only from mise.lock: the versions, URLs and checksums
 # recorded there. Only these, so tools in a global config still install as they would
@@ -44,8 +50,9 @@ node.gpg_verify = true
 # Versions only once they've been out a week, so a compromised release has time to be
 # caught and pulled before it's used
 minimum_release_age = "7d"
-# Plugin backends that run code from their plugins' repositories when they install
-disable_backends = ["asdf", "vfox"]
+# asdf's plugins run shell scripts from their repositories as they install. vfox's run
+# Lua from theirs too, but gcloud is only to be had through one
+disable_backends = ["asdf"]
 # A failed decryption of a secret in [env] is an error, not silently skipped
 age.strict = true
 

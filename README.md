@@ -114,6 +114,24 @@ $ RELEASE_TAG=2026.11.04 ANDROID_UPLOAD_KEYSTORE=path/to/upload-keystore.jks AND
 
 will build the release app bundle for Google Play at `android/app/build/outputs/bundle/release/app-release.aab`, versioned by the tag and signed with the upload key, which is kept out of the repository. The key's alias is `upload` unless `ANDROID_UPLOAD_KEY_ALIAS` says otherwise, and its password is the keystore's unless `ANDROID_UPLOAD_KEY_PASSWORD` is set.
 
+### Google Play
+
+Each nightly bundle is published to Google Play's **internal testing** track, for the testers there, once the `PLAY_SERVICE_ACCOUNT_JSON` secret is set; until then that step is skipped. Its "what's new" notes are the commits since the release before it. Production releases are made by hand: in Play Console, promote a build from internal testing.
+
+It needs setting up once:
+
+1. In [Play Console](https://play.google.com/console), create the app `tech.tanay.diwali`, and fill in its store listing, content rating, data safety and target audience, with the privacy policy at https://diwali.tanay.tech/privacy. Use Play App Signing, with the upload key above.
+2. Upload the first bundle by hand to internal testing, as Google Play's API can't make an app's first upload: the `.aab` from the latest GitHub release. Add the testers' email addresses and roll it out.
+3. In [Google Cloud](https://console.cloud.google.com), enable the Google Play Android Developer API in a project, and create a service account there with a JSON key.
+4. In Play Console's Users and permissions, invite the service account's email address, with permission to release to testing tracks for this app only.
+5. Save the key as the secret, and delete the file:
+
+```sh
+$ gh secret set PLAY_SERVICE_ACCOUNT_JSON < key.json
+```
+
+Google Play refuses a version code it already has, so a tag rebuilt by hand fails to publish; a fix goes out as a new tag, such as the same day's `.2`.
+
 The app's icon and launch screen are the site's diya (`public/favicon.svg`) on black. Their sources in `assets/` are rendered from it, with its flame at rest, by
 
 ```sh
