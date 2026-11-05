@@ -986,6 +986,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Sends the dragged firework back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
+    current.sprite.alpha = 1
     setOutline(current.sprite, "selected", false)
     if (current.fromScene) {
       placeFirework(current.firework, current.fromScene)
@@ -1006,10 +1007,15 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     setOverBar(false)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
+    current.sprite.alpha = 1
+    const scene = background.toScene(at)
     if (hudShown && bar.isOver(finger)) {
       removeFirework(current.firework)
+    } else if (background.isOnPorchFloor(scene)) {
+      placeFirework(current.firework, scene)
     } else {
-      placeFirework(current.firework, background.toScene(at))
+      // Fireworks only go on the porch's floor; let go anywhere else, it goes back
+      returnDrag(current)
     }
     render()
   }
@@ -1023,8 +1029,11 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const onPointerMove = (e: PointerEvent) => {
     const finger = toStage(e)
     if (drag) {
-      drag.sprite.position.copyFrom(touch.follow(finger, e.pointerType))
+      const at = touch.follow(finger, e.pointerType)
+      drag.sprite.position.copyFrom(at)
       setOverBar(hudShown && bar.isOver(finger))
+      // Faded while it's somewhere it can't be put down
+      drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (held) {
       pointer.copyFrom(touch.follow(finger, e.pointerType))
       aimMatch()

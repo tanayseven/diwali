@@ -554,6 +554,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // Sends whatever's dragged back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
+    current.sprite.alpha = 1
     setOutline(current.sprite, "selected", false)
     if (current.kind === "diya") {
       if (current.fromScene) {
@@ -584,12 +585,17 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     setTarget(undefined)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
+    current.sprite.alpha = 1
     if (current.kind === "diya") {
+      const scene = background.toScene(at)
       if (hudShown && bar.isOver(finger)) {
         placed.push(current.diya)
         returnDiya(current.diya)
+      } else if (background.isOnPorchFloor(scene)) {
+        placeDiya(current.diya, scene)
       } else {
-        placeDiya(current.diya, background.toScene(at))
+        // Diyas only go on the porch's floor; let go anywhere else, it goes back
+        returnDrag(current)
       }
     } else if (current.kind === "wick" && into) {
       current.sprite.destroy()
@@ -634,6 +640,8 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
       setOverBar(hudShown && bar.isOver(finger))
+      // Faded while it's somewhere it can't be put down
+      drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(at, diya => !diya.wick))
     } else {
