@@ -5,9 +5,10 @@ const highlight = 0xffd700
 // How thick the outline is on screen, in CSS pixels
 const thickness = 2.5
 // The fainter, thinner outline round things that are still to be finished, like an
-// unlit diya, which pulses between these strengths
-const hintThickness = 1.5
-const hintStrength = {least: 0.3, most: 0.65}
+// unlit diya, which pulses between these strengths. Strong enough to stay a clean
+// yellow over the night, which muddies a weaker one, but thinner than a selection's
+const hintThickness = 2
+const hintStrength = {least: 0.6, most: 0.9}
 // How long a pulse of it takes, in ms
 const hintPulse = 2400
 // How opaque a part of a drawing has to be to count as solid, so the soft shadows
