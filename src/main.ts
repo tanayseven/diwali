@@ -6,6 +6,7 @@ import {createDiyaInventory, diyaAssets, diyaImages} from "./diyaInventory"
 import {createHouseLights, fairyLightAssets} from "./fairyLights"
 import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
+import {startHints} from "./hints"
 import {createHudToggle} from "./hudToggle"
 import {createKandils, kandilAssets} from "./kandil"
 import {createLighting} from "./lighting"
@@ -121,6 +122,9 @@ const main = async () => {
     controls.decorate = createHouseLights(app, background, lighting, wind)
   }
   controls.rangoli = createRangoli(app, background)
+  // A "?" badge, and a faint outline, on whatever's placed and still to be finished,
+  // such as an unlit diya, which shows what to do next with it
+  startHints(app)
 
   const available = tools.filter(tool => controls[tool.name] && loaded([tool.icon]))
   let selected = available[0].name

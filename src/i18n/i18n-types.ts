@@ -156,6 +156,44 @@ type RootTranslation = {
 		volume: string
 	}
 	tooltip: {
+		/**
+		 * W​h​a​t​ ​t​o​ ​d​o​ ​n​e​x​t
+		 */
+		hintButton: string
+		next: {
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​a​ ​w​i​c​k​ ​a​n​d​ ​t​h​e​ ​o​i​l​ ​f​r​o​m​ ​t​h​e​ ​D​i​y​a​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​,​ ​i​n​ ​e​i​t​h​e​r​ ​o​r​d​e​r
+			 */
+			addWickAndOil: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​a​ ​w​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​D​i​y​a​s​ ​b​a​r​ ​o​n​t​o​ ​i​t
+			 */
+			addWick: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​o​i​l​ ​f​r​o​m​ ​t​h​e​ ​D​i​y​a​s​ ​b​a​r​ ​o​n​t​o​ ​i​t
+			 */
+			addOil: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​D​i​y​a​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 */
+			lightDiya: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​F​i​r​e​w​o​r​k​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 */
+			lightFirework: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​a​ ​p​a​p​e​r​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​t​o​ ​w​r​a​p​ ​i​t
+			 */
+			addPaper: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​s​o​m​e​ ​t​a​i​l​s​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t
+			 */
+			addTails: string
+			/**
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​b​u​l​b​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 */
+			addBulb: string
+		}
 		diya: {
 			/**
 			 * D​i​y​a
@@ -599,6 +637,44 @@ export type TranslationFunctions = {
 		volume: () => LocalizedString
 	}
 	tooltip: {
+		/**
+		 * What to do next
+		 */
+		hintButton: () => LocalizedString
+		next: {
+			/**
+			 * Next: drag a wick and the oil from the Diyas bar onto it, in either order
+			 */
+			addWickAndOil: () => LocalizedString
+			/**
+			 * Next: drag a wick from the Diyas bar onto it
+			 */
+			addWick: () => LocalizedString
+			/**
+			 * Next: drag the oil from the Diyas bar onto it
+			 */
+			addOil: () => LocalizedString
+			/**
+			 * Next: drag the matchstick from the Diyas bar onto it, and hold it there to light it
+			 */
+			lightDiya: () => LocalizedString
+			/**
+			 * Next: drag the matchstick from the Fireworks bar onto it, and hold it there to light it
+			 */
+			lightFirework: () => LocalizedString
+			/**
+			 * Next: drag a paper from the Craft Kandil bar onto it to wrap it
+			 */
+			addPaper: () => LocalizedString
+			/**
+			 * Next: drag some tails from the Craft Kandil bar onto it
+			 */
+			addTails: () => LocalizedString
+			/**
+			 * Next: drag the bulb from the Craft Kandil bar onto it to light it
+			 */
+			addBulb: () => LocalizedString
+		}
 		diya: {
 			/**
 			 * Diya

@@ -6,6 +6,7 @@ import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {draggedFrom} from "./matchstick"
 import {accelerate, airFriction, createParticleBody, hangingWorld, place as placeBody, velocityOf} from "./physics"
+import {addHint} from "./hints"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import type {Wind} from "./wind"
@@ -176,6 +177,16 @@ const createKandils = (app: Application, background: Background, lighting: Light
     const status = kandil.lit ? tips.lit() : !kandil.paper ? tips.needsPaper() : !kandil.tails ? tips.needsTails() : tips.ready()
     return {title: tips.name(), lines: [status, tips.move()]}
   }
+  // What to do next with a kandil that isn't lit yet, for its hint's badge
+  const kandilHint = (kandil: Kandil) => (): Tooltip | undefined => {
+    if (kandil.lit) {
+      return undefined
+    }
+    const [status, next] = !kandil.paper ? [tips.needsPaper(), LL.tooltip.next.addPaper()]
+      : !kandil.tails ? [tips.needsTails(), LL.tooltip.next.addTails()]
+      : [tips.ready(), LL.tooltip.next.addBulb()]
+    return {title: tips.name(), lines: [status, next]}
+  }
 
   const render = () => {
     bar.drawBoxes(overBar ? frameSlot.box : undefined)
@@ -229,6 +240,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
       place: {on: "porch", at: {x: 0, y: 0}}, phase: Math.random() * Math.PI * 2,
     }
     addTooltip(kandilContainer, kandilTooltip(kandil))
+    addHint(kandilContainer, kandilHint(kandil), bodyArea)
     kandilContainer.on("pointerdown", e => {
       if (!drag) {
         e.stopPropagation()
