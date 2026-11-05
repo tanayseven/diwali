@@ -535,7 +535,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       (shape.area.x - shape.frame.x) * shape.density, (shape.area.y - shape.frame.y) * shape.density,
       shape.area.width * shape.density, shape.area.height * shape.density,
     ),
-    count: 5,
+    count: 20,
   })
   const stacks: Record<Kind, Item> = {
     anar: itemFor(anarShape, anarUrls.unlit),

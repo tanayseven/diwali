@@ -43,8 +43,8 @@ const bottleCrop = new Rectangle(560, 265, 260, 775)
 // The HUD's items besides the matchstick, made afresh for each inventory as their
 // counts change
 const createItems = () => {
-  const emptyDiyas: Item = {url: diyaUrls.empty, crop: diyaCrop, count: 5}
-  const wicks: Item = {url: wickUrl, crop: wickCrop, count: 5}
+  const emptyDiyas: Item = {url: diyaUrls.empty, crop: diyaCrop, count: 20}
+  const wicks: Item = {url: wickUrl, crop: wickCrop, count: 20}
   const oilBottle: Item = {url: oilBottleUrl, crop: bottleCrop}
   return {emptyDiyas, wicks, oilBottle}
 }

@@ -15,6 +15,8 @@ const iconFill = 0.8
 // The count badge in the slot's top-right corner
 const badgeRadius = 13
 const badgeInset = 6
+// Shown on the badge of something that never runs out
+const unlimitedMark = "∞"
 // A bar fades and drops away as it's hidden, as when the tool changes or the bars are
 // hidden, and fades in rising into place as it's shown, just after the one going away
 // has started to, in ms and screen pixels
@@ -27,7 +29,8 @@ type Item = {
   url: string
   // Where the drawing sits in its SVG's canvas, so it can be cropped to fill a slot
   crop: Rectangle
-  // How many there are, shown on a badge; tools like the oil bottle have no count
+  // How many there are, shown on a badge; tools like the oil bottle have no count, and
+  // their badge shows "∞" instead
   count?: number
   // Turns the icon, so long thin things lie across the slot's diagonal
   rotation?: number
@@ -126,20 +129,46 @@ const createHud = (app: Application) => {
       .stroke({width: 2, color: 0x555555})
   }
 
+  // A badge in a slot's top-right corner, drawn over whatever's in it so far. Returns
+  // a function that sets what it says
+  const addBadge = (slot: Container) => {
+    const badge = new Container()
+    badge.position.set(slotSize / 2 - badgeInset, -slotSize / 2 + badgeInset)
+    const circle = new Graphics()
+      .circle(0, 0, badgeRadius)
+      .fill(highlight)
+      .stroke({width: 2, color: 0x000000})
+    const label = new Text({text: "", style: {fontFamily, fontSize: 20, fill: 0x000000}})
+    label.anchor.set(0.5)
+    label.roundPixels = true
+    badge.addChild(circle, label)
+    slot.addChild(badge)
+    return (text: string) => {
+      label.text = text
+      // Two digits are shrunk to fit inside the circle
+      label.style.fontSize = text.length > 1 ? 16 : 20
+    }
+  }
+
   // An empty slot to fill with anything, which can be pressed. Its content is drawn
-  // centred on the slot, which is slotSize across
-  const addSlot = (idx: number) => {
+  // centred on the slot, which is slotSize across. An unlimited one, such as a colour
+  // of rangoli powder, has a badge showing it never runs out
+  const addSlot = (idx: number, unlimited = false) => {
     const slot = new Container()
     slot.position.copyFrom(boxes[idx].position)
     slot.eventMode = "static"
     slot.cursor = "pointer"
     slot.hitArea = new Rectangle(-slotSize / 2, -slotSize / 2, slotSize, slotSize)
     container.addChild(slot)
+    if (unlimited) {
+      addBadge(slot)(unlimitedMark)
+    }
     return {container: slot, box: boxes[idx]}
   }
 
-  // Puts an item in a slot: its drawing fitted inside, with a badge for its count if
-  // it's counted. The slot can be pressed to take one; show updates it after a change
+  // Puts an item in a slot: its drawing fitted inside, with a badge for its count, or
+  // showing it never runs out if it isn't counted, as a tool like the oil bottle
+  // isn't. The slot can be pressed to take one; show updates it after a change
   const addItem = (idx: number, item: Item) => {
     const {container: slot, box} = addSlot(idx)
     const icon = new Sprite(cropped(item.url, item.crop))
@@ -149,20 +178,8 @@ const createHud = (app: Application) => {
     const room = item.rotation ? Math.SQRT2 : 1
     icon.scale.set(slotSize * iconFill * room / Math.max(icon.texture.width, icon.texture.height))
     slot.addChild(icon)
-    let label: Text | undefined
-    if (item.count !== undefined) {
-      const badge = new Container()
-      badge.position.set(slotSize / 2 - badgeInset, -slotSize / 2 + badgeInset)
-      const circle = new Graphics()
-        .circle(0, 0, badgeRadius)
-        .fill(highlight)
-        .stroke({width: 2, color: 0x000000})
-      label = new Text({text: "", style: {fontFamily, fontSize: 20, fill: 0x000000}})
-      label.anchor.set(0.5)
-      label.roundPixels = true
-      badge.addChild(circle, label)
-      slot.addChild(badge)
-    }
+    const setBadge = addBadge(slot)
+    setBadge(item.count === undefined ? unlimitedMark : String(item.count))
     return {
       container: slot,
       box,
@@ -171,8 +188,8 @@ const createHud = (app: Application) => {
         const available = !inUse && item.count !== 0
         icon.alpha = available ? 1 : 0.35
         slot.cursor = available ? "grab" : "default"
-        if (label) {
-          label.text = String(item.count)
+        if (item.count !== undefined) {
+          setBadge(String(item.count))
         }
       },
     }
