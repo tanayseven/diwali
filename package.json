@@ -3,6 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "vite build",
+		"build:web": "vite build --mode web",
 		"build:desktop": "vite build --outDir desktop/frontend/dist --emptyOutDir",
 		"dev": "vite",
 		"preview": "vite preview",

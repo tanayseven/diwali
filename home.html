@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diwali Celebration</title>
+<meta name="description" content="Celebrate Diwali night on a house's porch: light diyas, set off fireworks, hang fairy lights and kandils, and draw a rangoli. Free, in 22 languages, in your browser or on Android, Windows, macOS and Linux.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+  :root {
+    color-scheme: dark;
+    --background: #120a1f;
+    --panel: #1d1230;
+    --text: #f3ece0;
+    --muted: #b9ad9c;
+    --highlight: #ffd700;
+    --glow: #ffc861;
+    --rule: #3a2c4d;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  }
+  a {
+    color: var(--highlight);
+  }
+  main, footer {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  /* The top of the page: a night sky with a diya's warm glow below the title */
+  header {
+    text-align: center;
+    padding: 4rem 1rem 3rem;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 100%, rgba(255, 200, 97, 0.22), transparent 70%),
+      linear-gradient(#07040e, var(--background));
+  }
+  header img {
+    width: 7rem;
+    height: 7rem;
+    filter: drop-shadow(0 0 1.5rem rgba(255, 200, 97, 0.6));
+  }
+  h1 {
+    font-family: "Jaini", system-ui, sans-serif;
+    font-weight: 400;
+    color: var(--highlight);
+    font-size: clamp(2.75rem, 9vw, 5rem);
+    line-height: 1.1;
+    margin: 0.5rem 0;
+    text-shadow: 0 0 1.5rem rgba(255, 215, 0, 0.35);
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 1.15rem;
+    max-width: 36rem;
+    margin: 0 auto 2rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  .button {
+    display: inline-block;
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid var(--highlight);
+  }
+  .button.primary {
+    background: var(--highlight);
+    color: #000000;
+    box-shadow: 0 0 1.5rem rgba(255, 215, 0, 0.35);
+  }
+  .button:hover, .button:focus-visible {
+    filter: brightness(1.1);
+  }
+  h2 {
+    color: var(--highlight);
+    font-size: 1.5rem;
+    margin: 3rem 0 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+  /* Screenshots of the game, two to a row on wide screens */
+  .shots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    gap: 1rem;
+    margin: 0;
+  }
+  .shots figure {
+    margin: 0;
+  }
+  .shots img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    border: 1px solid var(--rule);
+  }
+  .shots figcaption {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .features li, .platform {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+  }
+  .features strong, .platform h3 {
+    color: var(--highlight);
+  }
+  .platforms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem;
+  }
+  .platform h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+  }
+  .platform p {
+    margin: 0 0 0.75rem;
+    color: var(--muted);
+  }
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    text-align: center;
+  }
+  footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="/favicon.svg" alt="">
+  <h1>Diwali Celebration</h1>
+  <p class="tagline">A house's porch on Diwali night, lit only by what you light on it. Light diyas, set off fireworks, hang fairy lights and kandils, and draw a rangoli.</p>
+  <div class="actions">
+    <a class="button primary" href="/play">Play in your browser</a>
+    <a class="button" href="#download">Download the app</a>
+  </div>
+</header>
+
+<main>
+  <h2>A night on the porch</h2>
+  <div class="shots">
+    <figure>
+      <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="1920" height="887" alt="Three lit diyas glowing on the porch of a house at night">
+      <figcaption>Fill diyas with wicks and oil, and light them with a match.</figcaption>
+    </figure>
+    <figure>
+      <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="1920" height="887" alt="An anar fountain and a spinning chakri throwing sparks on the porch" loading="lazy">
+      <figcaption>Set off anars, chakris, laddis, sutli bombs and rockets.</figcaption>
+    </figure>
+    <figure>
+      <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="1920" height="887" alt="Strings of fairy lights hung across the front of the house" loading="lazy">
+      <figcaption>Hang strings of fairy lights that sway in the wind.</figcaption>
+    </figure>
+    <figure>
+      <img src="/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="1920" height="887" alt="A colourful rangoli of petals drawn on the porch floor" loading="lazy">
+      <figcaption>Draw a rangoli on the porch floor in coloured powder.</figcaption>
+    </figure>
+  </div>
+
+  <h2>What's in it</h2>
+  <ul class="features">
+    <li><strong>22 languages.</strong> Assamese to Urdu, each in its own script, Hinglish and Sanskrit included.</li>
+    <li><strong>Fireworks over the city.</strong> Shells burst over a skyline strung with twinkling lights.</li>
+    <li><strong>Akash kandils.</strong> Make paper lanterns, light them and hang them from the eaves.</li>
+    <li><strong>Wind.</strong> Petals drift past, lanterns swing and smoke blows across the porch.</li>
+    <li><strong>Sound all around.</strong> Every crackle and bang is heard from where it is, best with headphones.</li>
+    <li><strong>Photos.</strong> Take a picture of your porch and share it.</li>
+    <li><strong>Private.</strong> No ads, no accounts and no tracking: it collects nothing.</li>
+    <li><strong>Free and open source.</strong> MIT-licensed, with the code on GitHub.</li>
+  </ul>
+
+  <h2 id="download">Get the app</h2>
+  <p>The apps carry everything with them, so they work offline.</p>
+  <div class="platforms">
+    <div class="platform">
+      <h3>Android</h3>
+      <p>Android 7.0 or newer. Download the APK and open it to install.</p>
+      <a class="button" href="https://github.com/tanayseven/diwali/releases/latest">Download APK</a>
+    </div>
+    <div class="platform">
+      <h3>Windows, macOS and Linux</h3>
+      <p>Installers for Windows (x64 and Arm), macOS, and Linux (.deb, .rpm, Arch and .tar.gz).</p>
+      <a class="button" href="https://github.com/tanayseven/diwali/releases/latest">Download</a>
+    </div>
+    <div class="platform">
+      <h3>Browser</h3>
+      <p>Nothing to install. Best on a computer, or a phone held sideways.</p>
+      <a class="button primary" href="/play">Play now</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <nav>
+    <a href="/privacy">Privacy policy</a>
+    <a href="https://github.com/tanayseven/diwali">Source code</a>
+    <a href="https://blog.tanay.tech">Tanay PrabhuDesai</a>
+  </nav>
+  <p>Happy Diwali! 🪔</p>
+</footer>
+<script src="src/home.ts" type="module"></script>
+</body>
+</html>
