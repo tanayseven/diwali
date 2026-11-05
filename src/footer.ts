@@ -1,3 +1,4 @@
+import {Capacitor} from "@capacitor/core"
 import {fontFamily} from "./app"
 import {LL} from "./locale"
 
@@ -69,6 +70,33 @@ const createLink = (href: string, text: string) => {
   return link
 }
 
+// What privacy.html sends from its close button when it's shown in a frame
+const closePrivacyMessage = "close-privacy"
+
+// The privacy policy bundled with the app, shown over the game in a frame, as the Android
+// app has no internet to load the website's, and the game is still there when it's closed
+const showBundledPrivacy = () => {
+  const frame = document.createElement("iframe")
+  frame.src = "privacy.html"
+  frame.title = LL.footer.privacy()
+  Object.assign(frame.style, {
+    position: "fixed",
+    inset: "0",
+    width: "100%",
+    height: "100%",
+    border: "0",
+    background: "#120a1f",
+    zIndex: "10",
+  })
+  const close = (event: MessageEvent) => {
+    if (event.source !== frame.contentWindow || event.data !== closePrivacyMessage) return
+    window.removeEventListener("message", close)
+    frame.remove()
+  }
+  window.addEventListener("message", close)
+  document.body.appendChild(frame)
+}
+
 // A bar along the bottom of the screen crediting who made it
 const createFooter = () => {
   const stylesheet = document.createElement("style")
@@ -104,8 +132,16 @@ const createFooter = () => {
   footer.append(...credit.split(/\{(love|author)\}/)
     .filter(part => part.trim() !== "")
     .map(part => parts[part] ?? part.trim()))
-  // The privacy policy, which app stores ask to be linked to from within the app
-  footer.append("·", createLink(privacyUrl, LL.footer.privacy()))
+  // The privacy policy, which app stores ask to be linked to from within the app. The
+  // Android app shows the copy bundled with it
+  const privacyLink = createLink(privacyUrl, LL.footer.privacy())
+  if (Capacitor.isNativePlatform()) {
+    privacyLink.addEventListener("click", event => {
+      event.preventDefault()
+      showBundledPrivacy()
+    })
+  }
+  footer.append("·", privacyLink)
   document.body.appendChild(footer)
 
   return {

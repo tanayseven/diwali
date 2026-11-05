@@ -349,15 +349,15 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
   }
 
-  // A diya going back on the stack gives back its wick, unless it's been burnt by
-  // lighting it; any oil in it is spilt
+  // A diya going back on the stack is put out and gives back both itself, empty, and
+  // its wick, even once it's been lit; any oil in it is spilt
   const returnDiya = (diya: PlacedDiya) => {
     placed.splice(placed.indexOf(diya), 1)
     diya.sprite.destroy()
     diya.light?.destroy()
     diya.glow?.destroy()
     emptyDiyas.count! += 1
-    if (diya.wick && !diya.lit) {
+    if (diya.wick) {
       wicks.count! += 1
     }
     render()
