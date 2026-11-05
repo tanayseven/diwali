@@ -102,7 +102,7 @@ const createRangoli = (app: Application, background: Background) => {
 
   // A swatch of each colour, heaped like a little pile of powder
   const powderSlots = powderNames.map((powder, idx) => {
-    const slot = bar.addSlot(idx)
+    const slot = bar.addSlot(idx, true)
     const swatch = new Sprite(powderStamp)
     swatch.anchor.set(0.5)
     swatch.tint = powders[powder]
