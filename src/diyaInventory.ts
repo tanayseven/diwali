@@ -4,6 +4,7 @@ import {createBackground} from "./background"
 import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
+import {addHint} from "./hints"
 import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
@@ -96,6 +97,11 @@ const redrawEvery = 1000 / 30
 const diyaGlowRadius = 10
 // A diya's bowl in its canvas, padded a little, for dropping wicks and oil onto it
 const diyaTarget = new Rectangle(diyaCrop.x - 20, diyaCrop.y - 30, diyaCrop.width + 40, diyaCrop.height + 30)
+// Its bowl in the sprite's own coordinates, for the badge hinting what to do next with it
+const diyaBowl = new Rectangle(
+  diyaCrop.x - diyaCanvas.width * diyaAnchor.x, diyaCrop.y - diyaCanvas.height * diyaAnchor.y,
+  diyaCrop.width, diyaCrop.height,
+)
 // A diya that can take a wick or oil grows this much while one is dragged over it
 const targetGrowth = 1.12
 
@@ -268,13 +274,25 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   addTooltip(matchSlot.container, () => ({title: tips.matchstick.name(), lines: [tips.matchstick.diyaHint()]}))
 
   // What a placed diya still needs, or that it's lit and can be turned
-  const diyaTooltip = (diya: PlacedDiya) => (): Tooltip => {
-    const status = diya.lit ? tips.diya.lit()
-      : diya.wick && diya.oil ? tips.diya.ready()
-      : diya.wick ? tips.diya.needsOil()
-      : diya.oil ? tips.diya.needsWick()
-      : tips.diya.needsWickAndOil()
-    return {title: tips.diya.name(), lines: diya.lit ? [status, tips.diya.turn(), tips.move()] : [status, tips.move()]}
+  const diyaStatus = (diya: PlacedDiya) => diya.lit ? tips.diya.lit()
+    : diya.wick && diya.oil ? tips.diya.ready()
+    : diya.wick ? tips.diya.needsOil()
+    : diya.oil ? tips.diya.needsWick()
+    : tips.diya.needsWickAndOil()
+  const diyaTooltip = (diya: PlacedDiya) => (): Tooltip => ({
+    title: tips.diya.name(),
+    lines: diya.lit ? [diyaStatus(diya), tips.diya.turn(), tips.move()] : [diyaStatus(diya), tips.move()],
+  })
+  // What to do next with a diya that isn't lit yet, for its hint's badge
+  const diyaHint = (diya: PlacedDiya) => (): Tooltip | undefined => {
+    if (diya.lit) {
+      return undefined
+    }
+    const next = diya.wick && diya.oil ? tips.next.lightDiya()
+      : diya.wick ? tips.next.addOil()
+      : diya.oil ? tips.next.addWick()
+      : tips.next.addWickAndOil()
+    return {title: tips.diya.name(), lines: [diyaStatus(diya), next]}
   }
 
   const render = () => {
@@ -463,6 +481,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     emptyDiyas.count! -= 1
     const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false, facing: "right"}
     addTooltip(diya.sprite, diyaTooltip(diya))
+    addHint(diya.sprite, diyaHint(diya), diyaBowl)
     startDiyaDrag(e.global, e.pointerType, diya)
   })
 

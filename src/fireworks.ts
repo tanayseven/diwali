@@ -7,6 +7,7 @@ import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {createShownParticles} from "./shownParticles"
+import {addHint} from "./hints"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
@@ -599,6 +600,17 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     title: names[firework.kind](),
     lines: firework.state === "spent" ? [tips.spent()] : [tips.unlit(), tips.move()],
   })
+  // What to do next with a firework that hasn't been lit, for its hint's badge
+  const fireworkHint = (firework: Placed) => (): Tooltip | undefined => firework.state === "unlit"
+    ? {title: names[firework.kind](), lines: [tips.next.lightFirework()]}
+    : undefined
+  // The part of a firework that's picked up, in its sprite's own coordinates, for the badge
+  const fireworkBox = (kind: Kind) => {
+    const {area, origin, density} = shapes[kind]
+    return new Rectangle(
+      (area.x - origin.x) * density, (area.y - origin.y) * density, area.width * density, area.height * density,
+    )
+  }
 
   const sparkTexture = radialTexture(32, [[0, 1], [0.3, 0.85], [1, 0]])
   const {glowTexture} = lighting
@@ -851,6 +863,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       spin: 0, burnFor: 0, home: {x: 0, y: 0}, roam: {x: 0, y: 0}, roamVelocity: {x: 0, y: 0}, roamGoal: {x: 0, y: 0}, nextRoamAt: 0,
     }
     addTooltip(sprite, fireworkTooltip(firework))
+    addHint(sprite, fireworkHint(firework), fireworkBox(kind))
     sprite.on("pointerdown", e => {
       const fromScene = {x: sprite.x, y: sprite.y}
       placed.splice(placed.indexOf(firework), 1)

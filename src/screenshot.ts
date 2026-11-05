@@ -4,6 +4,7 @@ import {Share} from "@capacitor/share"
 import {Application, Container, Graphics, Rectangle} from "pixi.js"
 import {fontFamily} from "./app"
 import {LL} from "./locale"
+import {withoutHints} from "./outline"
 
 const siteUrl = "https://diwali.tanay.tech"
 const highlight = "#ffd700"
@@ -19,11 +20,12 @@ const flashDuration = 300
 // with the site's address printed on it
 const takePhoto = (app: Application, scene: Container) => {
   const {width, height} = app.screen
-  const shot = app.renderer.extract.canvas({
+  // Without the faint outlines round what's still to be finished
+  const shot = withoutHints(() => app.renderer.extract.canvas({
     target: scene,
     frame: new Rectangle(0, 0, width, height),
     resolution: app.renderer.resolution,
-  }) as HTMLCanvasElement
+  })) as HTMLCanvasElement
   const context = shot.getContext("2d")!
   const fontSize = Math.round(shot.height * urlHeightShare)
   const margin = Math.round(Math.min(shot.width, shot.height) * urlMargin)

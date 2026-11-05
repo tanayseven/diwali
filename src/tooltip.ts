@@ -20,8 +20,13 @@ let element: HTMLDivElement | undefined
 // What it's showing for now, and how to describe that
 let owner: Container | undefined
 let describe: (() => Tooltip | undefined) | undefined
-// What's outlined while it's hovered, as most things are
-const outlined = new WeakSet<Container>()
+// What's outlined while its tooltip shows, as most things are
+let outlinedNow: Container | undefined
+// Where it sits when it's opened from a hint's badge rather than by hovering over what
+// it's for: beside the badge, wherever that goes. A badge tapped or clicked keeps it
+// open, pinned, until something else is pressed
+let anchor: (() => DOMRect | undefined) | undefined
+let pinned = false
 
 const getElement = () => {
   if (!element) {
@@ -48,16 +53,24 @@ const getElement = () => {
     window.addEventListener("pointermove", onWindowPointerMove)
     window.addEventListener("pointerdown", hide)
     window.addEventListener("blur", hide)
+    window.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        hide()
+      }
+    })
   }
   return element
 }
 
 const hide = () => {
-  if (owner && outlined.has(owner)) {
-    setOutline(owner, "hover", false)
+  if (outlinedNow) {
+    setOutline(outlinedNow, "hover", false)
+    outlinedNow = undefined
   }
   owner = undefined
   describe = undefined
+  anchor = undefined
+  pinned = false
   if (element) {
     element.style.visibility = "hidden"
   }
@@ -115,8 +128,33 @@ const moveTo = (x: number, y: number) => {
   el.style.transform = `translate(${Math.max(screenMargin, left)}px, ${Math.max(screenMargin, top)}px)`
 }
 
+// Beside a box, such as a hint's badge: below it, or above it near the bottom edge
+const moveBeside = (box: DOMRect) => {
+  const el = getElement()
+  const {width, height} = el.getBoundingClientRect()
+  const left = Math.min(box.left, window.innerWidth - screenMargin - width)
+  let top = box.bottom + screenMargin
+  if (top + height > window.innerHeight - screenMargin) {
+    top = box.top - screenMargin - height
+  }
+  el.style.transform = `translate(${Math.max(screenMargin, left)}px, ${Math.max(screenMargin, top)}px)`
+}
+
+const showAnchored = () => {
+  const box = anchor?.()
+  if (!owner || !box || !isHoverable(owner)) {
+    hide()
+    return
+  }
+  render()
+  if (owner) {
+    moveBeside(box)
+  }
+}
+
 function onWindowPointerMove(e: PointerEvent) {
-  if (!owner) {
+  // One opened from a badge stays by it, and is kept up to date by refreshTooltip
+  if (!owner || anchor) {
     return
   }
   // Not while dragging, nor once what it's for is gone or can't be used
@@ -136,11 +174,11 @@ function onWindowPointerMove(e: PointerEvent) {
 // While it shows, the target's outlined in yellow too, unless it's a button that has
 // its own way of showing it's hovered
 const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined, {outline = true} = {}) => {
-  if (outline) {
-    outlined.add(target)
-  }
   const show = (e: FederatedPointerEvent) => {
-    if (owner === target || e.pointerType !== "mouse" || e.buttons !== 0) {
+    // Nor while the pointer's over something on top of the canvas, such as a hint's
+    // badge, which has its own
+    if (owner === target || e.pointerType !== "mouse" || e.buttons !== 0
+      || !(e.nativeEvent.target instanceof HTMLCanvasElement)) {
       return
     }
     hide()
@@ -148,6 +186,7 @@ const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined
     describe = describeTarget
     if (outline) {
       setOutline(target, "hover", true)
+      outlinedNow = target
     }
     render()
     if (owner === target) {
@@ -165,5 +204,39 @@ const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined
   })
 }
 
-export {addTooltip}
+// Shows a tooltip for a target beside a box, such as a hint's badge, rather than the
+// pointer, outlining the target so it's clear what it's for. Pinned, it stays until
+// something else is pressed, as on a touch screen there's no hover to end
+const showTooltipBeside = (target: Container, describeTarget: () => Tooltip | undefined,
+  box: () => DOMRect | undefined, {pin = false} = {}) => {
+  hide()
+  owner = target
+  describe = describeTarget
+  anchor = box
+  pinned = pin
+  setOutline(target, "hover", true)
+  outlinedNow = target
+  showAnchored()
+}
+
+// Whether a tooltip's showing for a target, and whether it's pinned open
+const tooltipFor = (target: Container) =>
+  owner === target ? {pinned} : undefined
+
+// Hides the tooltip if it's showing for a target
+const hideTooltipFor = (target: Container) => {
+  if (owner === target) {
+    hide()
+  }
+}
+
+// Rewrites and moves a tooltip opened beside something, as what it describes changes
+// and what it's beside moves, such as a swinging kandil. Called every frame
+const refreshTooltip = () => {
+  if (anchor) {
+    showAnchored()
+  }
+}
+
+export {addTooltip, hideTooltipFor, isHoverable, refreshTooltip, showTooltipBeside, tooltipFor}
 export type {Tooltip}
