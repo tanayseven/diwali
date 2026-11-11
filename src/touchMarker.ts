@@ -44,7 +44,10 @@ const createTouchMarker = () => {
   const marker = new Container()
   marker.addChild(hasHand ? handSprite(handUrl) : circle())
   const front = new Container()
-  front.zIndex = 1
+  // Placed things keep their height in the scene as their zIndex when they're picked
+  // up, so the hand's set below and its forefinger above any that could be
+  marker.zIndex = -Number.MAX_SAFE_INTEGER
+  front.zIndex = Number.MAX_SAFE_INTEGER
   if (hasHand) {
     front.addChild(handSprite(handFrontUrl))
   }
