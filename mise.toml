@@ -62,7 +62,7 @@ description = "Generate the typed translation functions in src/i18n/ from the lo
 run = "npx typesafe-i18n --no-watch"
 
 [tasks."generate:icons"]
-description = "Render the Android and desktop apps' icons and Android's launch screen from public/favicon.svg, in every size"
+description = "Render the Android and desktop apps' icons, Android's launch screen and the store's icon and banner from public/favicon.svg, in every size"
 run = [
   "node scripts/icons/render.mjs",
   "npx capacitor-assets generate --android",
@@ -72,6 +72,10 @@ run = [
   "cp assets/icon-only.png desktop/build/appicon.png",
 ]
 
+[tasks."generate:screenshots"]
+description = "Take the screenshots F-Droid shows, in fastlane/, by playing the built game"
+run = ["npm run build", "node scripts/store/screenshots.mjs"]
+
 [tasks.generate]
-description = "Regenerate the translations and the Android icons"
-depends = ["generate:i18n", "generate:icons"]
+description = "Regenerate the translations, the icons and the store's screenshots"
+depends = ["generate:i18n", "generate:icons", "generate:screenshots"]

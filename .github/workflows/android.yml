@@ -93,25 +93,18 @@ jobs:
           fi
           gh release upload "$TAG" "${files[@]}" --clobber
 
-      # What's new in it, for its testers: the commits since the date tag before it, cut
-      # to the 500 characters Google Play allows
+      # What's new in it, for its testers: F-Droid's changelog for it, which the release
+      # commit carries, or for a tag from before those, the commits since the tag before it
       - name: Write the notes for Google Play
         if: env.PLAY_SERVICE_ACCOUNT_JSON != '' && hashFiles(format('diwali-{0}.aab', env.TAG)) != ''
         run: |
-          previous=$(git tag --list | grep -E '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]{1,2})?$' \
-            | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | grep -B1 -Fx "$TAG" | grep -vFx "$TAG" || true)
-          if [ -n "$previous" ]; then
-            range=("$previous..$TAG")
-          else
-            range=(-n 10 "$TAG")
-          fi
           mkdir -p "$RUNNER_TEMP/whatsnew"
           notes="$RUNNER_TEMP/whatsnew/whatsnew-en-US"
-          # Whole lines only, so nothing's cut off partway
-          git log --no-merges --format='• %s' "${range[@]}" \
-            | awk '{ if (n + length($0) + 1 > 500) exit; print; n += length($0) + 1 }' > "$notes"
-          if [ ! -s "$notes" ]; then
-            echo "Nightly build $TAG" > "$notes"
+          changelog="fastlane/metadata/android/en-US/changelogs/$(scripts/release/version.sh "$TAG").txt"
+          if [ -f "$changelog" ]; then
+            cp "$changelog" "$notes"
+          else
+            scripts/release/notes.sh "$TAG" > "$notes"
           fi
           cat "$notes"
 

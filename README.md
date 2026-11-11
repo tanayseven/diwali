@@ -140,6 +140,24 @@ $ gh secret set PLAY_SERVICE_ACCOUNT_JSON < key.json
 
 Google Play refuses a version code it already has, so a tag rebuilt by hand fails to publish; a fix goes out as a new tag, such as the same day's `.2`.
 
+### F-Droid
+
+[F-Droid](https://f-droid.org) builds the app itself, from the source at each date tag, and signs it with its own key, so it can't be updated from the Play or GitHub versions, or the other way round, without reinstalling. It finds new tags on its own once a day, and a build reaches the store a day or two later.
+
+It reads the version from the tagged source, as it can't work it out from the tag. So the nightly workflow puts each tag on a commit of its own, `Release <tag>`, which writes the version into `android/version.properties` and what's new into `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`. Those are only ever written there. Google Play's notes are taken from the same changelog.
+
+The store's text, icon, banner and screenshots are in `fastlane/metadata/android/en-US/`. The icon and banner are made with the app's icons (`mise run generate:icons`), and the screenshots by playing the built game (`mise run generate:screenshots`). F-Droid's build recipe, sent to its [fdroiddata](https://gitlab.com/fdroid/fdroiddata) repository, is kept in `fdroid/tech.tanay.diwali.yml`.
+
+```sh
+$ cd android && ./gradlew -q :app:printVersion
+```
+
+prints the version a build gets: the one in `version.properties`, or `RELEASE_TAG`'s when that's set.
+
+The recipe builds the web app with Node, then deletes Node and all of `node_modules` but the Android code of Capacitor and its plugins (`@capacitor/android`, `filesystem` and `share`), which Gradle builds from source there. F-Droid's scanner refuses the prebuilt binaries the rest of `node_modules` has.
+
+Only tags made since the release commit was added carry `version.properties`, so the recipe's build has to be one of those: before sending it to fdroiddata, set its `versionName`, `versionCode` and `commit`, and `CurrentVersion` and `CurrentVersionCode`, to the newest such tag, its code from `scripts/release/version.sh <tag>`. After that, F-Droid adds new tags itself.
+
 The app's icon and launch screen are the site's diya (`public/favicon.svg`) on black. Their sources in `assets/` are rendered from it, with its flame at rest, by
 
 ```sh

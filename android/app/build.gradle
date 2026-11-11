@@ -1,15 +1,22 @@
 apply plugin: 'com.android.application'
 
 // Releases are tagged with their date, YYYY.MM.DD, or YYYY.MM.DD.N for the Nth release
-// that day, and CI passes the tag in as RELEASE_TAG. It's the app's version name, and
-// its version code is the days since 1 January 2026 times 100, plus the release's
-// number that day, so each release is higher than the one before, while staying far
-// below Google Play's limit of 2,100,000,000. Builds without a tag are versioned "dev",
-// below them all
+// that day. The tag is the app's version name, and its version code is the days since
+// 1 January 2026 times 100, plus the release's number that day, so each release is
+// higher than the one before, while staying far below Google Play's limit of
+// 2,100,000,000. scripts/release/version.sh works it out the same way, so change both
+// together.
+//
+// The nightly workflow writes both into android/version.properties in the release's
+// own commit, as F-Droid reads them from there and can't work them out. RELEASE_TAG,
+// when it's set, wins, for building a release locally. Until the first release, the
+// file versions builds "dev", below them all
 def releaseVersion = {
     def tag = System.getenv("RELEASE_TAG")
     if (!tag) {
-        return [code: 1, name: "dev"]
+        def properties = new Properties()
+        rootProject.file("version.properties").withInputStream { properties.load(it) }
+        return [code: properties.getProperty("versionCode").toInteger(), name: properties.getProperty("versionName")]
     }
     def date = tag =~ /^(\d{4})\.(\d{2})\.(\d{2})(?:\.(\d{1,2}))?$/
     if (!date.matches()) {
@@ -81,11 +88,11 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
+// Prints the version a build gets, to check it: ./gradlew -q :app:printVersion
+tasks.register("printVersion") {
+    def code = android.defaultConfig.versionCode
+    def name = android.defaultConfig.versionName
+    doLast {
+        println "${code} ${name}"
     }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
