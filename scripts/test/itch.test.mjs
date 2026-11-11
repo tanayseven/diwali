@@ -1,7 +1,9 @@
 // Runs scripts/release/itch.sh against a release made of stand-in files, with a stand-in
 // butler first on the path that only records what it's asked to push, and checks each
 // kind of build goes to its own itch.io channel, as itch.io expects it, labelled with the
-// tag. And that a build missing from the release fails it, after pushing the rest.
+// tag. That a build missing from the release fails it, after pushing the rest, and with
+// no release at all, the browser game still goes. And that a tag older than the newest
+// isn't pushed over it.
 //
 //   npm run test:e2e
 import assert from "node:assert/strict"
@@ -84,10 +86,10 @@ printf '%s\\t%s\\t%s\\n' "$*" "$1" "$files" >> "${log}"
 after(() => rmSync(dir, {recursive: true, force: true}))
 
 // Runs the script, and gives its exit code, its output and what it pushed, by channel
-const push = () => new Promise(resolve => {
+const push = ({releaseDir = release, newest = tag} = {}) => new Promise(resolve => {
   rmSync(log, {force: true})
-  const child = spawn("bash", [script, tag, release, web], {
-    env: {...process.env, PATH: `${bin}:${process.env.PATH}`},
+  const child = spawn("bash", [script, tag, releaseDir, web], {
+    env: {...process.env, PATH: `${bin}:${process.env.PATH}`, ITCH_NEWEST_TAG: newest},
   })
   let output = ""
   child.stdout.on("data", chunk => output += chunk)
@@ -132,5 +134,25 @@ test("fails when a build's missing from the release, after pushing the rest", as
     assert.equal(Object.keys(pushes).length, Object.keys(expected).length - 1)
   } finally {
     writeFileSync(apk, "apk")
+  }
+})
+
+test("pushes the browser game when there's no release at all, and lists every build missing", async () => {
+  const empty = join(dir, "empty")
+  mkdirSync(empty, {recursive: true})
+  const {code, output, pushes} = await push({releaseDir: empty})
+  assert.notEqual(code, 0)
+  assert.deepEqual(Object.keys(pushes), ["html5"])
+  for (const channel of Object.keys(expected).filter(channel => channel !== "html5")) {
+    assert.match(output, new RegExp(`\\(${channel}\\)`), `${channel} listed as missing`)
+  }
+})
+
+test("doesn't push a tag older than the newest over it", async () => {
+  for (const newer of ["2026.11.13", `${tag}.2`]) {
+    const {code, output, pushes} = await push({newest: newer})
+    assert.equal(code, 0, output)
+    assert.deepEqual(pushes, {}, `nothing pushed with ${newer} out`)
+    assert.match(output, new RegExp(`${newer.replaceAll(".", "\\.")} is`))
   }
 })

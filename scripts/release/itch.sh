@@ -11,7 +11,12 @@
 #
 # Each goes to a channel of its own, which itch.io tells the platform from by its name.
 # Everything there is gets pushed; anything missing from the release is listed at the
-# end, and fails it, so a build that didn't make it is noticed
+# end, and fails it, so a build that didn't make it is noticed.
+#
+# The channels only ever hold the newest release: a tag older than the newest date tag
+# on GitHub isn't pushed, so a slow run for an older one can't replace a newer one that
+# got there first. itch.yml runs one at a time, so a newer one waits for an older one.
+# ITCH_NEWEST_TAG gives the newest, instead of asking GitHub, for testing
 set -euo pipefail
 
 tag=${1:?Usage: itch.sh <tag> <release-dir> <web-dir>}
@@ -19,6 +24,18 @@ release=${2:?Usage: itch.sh <tag> <release-dir> <web-dir>}
 web=${3:?Usage: itch.sh <tag> <release-dir> <web-dir>}
 game=${ITCH_GAME:-tanayseven/diwali-celebration}
 name=diwali-celebration
+
+# Sorted by date, then the day's release number, as the nightly workflow sorts them.
+# If GitHub can't be asked, nothing's pushed, rather than risk replacing a newer one
+newest=${ITCH_NEWEST_TAG:-}
+if [[ -z $newest ]]; then
+  newest=$(git ls-remote --tags --refs origin | sed 's|.*refs/tags/||' \
+    | grep -E '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]{1,2})?$' | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | tail -n 1)
+fi
+if [[ $tag != "$newest" ]]; then
+  echo "$tag isn't the newest release, $newest is, so it isn't pushed over it"
+  exit 0
+fi
 
 missing=()
 staging=$(mktemp -d)

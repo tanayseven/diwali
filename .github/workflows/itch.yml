@@ -26,6 +26,11 @@ permissions:
 jobs:
   itch:
     runs-on: ubuntu-latest
+    # One at a time, so a run for a newer tag waits for one still pushing an older one,
+    # and then itch.sh refuses an older tag that's waited behind a newer one
+    concurrency:
+      group: itch-io
+      cancel-in-progress: false
     env:
       TAG: ${{ inputs.tag }}
       # Every one of mise's protections, which it only takes from the environment
@@ -45,12 +50,12 @@ jobs:
         with:
           ref: refs/tags/${{ env.TAG }}
 
-      # Only Node, as locked in mise.lock
+      # Node and gh, as locked in mise.lock
       - name: Setup tools with mise
         if: env.BUTLER_API_KEY != ''
         uses: jdx/mise-action@v5
         with:
-          install_args: node
+          install_args: node gh
 
       # The game for the browser, with relative paths, as itch.io serves it from a folder
       # of its own
@@ -60,11 +65,19 @@ jobs:
           npm ci
           npm run build:itch
 
+      # If the Android and desktop builds both failed before making the tag's release,
+      # there's none, and the browser game still goes; itch.sh then lists what's missing
       - name: Download the release's files
         if: env.BUTLER_API_KEY != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download "$TAG" --dir "$RUNNER_TEMP/release"
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release download "$TAG" --dir "$RUNNER_TEMP/release"
+          else
+            echo "There's no GitHub release for $TAG, so only the browser game can be pushed"
+          fi
 
       # butler isn't in mise's registry, so it's fetched from itch.io's own downloads at
       # an exact version, at least a week old, and checked against the checksum of that
