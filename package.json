@@ -4,6 +4,7 @@
 	"scripts": {
 		"build": "vite build",
 		"build:web": "vite build --mode web",
+		"build:itch": "vite build --mode itch --outDir dist-itch --emptyOutDir",
 		"build:desktop": "vite build --outDir desktop/frontend/dist --emptyOutDir",
 		"dev": "vite",
 		"preview": "vite preview",
