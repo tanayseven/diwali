@@ -32,7 +32,7 @@ Live at: https://diwali.tanay.tech/, and the game itself at https://diwali.tanay
 - **Decorate House:** pick a colour of fairy lights (or mixed), then drag from one point on the house to another to hang a string between them. Each string is a rope, simulated with [Matter.js](https://brm.io/matter-js/), that sags under its weight and swings in the wind. The bulbs twinkle and light up the house around them. Strings can be dragged to move them, or onto the bar to take them down.
 - **Draw Rangoli:** pick a colour of powder and draw on the porch floor, rub parts out with the eraser, or clear it all.
 - **Craft Kandil:** make akash kandils (paper lanterns) and hang them on the house. Drag a bamboo frame from the bar onto the porch to make it there, or onto the house to hang it by a string from the eave above. Then drag paper onto it to wrap it, in red, orange, blue or mixed colours, then tails to hang below it, in green, red, gold or mixed, and finally the bulb to light it. Lit, it glows and lights up what's around it in its paper's colour. Hung ones hang as pendulums on their strings, also simulated with Matter.js, swinging as they're hung and swaying in the wind. Made or not, one can be dragged between the porch and the house, or back onto the bar to put its frame back on the stack.
-- **Dragging by touch:** on touch screens, a diya, wick, oil bottle, firework or the matchstick being dragged is shown a little above and to the left of the finger, which is marked by a circle, so the finger doesn't hide it. It's put down, or held to a wick or a fuse, where it's shown.
+- **Dragging by touch:** on touch screens, a diya, wick, oil bottle, firework or the matchstick being dragged is shown a little above and to the left of the finger, so the finger doesn't hide it, held there by a drawn hand reaching up from the finger, pinching it between thumb and forefinger (the match by its stick, clear of its head). It's put down, or held to a wick or a fuse, where it's shown.
 - **Tooltips:** hovering over things with a mouse says what they are and what to do with them.
 - **Hints:** whatever's placed and still to be finished, such as an unlit diya or firework or a kandil still to be made, is faintly outlined and has a **?** badge. Hovering over the badge, or tapping it on a touch screen, says what to do next. The outline is left out of photos.
 - **Photos:** the camera button under the zoom buttons takes a photo of the scene, without the bars and buttons, with https://diwali.tanay.tech printed in its corner. In the Android app, and where the browser can share files, as on most phones, it opens the share sheet to send it to any app; in the desktop apps it's saved where it's picked in a save dialog; otherwise it downloads it.
@@ -79,6 +79,12 @@ $ npm run check
 ```
 
 will type check the code with `tsc`
+
+```sh
+$ npm run test:e2e
+```
+
+will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. The tests are in `scripts/test/`.
 
 ## Build
 

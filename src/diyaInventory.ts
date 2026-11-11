@@ -223,9 +223,10 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(hud, dragLayer)
-  // Under whatever's dragged, a circle where a finger dragging it is
+  // A hand holding whatever a finger drags, its forefinger's tip over it
   const touch = createTouchMarker()
-  dragLayer.addChild(touch.marker)
+  dragLayer.sortableChildren = true
+  dragLayer.addChild(touch.marker, touch.front)
   // Lower diyas are nearer, so they're drawn in front
   background.decorations.sortableChildren = true
   // The flames' glows shine through the night
@@ -453,6 +454,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       return
     }
     held.moveTo(pointer, background.scale())
+    touch.holdAt(held.grip())
     const diya = diyaAt(pointer, lightable)
     setTarget(diya)
     held.setAim(diya && {target: diya, light: () => {
