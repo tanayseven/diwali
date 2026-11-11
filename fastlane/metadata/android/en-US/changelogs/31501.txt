@@ -1,0 +1,6 @@
+• Push only the newest release to itch.io, even with no GitHub release, with the pinned gh
+• Release each nightly to itch.io, in every form it takes
+• Run the Playwright tests in CI on every pull request
+• Test play-production.sh against a stand-in for Google's token endpoint and Play's API
+• Release each nightly on every Google Play track, testing and production
+• Release each nightly to Google Play's production track as a staged rollout
