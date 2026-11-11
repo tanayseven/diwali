@@ -19,6 +19,7 @@ import {createScreenshotButton} from "./screenshot"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
+import {handAssets} from "./touchMarker"
 import {createWind} from "./wind"
 import {createWindBlown} from "./windBlown"
 import {showSoundSplash, showSplashWarning} from "./splashWarning"
@@ -70,7 +71,7 @@ const main = async () => {
   const failed = await loadAssets({
     textures: [
       ...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...kandilAssets,
-      ...tools.map(tool => tool.icon),
+      ...handAssets, ...tools.map(tool => tool.icon),
     ],
     images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg"],
     // Enough of the first track to start the music without a wait

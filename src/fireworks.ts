@@ -571,9 +571,9 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(screenFlash, bar.container, dragLayer)
-  // Under whatever's dragged, a circle where a finger dragging it is
+  // A hand holding whatever a finger drags, its forefinger's tip over it
   const touch = createTouchMarker()
-  dragLayer.addChild(touch.marker)
+  dragLayer.addChild(touch.marker, touch.front)
   const slots = {
     anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),
     sutli: bar.addItem(3, stacks.sutli), rocket: bar.addItem(4, stacks.rocket),
@@ -940,6 +940,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       return
     }
     held.moveTo(pointer, background.scale())
+    touch.holdAt(held.grip())
     const firework = fireworkAt(pointer)
     setTarget(firework)
     held.setAim(firework && {target: firework, light: () => {
