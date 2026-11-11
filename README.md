@@ -84,7 +84,7 @@ will type check the code with `tsc`
 $ npm run test:e2e
 ```
 
-will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. It also runs `scripts/release/play-production.sh` against a local stand-in for Google's token endpoint and Play's API, with a throwaway key, checking the signed token, the production release it makes, and that a refused token stops it. The tests are in `scripts/test/`. The [Tests](.github/workflows/test.yml) workflow runs them on every pull request.
+will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. It also runs `scripts/release/play-production.sh` against a local stand-in for Google's token endpoint and Play's API, with a throwaway key, checking the signed token, the production release it makes, and that a refused token stops it, and `scripts/release/itch.sh` with a stand-in for butler, checking each build goes to its own itch.io channel and a missing one fails it. The tests are in `scripts/test/`. The [Tests](.github/workflows/test.yml) workflow runs them on every pull request.
 
 ## Build
 
@@ -188,6 +188,38 @@ Building on Linux needs GTK 3 and WebKitGTK 4.1 (`libgtk-3-dev` and `libwebkit2g
 | `APPLE_APP_PASSWORD` | An [app-specific password](https://support.apple.com/102654) for that Apple Account |
 
 `desktop/package.sh` takes the last four from the environment too, with the certificate in the login keychain. Without them, the app's signed ad hoc, which macOS doesn't trust, so the first time it's opened macOS blocks it: open it once, then in System Settings → Privacy & Security, choose Open Anyway. Or take it out of quarantine with `xattr -dr com.apple.quarantine "/Applications/Diwali Celebration.app"`.
+
+## itch.io
+
+Each release is also on itch.io, at https://tanayseven.itch.io/diwali-celebration, in every form it takes, each in a channel of its own, from which itch.io tells its platform:
+
+| Channel | What |
+|---|---|
+| `html5` | The game, to play in the browser on the game's page |
+| `windows-x64`, `windows-arm64` | The Windows app, portable, for x64 and Arm PCs |
+| `windows-x64-installer`, `windows-arm64-installer` | Its installers |
+| `mac` | The macOS app |
+| `mac-dmg` | Its disk image |
+| `linux-x64` | The Linux app, portable |
+| `linux-deb`, `linux-rpm`, `linux-arch` | Its packages, for Debian and Ubuntu, Fedora, and Arch Linux |
+| `android` | The Android app's APK |
+
+The nightly workflow runs the [itch.io release](.github/workflows/itch.yml) workflow once the Android and desktop builds have attached their files to the tag's GitHub release. It downloads them, builds the game for the browser (`npm run build:itch`, into `dist-itch/`), and pushes everything with [butler](https://itch.io/docs/butler/), itch.io's command-line tool, through `scripts/release/itch.sh`, labelled with the tag. A build that hasn't changed isn't pushed again. butler isn't in mise's registry, so the workflow fetches it at an exact version and checks it against its checksum. For a tag pushed by hand, run the workflow from the Actions tab once its Android and desktop builds are done.
+
+The browser build refers to everything relative to its page, and leaves out `index.html`'s `<base href="/">` and the source maps, as itch.io serves the game from a folder of its own and limits it to 1,000 files.
+
+It needs setting up once:
+
+1. Create an API key in itch.io's [settings](https://itch.io/user/settings/api-keys), and save it as the secret:
+
+```sh
+$ gh secret set BUTLER_API_KEY
+```
+
+2. After the first release has been pushed, edit the game on itch.io:
+   - Set its kind of project to **HTML**, and tick **This file will be played in the browser** on the `html5` upload.
+   - Under Embed options, set the viewport to 1280 × 720, and tick **Mobile friendly**, with **Landscape** orientation, and **Fullscreen button**.
+   - Untick **Click to launch in fullscreen** if it's ticked, so it plays on the page.
 
 ## Deployment
 

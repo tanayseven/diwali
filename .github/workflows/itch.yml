@@ -1,0 +1,87 @@
+name: itch.io release
+
+# Pushes a release to https://tanayseven.itch.io/diwali-celebration in every form itch.io
+# takes, with butler: the game to play in the browser, the desktop apps for Windows,
+# macOS and Linux, portable and as installers and packages, and the Android app. The
+# nightly release tag workflow calls it once the Android and desktop builds have
+# attached their files to the tag's GitHub release. For a tag pushed by hand, run it
+# from the Actions tab once those builds are done. Only once BUTLER_API_KEY is set
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: The date tag to release
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The date tag to release, such as 2026.10.30
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  itch:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag }}
+      # Every one of mise's protections, which it only takes from the environment
+      MISE_PARANOID: 1
+      # The itch.io API key butler logs in with. It's here, as a secret can't be tested
+      # in a step's if
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+    steps:
+      - name: Without an itch.io API key, there's nothing to do
+        if: env.BUTLER_API_KEY == ''
+        run: echo "No BUTLER_API_KEY in the secrets, so nothing's pushed to itch.io"
+
+      - name: Checkout the tag
+        if: env.BUTLER_API_KEY != ''
+        uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      # Only Node, as locked in mise.lock
+      - name: Setup tools with mise
+        if: env.BUTLER_API_KEY != ''
+        uses: jdx/mise-action@v5
+        with:
+          install_args: node
+
+      # The game for the browser, with relative paths, as itch.io serves it from a folder
+      # of its own
+      - name: Build the game for itch.io
+        if: env.BUTLER_API_KEY != ''
+        run: |
+          npm ci
+          npm run build:itch
+
+      - name: Download the release's files
+        if: env.BUTLER_API_KEY != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$TAG" --dir "$RUNNER_TEMP/release"
+
+      # butler isn't in mise's registry, so it's fetched from itch.io's own downloads at
+      # an exact version, at least a week old, and checked against the checksum of that
+      # download before it's run
+      - name: Install butler
+        if: env.BUTLER_API_KEY != ''
+        env:
+          BUTLER_VERSION: 15.32.0
+          BUTLER_SHA256: 2335971394ef6596f95ded0833e85ee28755e13761716ef4c91d6b11f69162f5
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/butler.zip" \
+            "https://broth.itch.zone/butler/linux-amd64/$BUTLER_VERSION/archive/default"
+          echo "$BUTLER_SHA256  $RUNNER_TEMP/butler.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/butler.zip" -d "$RUNNER_TEMP/butler"
+          chmod +x "$RUNNER_TEMP/butler/butler"
+          echo "$RUNNER_TEMP/butler" >> "$GITHUB_PATH"
+
+      - name: Push it to itch.io
+        if: env.BUTLER_API_KEY != ''
+        run: scripts/release/itch.sh "$TAG" "$RUNNER_TEMP/release" dist-itch

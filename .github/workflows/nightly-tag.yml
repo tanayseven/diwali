@@ -105,3 +105,15 @@ jobs:
       tag: ${{ needs.tag.outputs.tag }}
     # The secrets the macOS app's signed and notarized with, when they're set
     secrets: inherit
+
+  # Once both have attached their files to the tag's release, the release goes to
+  # itch.io too. It runs even if one of them failed, so the rest still gets there; the
+  # builds missing from the release then fail it
+  itch:
+    needs: [tag, android, desktop]
+    if: always() && needs.tag.outputs.tag != ''
+    uses: ./.github/workflows/itch.yml
+    with:
+      tag: ${{ needs.tag.outputs.tag }}
+    # The itch.io API key butler logs in with, when it's set
+    secrets: inherit
