@@ -1,0 +1,44 @@
+name: Tests
+
+# Every pull request runs the tests in scripts/test/: the game played in headless
+# Chromium as a phone, checking the hand that holds what a finger drags, and the Google
+# Play production release script against a stand-in for Play's API
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request replaces a run still going
+concurrency:
+  group: tests-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Every one of mise's protections, which it only takes from the environment
+      MISE_PARANOID: 1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      # Only Node, as locked in mise.lock
+      - name: Setup tools with mise
+        uses: jdx/mise-action@v5
+        with:
+          install_args: node
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The Chromium that the locked playwright-core was made for, with the system
+      # libraries it needs
+      - name: Install Chromium for Playwright
+        run: npx playwright-core install --with-deps chromium
+
+      - name: Run the tests
+        run: npm run test:e2e
