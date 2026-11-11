@@ -84,7 +84,7 @@ will type check the code with `tsc`
 $ npm run test:e2e
 ```
 
-will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. It also runs `scripts/release/play-production.sh` against a local stand-in for Google's token endpoint and Play's API, with a throwaway key, checking the signed token, the production release it makes, and that a refused token stops it. The tests are in `scripts/test/`.
+will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. It also runs `scripts/release/play-production.sh` against a local stand-in for Google's token endpoint and Play's API, with a throwaway key, checking the signed token, the production release it makes, and that a refused token stops it. The tests are in `scripts/test/`. The [Tests](.github/workflows/test.yml) workflow runs them on every pull request.
 
 ## Build
 
