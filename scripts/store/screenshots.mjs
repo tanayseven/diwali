@@ -37,6 +37,13 @@ const drag = async (from, to, {hold = 0, steps = 12} = {}) => {
   await page.mouse.up()
   await page.waitForTimeout(150)
 }
+// Picks a tool from the rail, and waits for its bar to finish sliding in, as its slots
+// can't be pressed until then: src/hud.ts waits 120 ms, then slides it in over 240 ms
+const barShown = 600
+const pickTool = async y => {
+  await page.mouse.click(52, y)
+  await page.waitForTimeout(barShown)
+}
 // Moves the mouse off everything, so no tooltip's showing, and takes the shot
 let shots = 0
 const shoot = async () => {
@@ -60,7 +67,7 @@ await page.waitForTimeout(1500)
 // Diyas along the porch, each with a wick and oil, lit with the match
 // Round where the rangoli goes, in the middle of the porch
 const diyas = [{x: 290, y: 234}, {x: 420, y: 198}, {x: 550, y: 234}]
-await page.mouse.click(52, rail.diyas)
+await pickTool(rail.diyas)
 for (const at of diyas) {
   await drag(slot(0), at)
   await drag(slot(1), at)
@@ -79,7 +86,7 @@ await page.waitForTimeout(800)
 await shoot()
 
 // An anar and a chakri lit beside them
-await page.mouse.click(52, rail.fireworks)
+await pickTool(rail.fireworks)
 const anar = {x: 250, y: 250}
 const chakri = {x: 620, y: 240}
 await drag(slot(0), anar)
@@ -95,7 +102,7 @@ await page.waitForTimeout(3500)
 await shoot()
 
 // Strings of fairy lights hung across the house
-await page.mouse.click(52, rail.decorate)
+await pickTool(rail.decorate)
 await page.mouse.click(slot(0).x, slot(0).y)
 await drag({x: 200, y: 60}, {x: 420, y: 70}, {steps: 20})
 await drag({x: 440, y: 70}, {x: 660, y: 60}, {steps: 20})
@@ -103,7 +110,7 @@ await page.waitForTimeout(1500)
 await shoot()
 
 // A rangoli drawn on the floor: rings of petals round a centre
-await page.mouse.click(52, rail.rangoli)
+await pickTool(rail.rangoli)
 const centre = {x: 420, y: 232}
 const ring = async (colour, radius, petals, squash = 0.45) => {
   await page.mouse.click(slot(colour).x, slot(colour).y)
