@@ -84,7 +84,7 @@ will type check the code with `tsc`
 $ npm run test:e2e
 ```
 
-will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. The tests are in `scripts/test/`.
+will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match or a firework has a hand drawn holding it, and a mouse doesn't. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. It also runs `scripts/release/play-production.sh` against a local stand-in for Google's token endpoint and Play's API, with a throwaway key, checking the signed token, the production release it makes, and that a refused token stops it. The tests are in `scripts/test/`.
 
 ## Build
 
@@ -124,7 +124,7 @@ will build the release app bundle for Google Play at `android/app/build/outputs/
 
 ### Google Play
 
-Each nightly bundle is released to Google Play's **production** track as a **staged rollout to 20%** of users, once the `PLAY_SERVICE_ACCOUNT_JSON` secret is set; until then that step is skipped. Google reviews it first, so it reaches them after the review. Its "what's new" notes are the release's changelog, the commits since the release before it. To give it to everyone, increase the rollout to 100% in Play Console, under Production; or halt it there if something's wrong. A newer release replaces one still rolling out, so with releases most nights, the rest of the users only get a release once it's rolled out to everyone. The rollout's share is `userFraction` in `.github/workflows/android.yml`.
+Each nightly bundle is released on every one of Google Play's tracks, once the `PLAY_SERVICE_ACCOUNT_JSON` secret is set; until then those steps are skipped. It's uploaded once, and released to everyone on the **internal**, **closed** (`alpha`) and **open** (`beta`) testing tracks; internal testing isn't reviewed, so its testers get it within minutes. Then the same build is released to the **production** track as a **staged rollout to 20%** of users, by `scripts/release/play-production.sh`, which adds it there through Play's API without uploading it again. Google reviews the closed, open and production releases first, so they reach people after the review. Every one of those tracks has to exist in Play Console, or the upload fails. Its "what's new" notes are the release's changelog, the commits since the release before it. To give it to everyone, increase the rollout to 100% in Play Console, under Production; or halt it there if something's wrong. A newer release replaces one still rolling out, so with releases most nights, the rest of the users only get a release once it's rolled out to everyone. The rollout's share is the last argument to `play-production.sh` in `.github/workflows/android.yml`, and the testing tracks are the upload's `tracks`.
 
 It needs setting up once:
 
