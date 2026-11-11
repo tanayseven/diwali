@@ -154,6 +154,10 @@ $ cd android && ./gradlew -q :app:printVersion
 
 prints the version a build gets: the one in `version.properties`, or `RELEASE_TAG`'s when that's set.
 
+The recipe builds the web app with Node, then deletes Node and all of `node_modules` but the Android code of Capacitor and its plugins (`@capacitor/android`, `filesystem` and `share`), which Gradle builds from source there. F-Droid's scanner refuses the prebuilt binaries the rest of `node_modules` has.
+
+Only tags made since the release commit was added carry `version.properties`, so the recipe's build has to be one of those: before sending it to fdroiddata, set its `versionName`, `versionCode` and `commit`, and `CurrentVersion` and `CurrentVersionCode`, to the newest such tag, its code from `scripts/release/version.sh <tag>`. After that, F-Droid adds new tags itself.
+
 The app's icon and launch screen are the site's diya (`public/favicon.svg`) on black. Their sources in `assets/` are rendered from it, with its flame at rest, by
 
 ```sh

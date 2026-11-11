@@ -16,10 +16,8 @@ Builds:
     versionCode: 30901
     commit: 2026.11.06
     subdir: android/app
-    sudo:
-      - apt-get update
-      - apt-get install -y xz-utils
     init:
+      - cd ../..
       - curl -Lo node.tar.gz https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz
       - echo "24a5d58a1d4c2903478f4b7c3cfd2eeb5cea2cae3baee11a4dc6a1fed25fec6c  node.tar.gz"
         | sha256sum -c -
@@ -33,9 +31,10 @@ Builds:
       - npm ci
       - npm run build
       - npx cap sync android
-    scandelete:
-      - node_modules
-      - node-v20.18.0-linux-x64
+      - rm -rf node-v20.18.0-linux-x64
+      - find node_modules -mindepth 1 -maxdepth 1 ! -name @capacitor -exec rm -rf {} +
+      - find node_modules/@capacitor -mindepth 1 -maxdepth 1 ! -name android ! -name filesystem
+        ! -name share -exec rm -rf {} +
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^\d{4}\.\d{2}\.\d{2}(\.\d+)?$
