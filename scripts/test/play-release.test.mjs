@@ -2,8 +2,8 @@
 // and Play's API, with a throwaway service account key, and checks what it sends: a
 // token request signed with the key, then an edit of its own for each track, putting
 // the build on it, fully or as a staged rollout, and committing it. That a track Play
-// refuses doesn't stop the others, and is named, with what Play said. And that a refused
-// token stops it before Play's touched.
+// refuses, either the change to it or the edit's commit, doesn't stop the others, and is
+// named, with what Play said. And that a refused token stops it before Play's touched.
 //
 //   npm run test:e2e
 import assert from "node:assert/strict"
@@ -37,10 +37,14 @@ const keyPair = () => generateKeyPairSync("rsa", {
 const account = keyPair()
 const stranger = keyPair()
 
-// Every request the stand-in's had, in order, and the tracks it refuses releases on
+// Every request the stand-in's had, in order, the tracks it refuses releases on, and
+// those it takes the release on but then refuses the edit's commit for
 let requests = []
 let refused = new Set()
+let refusedCommits = new Set()
 let edits = 0
+// The track each edit changed
+const editTracks = new Map()
 const server = createServer((request, response) => {
   let body = ""
   request.on("data", chunk => body += chunk)
@@ -66,14 +70,20 @@ const server = createServer((request, response) => {
       edits += 1
       return reply(200, {id: `edit-${edits}`})
     }
-    const track = request.url.match(/\/tracks\/(\w+)$/)?.[1]
-    if (request.method === "PUT" && track) {
+    const changed = request.url.match(/edits\/([\w-]+)\/tracks\/(\w+)$/)
+    if (request.method === "PUT" && changed) {
+      const [, edit, track] = changed
+      editTracks.set(edit, track)
       return refused.has(track)
         ? reply(400, {error: {code: 400, message: refusal, status: "FAILED_PRECONDITION"}})
         : reply(200, JSON.parse(body))
     }
-    if (request.method === "POST" && request.url.endsWith(":commit")) {
-      return reply(200, {id: request.url.match(/edits\/([\w-]+):commit/)[1]})
+    const committing = request.url.match(/edits\/([\w-]+):commit$/)
+    if (request.method === "POST" && committing) {
+      const edit = committing[1]
+      return refusedCommits.has(editTracks.get(edit))
+        ? reply(400, {error: {code: 400, message: refusal, status: "FAILED_PRECONDITION"}})
+        : reply(200, {id: edit})
     }
     reply(404, {error: {message: "not found"}})
   })
@@ -96,11 +106,15 @@ after(() => {
 
 // Runs the script for some tracks with a key signed by a key pair, Play refusing some,
 // and gives its exit code, its output, and the calls to Play's API
-const release = ({privateKey = account.privateKey, tracks = ["alpha", "beta", "production:0.2"], refuse = []} = {}) =>
+const release = ({
+  privateKey = account.privateKey, tracks = ["alpha", "beta", "production:0.2"], refuse = [], refuseCommit = [],
+} = {}) =>
   new Promise(resolve => {
     requests = []
     refused = new Set(refuse)
+    refusedCommits = new Set(refuseCommit)
     edits = 0
+    editTracks.clear()
     const key = JSON.stringify({type: "service_account", client_email: email, private_key: privateKey,
       token_uri: `${base}/token`})
     const child = spawn("bash", [script, pkg, tag, notesFile, ...tracks], {
@@ -161,6 +175,18 @@ test("goes on past a track Play refuses, and fails naming it, with what Play sai
   ])
   assert.match(output, new RegExp(`Refused, 400: ${refusal.replace(".", "\\.")}`))
   assert.match(output, /didn't take 2026\.11\.12 on: beta$/m)
+})
+
+test("goes on past a track whose edit Play refuses to commit, and fails naming it", async () => {
+  const {code, output, calls} = await release({refuseCommit: ["beta"]})
+  assert.notEqual(code, 0)
+  // Beta's edit is changed and its commit tried, and refused; production's still goes
+  assert.deepEqual(calls.map(({method, url}) => `${method} ${url}`), [
+    ...releasing("edit-1", "alpha"), ...releasing("edit-2", "beta"), ...releasing("edit-3", "production"),
+  ])
+  assert.match(output, new RegExp(`Refused, 400: ${refusal.replace(".", "\\.")}`))
+  assert.match(output, /didn't take 2026\.11\.12 on: beta$/m)
+  assert.doesNotMatch(output, /on every track/)
 })
 
 test("stops before touching Play when the token's refused, saying why", async () => {
