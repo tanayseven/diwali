@@ -108,13 +108,14 @@ jobs:
           fi
           cat "$notes"
 
-      # Releases the bundle to production on Google Play, as a staged rollout to a fifth of
-      # its users once Google's reviewed it; it's rolled out to everyone by hand in Play
-      # Console, and a newer release replaces it. Only once Play's set up, with the service
+      # Uploads the bundle to Google Play and releases it to everyone on its testing tracks:
+      # internal testing, which Google doesn't review, so its testers get it first, then
+      # closed (alpha) and open (beta) testing. Only once Play's set up, with the service
       # account's key in the secrets. Play refuses a version code it already has, so a tag
       # rebuilt by hand fails here, and a fix needs a new tag. The action's pinned to its
       # commit, as it's handed the key
-      - name: Publish the app bundle to Google Play's production track
+      - name: Publish the app bundle to Google Play's testing tracks
+        id: play
         if: env.PLAY_SERVICE_ACCOUNT_JSON != '' && hashFiles(format('diwali-{0}.aab', env.TAG)) != ''
         uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
         with:
@@ -122,7 +123,13 @@ jobs:
           packageName: tech.tanay.diwali
           releaseFiles: diwali-${{ env.TAG }}.aab
           releaseName: ${{ env.TAG }}
-          tracks: production
-          status: inProgress
-          userFraction: 0.2
+          tracks: internal,alpha,beta
+          status: completed
           whatsNewDirectory: ${{ runner.temp }}/whatsnew
+
+      # Then the same build, which Play now has, goes to production as a staged rollout to
+      # a fifth of its users once Google's reviewed it, without uploading it again. It's
+      # rolled out to everyone by hand in Play Console, and a newer release replaces it
+      - name: Release it to Google Play's production track for 20% of users
+        if: steps.play.outcome == 'success'
+        run: scripts/release/play-production.sh tech.tanay.diwali "$TAG" "$RUNNER_TEMP/whatsnew/whatsnew-en-US" 0.2
