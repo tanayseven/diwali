@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The forefinger's tip of hand-holding.svg, drawn again over whatever the hand holds -->
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="400" viewBox="0 0 120 200">
+<defs><clipPath id="tip"><circle cx="66" cy="34" r="14"/></clipPath></defs>
+<g clip-path="url(#tip)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<path d="M80 88 Q94 60 84 44 Q76 32 64 34" stroke="#6B4023" stroke-width="18"/>
+<path d="M80 88 Q94 60 84 44 Q76 32 64 34" stroke="#CF915F" stroke-width="13"/>
+<ellipse cx="69" cy="33" rx="5" ry="3.6" transform="rotate(-12 69 33)" fill="#F1C7A8" stroke="#A9714A" stroke-width="1"/>
+</g>
+</svg>

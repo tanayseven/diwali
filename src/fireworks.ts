@@ -7,6 +7,7 @@ import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {createShownParticles} from "./shownParticles"
+import {addHint} from "./hints"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
@@ -535,7 +536,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       (shape.area.x - shape.frame.x) * shape.density, (shape.area.y - shape.frame.y) * shape.density,
       shape.area.width * shape.density, shape.area.height * shape.density,
     ),
-    count: 5,
+    count: 20,
   })
   const stacks: Record<Kind, Item> = {
     anar: itemFor(anarShape, anarUrls.unlit),
@@ -570,9 +571,10 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(screenFlash, bar.container, dragLayer)
-  // Under whatever's dragged, a circle where a finger dragging it is
+  // A hand holding whatever a finger drags, its forefinger's tip over it
   const touch = createTouchMarker()
-  dragLayer.addChild(touch.marker)
+  dragLayer.sortableChildren = true
+  dragLayer.addChild(touch.marker, touch.front)
   const slots = {
     anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),
     sutli: bar.addItem(3, stacks.sutli), rocket: bar.addItem(4, stacks.rocket),
@@ -599,6 +601,17 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     title: names[firework.kind](),
     lines: firework.state === "spent" ? [tips.spent()] : [tips.unlit(), tips.move()],
   })
+  // What to do next with a firework that hasn't been lit, for its hint's badge
+  const fireworkHint = (firework: Placed) => (): Tooltip | undefined => firework.state === "unlit"
+    ? {title: names[firework.kind](), lines: [tips.next.lightFirework()]}
+    : undefined
+  // The part of a firework that's picked up, in its sprite's own coordinates, for the badge
+  const fireworkBox = (kind: Kind) => {
+    const {area, origin, density} = shapes[kind]
+    return new Rectangle(
+      (area.x - origin.x) * density, (area.y - origin.y) * density, area.width * density, area.height * density,
+    )
+  }
 
   const sparkTexture = radialTexture(32, [[0, 1], [0.3, 0.85], [1, 0]])
   const {glowTexture} = lighting
@@ -851,6 +864,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       spin: 0, burnFor: 0, home: {x: 0, y: 0}, roam: {x: 0, y: 0}, roamVelocity: {x: 0, y: 0}, roamGoal: {x: 0, y: 0}, nextRoamAt: 0,
     }
     addTooltip(sprite, fireworkTooltip(firework))
+    addHint(sprite, fireworkHint(firework), fireworkBox(kind))
     sprite.on("pointerdown", e => {
       const fromScene = {x: sprite.x, y: sprite.y}
       placed.splice(placed.indexOf(firework), 1)
@@ -927,6 +941,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
       return
     }
     held.moveTo(pointer, background.scale())
+    touch.holdAt(held.grip())
     const firework = fireworkAt(pointer)
     setTarget(firework)
     held.setAim(firework && {target: firework, light: () => {
@@ -973,6 +988,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   // Sends the dragged firework back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
+    current.sprite.alpha = 1
     setOutline(current.sprite, "selected", false)
     if (current.fromScene) {
       placeFirework(current.firework, current.fromScene)
@@ -993,10 +1009,15 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     setOverBar(false)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
+    current.sprite.alpha = 1
+    const scene = background.toScene(at)
     if (hudShown && bar.isOver(finger)) {
       removeFirework(current.firework)
+    } else if (background.isOnPorchFloor(scene)) {
+      placeFirework(current.firework, scene)
     } else {
-      placeFirework(current.firework, background.toScene(at))
+      // Fireworks only go on the porch's floor; let go anywhere else, it goes back
+      returnDrag(current)
     }
     render()
   }
@@ -1010,8 +1031,11 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const onPointerMove = (e: PointerEvent) => {
     const finger = toStage(e)
     if (drag) {
-      drag.sprite.position.copyFrom(touch.follow(finger, e.pointerType))
+      const at = touch.follow(finger, e.pointerType)
+      drag.sprite.position.copyFrom(at)
       setOverBar(hudShown && bar.isOver(finger))
+      // Faded while it's somewhere it can't be put down
+      drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (held) {
       pointer.copyFrom(touch.follow(finger, e.pointerType))
       aimMatch()

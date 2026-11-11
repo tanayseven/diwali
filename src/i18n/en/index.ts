@@ -54,6 +54,19 @@ const en = {
 	},
 	// Shown on hovering over things in the inventory bar and in the scene
 	tooltip: {
+		// The "?" badge on something placed that's still to be finished, read out by screen readers
+		hintButton: "What to do next",
+		// Shown from that badge: what to do next with it, naming the side rail's tool whose bar has what's needed
+		next: {
+			addWickAndOil: "Next: drag a wick and the oil from the Diyas bar onto it, in either order",
+			addWick: "Next: drag a wick from the Diyas bar onto it",
+			addOil: "Next: drag the oil from the Diyas bar onto it",
+			lightDiya: "Next: drag the matchstick from the Diyas bar onto it, and hold it there to light it",
+			lightFirework: "Next: drag the matchstick from the Fireworks bar onto it, and hold it there to light it",
+			addPaper: "Next: drag a paper from the Craft Kandil bar onto it to wrap it",
+			addTails: "Next: drag some tails from the Craft Kandil bar onto it",
+			addBulb: "Next: drag the bulb from the Craft Kandil bar onto it to light it",
+		},
 		diya: {
 			name: "Diya",
 			stack: "An oil lamp. Drag one onto the porch",

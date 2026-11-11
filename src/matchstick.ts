@@ -15,6 +15,8 @@ const matchCrop = new Rectangle(88, 100, 24, 207)
 // The match's head, by which it's held and put to a wick or a fuse
 const matchCanvas = {width: 200, height: 320}
 const matchHead = {x: 100 / matchCanvas.width, y: 110 / matchCanvas.height}
+// Where a hand holds it, down its stick from the head, in its canvas's units
+const matchGrip = {x: 0, y: 150}
 // The match's length in scene units, a little shorter than a diya is wide
 const matchSceneLength = 17.28
 const matchScale = matchSceneLength / matchCrop.height
@@ -147,6 +149,10 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
         moveTo(point: PointData, sceneScale: number) {
           container.position.copyFrom(point)
           match.scale.set(sceneScale * matchScale)
+        },
+        // Where a hand holding it holds it, well away from its head, on the stage
+        grip(): PointData {
+          return match.toGlobal(matchGrip)
         },
         // What it's over that it could light, and how to light it
         setAim(next: Aim | undefined) {

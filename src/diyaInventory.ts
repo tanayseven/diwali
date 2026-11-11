@@ -4,6 +4,7 @@ import {createBackground} from "./background"
 import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
+import {addHint} from "./hints"
 import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
@@ -43,8 +44,8 @@ const bottleCrop = new Rectangle(560, 265, 260, 775)
 // The HUD's items besides the matchstick, made afresh for each inventory as their
 // counts change
 const createItems = () => {
-  const emptyDiyas: Item = {url: diyaUrls.empty, crop: diyaCrop, count: 5}
-  const wicks: Item = {url: wickUrl, crop: wickCrop, count: 5}
+  const emptyDiyas: Item = {url: diyaUrls.empty, crop: diyaCrop, count: 20}
+  const wicks: Item = {url: wickUrl, crop: wickCrop, count: 20}
   const oilBottle: Item = {url: oilBottleUrl, crop: bottleCrop}
   return {emptyDiyas, wicks, oilBottle}
 }
@@ -96,6 +97,11 @@ const redrawEvery = 1000 / 30
 const diyaGlowRadius = 10
 // A diya's bowl in its canvas, padded a little, for dropping wicks and oil onto it
 const diyaTarget = new Rectangle(diyaCrop.x - 20, diyaCrop.y - 30, diyaCrop.width + 40, diyaCrop.height + 30)
+// Its bowl in the sprite's own coordinates, for the badge hinting what to do next with it
+const diyaBowl = new Rectangle(
+  diyaCrop.x - diyaCanvas.width * diyaAnchor.x, diyaCrop.y - diyaCanvas.height * diyaAnchor.y,
+  diyaCrop.width, diyaCrop.height,
+)
 // A diya that can take a wick or oil grows this much while one is dragged over it
 const targetGrowth = 1.12
 
@@ -217,9 +223,10 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // Above the HUD, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(hud, dragLayer)
-  // Under whatever's dragged, a circle where a finger dragging it is
+  // A hand holding whatever a finger drags, its forefinger's tip over it
   const touch = createTouchMarker()
-  dragLayer.addChild(touch.marker)
+  dragLayer.sortableChildren = true
+  dragLayer.addChild(touch.marker, touch.front)
   // Lower diyas are nearer, so they're drawn in front
   background.decorations.sortableChildren = true
   // The flames' glows shine through the night
@@ -268,13 +275,25 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   addTooltip(matchSlot.container, () => ({title: tips.matchstick.name(), lines: [tips.matchstick.diyaHint()]}))
 
   // What a placed diya still needs, or that it's lit and can be turned
-  const diyaTooltip = (diya: PlacedDiya) => (): Tooltip => {
-    const status = diya.lit ? tips.diya.lit()
-      : diya.wick && diya.oil ? tips.diya.ready()
-      : diya.wick ? tips.diya.needsOil()
-      : diya.oil ? tips.diya.needsWick()
-      : tips.diya.needsWickAndOil()
-    return {title: tips.diya.name(), lines: diya.lit ? [status, tips.diya.turn(), tips.move()] : [status, tips.move()]}
+  const diyaStatus = (diya: PlacedDiya) => diya.lit ? tips.diya.lit()
+    : diya.wick && diya.oil ? tips.diya.ready()
+    : diya.wick ? tips.diya.needsOil()
+    : diya.oil ? tips.diya.needsWick()
+    : tips.diya.needsWickAndOil()
+  const diyaTooltip = (diya: PlacedDiya) => (): Tooltip => ({
+    title: tips.diya.name(),
+    lines: diya.lit ? [diyaStatus(diya), tips.diya.turn(), tips.move()] : [diyaStatus(diya), tips.move()],
+  })
+  // What to do next with a diya that isn't lit yet, for its hint's badge
+  const diyaHint = (diya: PlacedDiya) => (): Tooltip | undefined => {
+    if (diya.lit) {
+      return undefined
+    }
+    const next = diya.wick && diya.oil ? tips.next.lightDiya()
+      : diya.wick ? tips.next.addOil()
+      : diya.oil ? tips.next.addWick()
+      : tips.next.addWickAndOil()
+    return {title: tips.diya.name(), lines: [diyaStatus(diya), next]}
   }
 
   const render = () => {
@@ -331,15 +350,15 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
   }
 
-  // A diya going back on the stack gives back its wick, unless it's been burnt by
-  // lighting it; any oil in it is spilt
+  // A diya going back on the stack is put out and gives back both itself, empty, and
+  // its wick, even once it's been lit; any oil in it is spilt
   const returnDiya = (diya: PlacedDiya) => {
     placed.splice(placed.indexOf(diya), 1)
     diya.sprite.destroy()
     diya.light?.destroy()
     diya.glow?.destroy()
     emptyDiyas.count! += 1
-    if (diya.wick && !diya.lit) {
+    if (diya.wick) {
       wicks.count! += 1
     }
     render()
@@ -435,6 +454,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       return
     }
     held.moveTo(pointer, background.scale())
+    touch.holdAt(held.grip())
     const diya = diyaAt(pointer, lightable)
     setTarget(diya)
     held.setAim(diya && {target: diya, light: () => {
@@ -463,6 +483,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     emptyDiyas.count! -= 1
     const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false, facing: "right"}
     addTooltip(diya.sprite, diyaTooltip(diya))
+    addHint(diya.sprite, diyaHint(diya), diyaBowl)
     startDiyaDrag(e.global, e.pointerType, diya)
   })
 
@@ -535,6 +556,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // Sends whatever's dragged back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
+    current.sprite.alpha = 1
     setOutline(current.sprite, "selected", false)
     if (current.kind === "diya") {
       if (current.fromScene) {
@@ -565,12 +587,17 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     setTarget(undefined)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
+    current.sprite.alpha = 1
     if (current.kind === "diya") {
+      const scene = background.toScene(at)
       if (hudShown && bar.isOver(finger)) {
         placed.push(current.diya)
         returnDiya(current.diya)
+      } else if (background.isOnPorchFloor(scene)) {
+        placeDiya(current.diya, scene)
       } else {
-        placeDiya(current.diya, background.toScene(at))
+        // Diyas only go on the porch's floor; let go anywhere else, it goes back
+        returnDrag(current)
       }
     } else if (current.kind === "wick" && into) {
       current.sprite.destroy()
@@ -615,6 +642,8 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
       setOverBar(hudShown && bar.isOver(finger))
+      // Faded while it's somewhere it can't be put down
+      drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(at, diya => !diya.wick))
     } else {

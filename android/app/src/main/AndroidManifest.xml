@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -46,5 +47,8 @@
 
     <!-- Permissions -->
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The game's images, sounds and fonts are all inside the app, so it has no use for
+         the internet, and isn't allowed it. Removed rather than left out, so a plugin or
+         library can't add it back. Links still open, in the browser -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
 </manifest>

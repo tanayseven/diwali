@@ -46,6 +46,17 @@ const hiLatn = {
 		volume: "Volume",
 	},
 	tooltip: {
+		hintButton: "Aage kya karein",
+		next: {
+			addWickAndOil: "Aage: Diye bar se baati aur tel ispe drag karo, kisi bhi order mein",
+			addWick: "Aage: Diye bar se baati ispe drag karo",
+			addOil: "Aage: Diye bar se tel ispe drag karo",
+			lightDiya: "Aage: Diye bar se maachis ki teeli ispe drag karo, aur jalane ke liye wahin pakad ke rakho",
+			lightFirework: "Aage: Patakhe bar se maachis ki teeli ispe drag karo, aur jalane ke liye wahin pakad ke rakho",
+			addPaper: "Aage: lapetne ke liye Kandil banao bar se kaagaz ispe drag karo",
+			addTails: "Aage: Kandil banao bar se latkanein ispe drag karo",
+			addBulb: "Aage: jalaane ke liye Kandil banao bar se bulb ispe drag karo",
+		},
 		diya: {
 			name: "Diya",
 			stack: "Tel ka diya. Ek drag karke porch pe rakho",
