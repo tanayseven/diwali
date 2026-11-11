@@ -10,10 +10,11 @@
 // screen, in CSS pixels, as in scripts/store/screenshots.mjs
 import assert from "node:assert/strict"
 import {after, before, test} from "node:test"
+import {fileURLToPath} from "node:url"
 import {chromium, devices} from "playwright-core"
 import {createServer} from "vite"
 
-const root = new URL("../../", import.meta.url).pathname
+const root = fileURLToPath(new URL("../../", import.meta.url))
 const port = 4175
 
 // A Pixel 7 held sideways, at the size the positions below are for

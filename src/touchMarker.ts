@@ -37,12 +37,14 @@ const circle = () => new Graphics()
   .stroke({width: 3, color: markerColour, alpha: 0.7})
 
 // The hand holding whatever a finger is dragging. Add the marker below what's dragged
-// and the front above it; the front keeps itself on top of whatever's added after it
+// and the front above it, in a container that sorts its children, as the front's
+// drawn over everything else in it, whenever that's added
 const createTouchMarker = () => {
   const hasHand = handAssets.every(url => Assets.cache.has(url))
   const marker = new Container()
   marker.addChild(hasHand ? handSprite(handUrl) : circle())
   const front = new Container()
+  front.zIndex = 1
   if (hasHand) {
     front.addChild(handSprite(handFrontUrl))
   }
@@ -60,7 +62,6 @@ const createTouchMarker = () => {
         part.visible = pointerType === "touch"
         part.position.copyFrom(shownAt)
       }
-      front.parent?.addChild(front)
       return shownAt
     },
     // Moves the hand to hold what's dragged at a point on the stage instead, as the match

@@ -573,6 +573,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   container.addChild(screenFlash, bar.container, dragLayer)
   // A hand holding whatever a finger drags, its forefinger's tip over it
   const touch = createTouchMarker()
+  dragLayer.sortableChildren = true
   dragLayer.addChild(touch.marker, touch.front)
   const slots = {
     anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),

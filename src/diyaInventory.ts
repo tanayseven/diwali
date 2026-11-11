@@ -225,6 +225,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   container.addChild(hud, dragLayer)
   // A hand holding whatever a finger drags, its forefinger's tip over it
   const touch = createTouchMarker()
+  dragLayer.sortableChildren = true
   dragLayer.addChild(touch.marker, touch.front)
   // Lower diyas are nearer, so they're drawn in front
   background.decorations.sortableChildren = true
