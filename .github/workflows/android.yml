@@ -3,7 +3,7 @@ name: Android build
 # When a release's date tag is pushed: YYYY.MM.DD, or YYYY.MM.DD.N for the Nth release
 # that day. The build itself rejects any other shape of tag. The nightly release tag
 # workflow calls it too, for the tag it's just made, as tags pushed by a workflow don't
-# start others
+# start others. It can be run by hand for a tag too, to build and release it again
 on:
   push:
     tags:
@@ -13,6 +13,12 @@ on:
     inputs:
       tag:
         description: The date tag to build and release
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The date tag to build and release again, such as 2026.10.30
         required: true
         type: string
 
@@ -108,13 +114,12 @@ jobs:
           fi
           cat "$notes"
 
-      # Uploads the bundle to Google Play and releases it to everyone on its testing tracks:
-      # internal testing, which Google doesn't review, so its testers get it first, then
-      # closed (alpha) and open (beta) testing. Only once Play's set up, with the service
-      # account's key in the secrets. Play refuses a version code it already has, so a tag
-      # rebuilt by hand fails here, and a fix needs a new tag. The action's pinned to its
-      # commit, as it's handed the key
-      - name: Publish the app bundle to Google Play's testing tracks
+      # Uploads the bundle to Google Play and releases it to everyone on internal testing,
+      # which Google doesn't review, so its testers get it first. Only once Play's set up,
+      # with the service account's key in the secrets. Play refuses a version code it
+      # already has, so a tag already published fails here, and a fix needs a new tag. The
+      # action's pinned to its commit, as it's handed the key
+      - name: Publish the app bundle to Google Play's internal testing
         id: play
         if: env.PLAY_SERVICE_ACCOUNT_JSON != '' && hashFiles(format('diwali-{0}.aab', env.TAG)) != ''
         uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
@@ -123,13 +128,21 @@ jobs:
           packageName: tech.tanay.diwali
           releaseFiles: diwali-${{ env.TAG }}.aab
           releaseName: ${{ env.TAG }}
-          tracks: internal,alpha,beta
+          tracks: internal
           status: completed
           whatsNewDirectory: ${{ runner.temp }}/whatsnew
 
-      # Then the same build, which Play now has, goes to production as a staged rollout to
-      # a fifth of its users once Google's reviewed it, without uploading it again. It's
-      # rolled out to everyone by hand in Play Console, and a newer release replaces it
-      - name: Release it to Google Play's production track for 20% of users
+      # Then the same build, which Play now has, goes on its other tracks without being
+      # uploaded again: to everyone on closed (alpha) and open (beta) testing, and to
+      # production as a staged rollout to a fifth of its users, each once Google's
+      # reviewed it. It's rolled out to everyone by hand in Play Console, and a newer
+      # release replaces it. Each track's changed on its own, so one Play won't take, such
+      # as a testing track that isn't set up, doesn't stop the others, and what Play said
+      # is in the log. The script's taken from this workflow's own commit, which is never
+      # older than the tag, so a fix to it applies when an older tag's run again
+      - name: Release it on Google Play's closed and open testing, and production for 20% of users
         if: steps.play.outcome == 'success'
-        run: scripts/release/play-production.sh tech.tanay.diwali "$TAG" "$RUNNER_TEMP/whatsnew/whatsnew-en-US" 0.2
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/workflow" "$GITHUB_SHA"
+          "$RUNNER_TEMP/workflow/scripts/release/play-release.sh" tech.tanay.diwali "$TAG" \
+            "$RUNNER_TEMP/whatsnew/whatsnew-en-US" alpha beta production:0.2
