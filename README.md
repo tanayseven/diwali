@@ -124,14 +124,14 @@ will build the release app bundle for Google Play at `android/app/build/outputs/
 
 ### Google Play
 
-Each nightly bundle is published to Google Play's **internal testing** track, for the testers there, once the `PLAY_SERVICE_ACCOUNT_JSON` secret is set; until then that step is skipped. Its "what's new" notes are the commits since the release before it. Production releases are made by hand: in Play Console, promote a build from internal testing.
+Each nightly bundle is released to Google Play's **production** track as a **staged rollout to 20%** of users, once the `PLAY_SERVICE_ACCOUNT_JSON` secret is set; until then that step is skipped. Google reviews it first, so it reaches them after the review. Its "what's new" notes are the release's changelog, the commits since the release before it. To give it to everyone, increase the rollout to 100% in Play Console, under Production; or halt it there if something's wrong. A newer release replaces one still rolling out, so with releases most nights, the rest of the users only get a release once it's rolled out to everyone. The rollout's share is `userFraction` in `.github/workflows/android.yml`.
 
 It needs setting up once:
 
 1. In [Play Console](https://play.google.com/console), create the app `tech.tanay.diwali`, and fill in its store listing, content rating, data safety and target audience, with the privacy policy at https://diwali.tanay.tech/privacy. Use Play App Signing, with the upload key above.
 2. Upload the first bundle by hand to internal testing, as Google Play's API can't make an app's first upload: the `.aab` from the latest GitHub release. Add the testers' email addresses and roll it out.
 3. In [Google Cloud](https://console.cloud.google.com), enable the Google Play Android Developer API in a project, and create a service account there with a JSON key.
-4. In Play Console's Users and permissions, invite the service account's email address, with permission to release to testing tracks for this app only.
+4. In Play Console's Users and permissions, invite the service account's email address, with permission to release to production and to testing tracks, for this app only.
 5. Save the key as the secret, and delete the file:
 
 ```sh
