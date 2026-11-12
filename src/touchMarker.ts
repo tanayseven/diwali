@@ -4,7 +4,7 @@ import {Assets, Container, Graphics, PointData, Sprite} from "pixi.js"
 // above and to the left of it, on screen, and it's there that it's put down or held to
 // something. A hand reaching up from the finger holds it there, pinched between thumb
 // and forefinger
-const liftOffset = 40
+const liftOffset = 64
 const markerRadius = 26
 const markerColour = 0xffffff
 
