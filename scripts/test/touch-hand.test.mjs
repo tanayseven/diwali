@@ -4,8 +4,9 @@
 //
 //   npm run test:e2e
 //
-// The hand is looked for by its skin's colours on the screen, in the square just below
-// and to the right of the finger, where its palm and wrist are and nothing else is drawn.
+// The hand is looked for by its skin's colours on the screen, in the square round the
+// finger, a little up and to the left of it, where the palm is: what it holds is further
+// up and to the left, out of the square.
 // The positions below are where the rail's buttons and the bar's slots are on that
 // screen, in CSS pixels, as in scripts/store/screenshots.mjs
 import assert from "node:assert/strict"
@@ -79,9 +80,10 @@ const touchUp = async () => {
   await page.waitForTimeout(300)
 }
 
-// How many pixels in the square below and to the right of a point are the hand's skin
+// How many pixels in the square round a point, a little up and to the left of it, are
+// the hand's skin
 const handPixels = async at => {
-  const shot = await page.screenshot({clip: {x: at.x, y: at.y, width: 70, height: 70}})
+  const shot = await page.screenshot({clip: {x: at.x - 55, y: at.y - 55, width: 70, height: 70}})
   return page.evaluate(async png => {
     const image = new Image()
     image.src = `data:image/png;base64,${png}`
