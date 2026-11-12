@@ -1,0 +1,3 @@
+• Hold what a finger drags further up and to the left of it
+• Test that a Google Play track whose commit is refused doesn't stop the others
+• Release on each Google Play track on its own, so one Play refuses doesn't stop the rest
