@@ -1,7 +1,8 @@
 // Runs scripts/release/itch.sh against a release made of stand-in files, with a stand-in
 // butler first on the path that only records what it's asked to push, and checks each
 // kind of build goes to its own itch.io channel, as itch.io expects it, labelled with the
-// tag. That a build missing from the release fails it, after pushing the rest, and with
+// tag. That a build missing from the release, or one butler fails to push, fails it,
+// after pushing the rest, and with
 // no release at all, the browser game still goes. And that a tag older than the newest
 // isn't pushed over it.
 //
@@ -75,21 +76,26 @@ before(() => {
   execFileSync("tar", ["-czf", join(release, `${name}-${tag}-linux-x64.tar.gz`), "-C", dir, `${name}-${tag}-linux-x64`])
   writeFileSync(join(web, "index.html"), "<!DOCTYPE html>")
   writeFileSync(join(web, "assets", "index.js"), "")
-  // Records each push: its arguments, and the files in the folder pushed
+  // Records each push: its arguments, and the files in the folder pushed. It fails a
+  // push to the channel in BUTLER_FAILS, after recording it, as butler does mid-push
   const butler = join(bin, "butler")
   writeFileSync(butler, `#!/usr/bin/env bash
 files=$(cd "$2" && find . -type f | sed 's|^\\./||' | sort | paste -sd, -)
 printf '%s\\t%s\\t%s\\n' "$*" "$1" "$files" >> "${log}"
+if [[ -n \${BUTLER_FAILS:-} && $3 == *:\$BUTLER_FAILS ]]; then
+  echo "checking for differences: not a directory" >&2
+  exit 1
+fi
 `)
   chmodSync(butler, 0o755)
 })
 after(() => rmSync(dir, {recursive: true, force: true}))
 
 // Runs the script, and gives its exit code, its output and what it pushed, by channel
-const push = ({releaseDir = release, newest = tag} = {}) => new Promise(resolve => {
+const push = ({releaseDir = release, newest = tag, fails = ""} = {}) => new Promise(resolve => {
   rmSync(log, {force: true})
   const child = spawn("bash", [script, tag, releaseDir, web], {
-    env: {...process.env, PATH: `${bin}:${process.env.PATH}`, ITCH_NEWEST_TAG: newest},
+    env: {...process.env, PATH: `${bin}:${process.env.PATH}`, ITCH_NEWEST_TAG: newest, BUTLER_FAILS: fails},
   })
   let output = ""
   child.stdout.on("data", chunk => output += chunk)
@@ -118,7 +124,9 @@ test("pushes every kind of build to its own channel, labelled with the tag", asy
     const pushed = pushes[channel]
     assert.equal(pushed.command, "push")
     assert.equal(pushed.target, `${game}:${channel}`)
-    assert.deepEqual(pushed.flags, ["--userversion", tag, "--if-changed"])
+    // Only the browser game is skipped when it's unchanged; every other build is named
+    // with the tag, so is never unchanged, and butler's check breaks on a .zip
+    assert.deepEqual(pushed.flags, ["--userversion", tag, ...channel === "html5" ? ["--if-changed"] : []])
     assert.deepEqual(pushed.files, files, `what's pushed to ${channel}`)
   }
 })
@@ -135,6 +143,15 @@ test("fails when a build's missing from the release, after pushing the rest", as
   } finally {
     writeFileSync(apk, "apk")
   }
+})
+
+test("goes on past a channel butler fails to push, and fails naming it", async () => {
+  const {code, output, pushes} = await push({fails: "windows-x64"})
+  assert.notEqual(code, 0)
+  // Tried, and every channel after it still pushed
+  assert.deepEqual(Object.keys(pushes).sort(), Object.keys(expected).sort())
+  assert.match(output, /butler couldn't push these channels to itch\.io: windows-x64$/m)
+  assert.doesNotMatch(output, /Pushed .* to every channel/)
 })
 
 test("pushes the browser game when there's no release at all, and lists every build missing", async () => {
