@@ -14,6 +14,24 @@ Live at: https://diwali.tanay.tech/, and the game itself at https://diwali.tanay
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE.txt)
 [![Website](https://img.shields.io/website?style=for-the-badge&url=https%3A%2F%2Fdiwali.tanay.tech&up_message=online&down_message=offline)](https://diwali.tanay.tech)
 [![Deploy to S3](https://github.com/tanayseven/diwali/actions/workflows/deploy.yml/badge.svg)](https://github.com/tanayseven/diwali/actions/workflows/deploy.yml)
+[![Tests](https://github.com/tanayseven/diwali/actions/workflows/test.yml/badge.svg)](https://github.com/tanayseven/diwali/actions/workflows/test.yml)
+[![Nightly release tag](https://github.com/tanayseven/diwali/actions/workflows/nightly-tag.yml/badge.svg)](https://github.com/tanayseven/diwali/actions/workflows/nightly-tag.yml)
+
+[![Latest release](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Ftanayseven%2Fdiwali%2Freleases%2Flatest&query=%24.tag_name&label=latest%20release&color=FFD700&style=for-the-badge&logo=github)](https://github.com/tanayseven/diwali/releases/latest)
+[![itch.io](https://img.shields.io/badge/itch.io-play%20in%20browser-FA5C5C?style=for-the-badge&logo=itchdotio&logoColor=white)](https://tanayseven.itch.io/diwali-celebration)
+[![Last commit](https://img.shields.io/github/last-commit/tanayseven/diwali?style=for-the-badge)](https://github.com/tanayseven/diwali/commits/main)
+
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/tanayseven/diwali/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-0078D4?style=for-the-badge)](https://github.com/tanayseven/diwali/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/tanayseven/diwali/releases/latest)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/tanayseven/diwali/releases/latest)
+[![Web](https://img.shields.io/badge/Web-browser-4285F4?style=for-the-badge)](https://diwali.tanay.tech/play)
+
+[![Capacitor](https://img.shields.io/badge/Capacitor-7-119EFF?style=for-the-badge&logo=capacitor&logoColor=white)](https://capacitorjs.com)
+[![Matter.js](https://img.shields.io/badge/Matter.js-0.20-4B5562?style=for-the-badge)](https://brm.io/matter-js/)
+[![Wails](https://img.shields.io/badge/Wails-2.17-DF0000?style=for-the-badge&logo=wails&logoColor=white)](https://wails.io)
+[![Go](https://img.shields.io/badge/Go-1.27-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev)
+[![Playwright](https://img.shields.io/badge/Playwright-1.56-2EAD33?style=for-the-badge)](https://playwright.dev)
 
 ## What's in it
 
