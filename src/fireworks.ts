@@ -6,7 +6,7 @@ import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
-import {mostOverlapped, screenBox} from "./overlap"
+import {mostOverlappedBy} from "./overlap"
 import {createShownParticles} from "./shownParticles"
 import {addHint} from "./hints"
 import {setOutline} from "./outline"
@@ -811,7 +811,7 @@ const createFireworks = (
 
   // The unlit placed firework something drawn in a box on screen touches most, the
   // nearest if it touches more than one as much
-  const fireworkAt = (box: Rectangle) => mostOverlapped(
+  const touchedFirework = (box: Rectangle) => mostOverlappedBy(
     box,
     placed.filter(firework => firework.state === "unlit").sort((a, b) => b.sprite.zIndex - a.sprite.zIndex),
     firework => {
@@ -937,20 +937,29 @@ const createFireworks = (
   const pointer = new Point()
   let pressedSlotAt: Point | undefined
 
+  // Where a firework's fuse is drawn, on the stage, through its sprite as it's shown,
+  // grown while it's targeted, for the match to be put to
+  const fuseOf = (firework: Placed) => {
+    const {origin, density, fuseAt} = shapes[firework.kind]
+    return firework.sprite.toGlobal({x: (fuseAt.x - origin.x) * density, y: (fuseAt.y - origin.y) * density})
+  }
+
   // The unlit fireworks, for whichever bar's match is held, which is put to the end
   // of the fuse
   const fireworkLightable: Lightable = {
-    aimAt(box) {
-      const firework = fireworkAt(box)
-      setTarget(firework)
-      return firework && {
-        target: firework,
-        at: () => background.decorations.toGlobal(onFirework(firework, shapes[firework.kind].fuseAt)),
-        light: () => light(firework),
+    touching(box) {
+      const touched = touchedFirework(box)
+      if (!touched) {
+        return undefined
+      }
+      const firework = touched.candidate
+      return {
+        aim: {target: firework, at: () => fuseOf(firework), light: () => light(firework)},
+        overlap: touched.overlap,
       }
     },
-    clearAim() {
-      setTarget(undefined)
+    pick(target) {
+      setTarget(placed.find(firework => firework === target))
     },
   }
   lightables.push(fireworkLightable)

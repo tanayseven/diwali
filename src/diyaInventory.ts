@@ -6,7 +6,7 @@ import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {addHint} from "./hints"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
-import {mostOverlapped, screenBox} from "./overlap"
+import {mostOverlappedBy, screenBox} from "./overlap"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
@@ -319,7 +319,7 @@ const createDiyaInventory = (
 
   // The placed diya that could take what's dragged that it touches most, drawn in a
   // box on screen, the nearest if it touches more than one as much
-  const diyaAt = (box: Rectangle, wants: (diya: PlacedDiya) => boolean) => mostOverlapped(
+  const touchedDiya = (box: Rectangle, wants: (diya: PlacedDiya) => boolean) => mostOverlappedBy(
     box,
     placed.filter(diya => !diya.busy && wants(diya)).sort((a, b) => b.sprite.zIndex - a.sprite.zIndex),
     ({sprite}) => screenBox(sprite, new Rectangle(
@@ -327,6 +327,7 @@ const createDiyaInventory = (
       diyaTarget.width, diyaTarget.height,
     )),
   )
+  const diyaAt = (box: Rectangle, wants: (diya: PlacedDiya) => boolean) => touchedDiya(box, wants)?.candidate
 
   const setTarget = (diya: PlacedDiya | undefined) => {
     if (target !== diya) {
@@ -464,13 +465,16 @@ const createDiyaInventory = (
 
   // The diyas ready to light, for whichever bar's match is held
   const diyaLightable: Lightable = {
-    aimAt(box) {
-      const diya = diyaAt(box, lightable)
-      setTarget(diya)
-      return diya && {target: diya, at: () => wickOf(diya), light: () => light(diya)}
+    touching(box) {
+      const touched = touchedDiya(box, lightable)
+      if (!touched) {
+        return undefined
+      }
+      const diya = touched.candidate
+      return {aim: {target: diya, at: () => wickOf(diya), light: () => light(diya)}, overlap: touched.overlap}
     },
-    clearAim() {
-      setTarget(undefined)
+    pick(target) {
+      setTarget(placed.find(diya => diya === target))
     },
   }
   lightables.push(diyaLightable)

@@ -25,17 +25,19 @@ const overlap = (a: Rectangle, b: Rectangle) =>
 // Of the things that could be, the one something on screen overlaps most, if any: so
 // whatever it's touching is what it's dropped on or held to, not just what's under the
 // pointer
-const mostOverlapped = <T>(box: Rectangle, candidates: T[], boxOf: (candidate: T) => Rectangle) => {
-  let best: T | undefined
-  let most = 0
+const mostOverlapped = <T>(box: Rectangle, candidates: T[], boxOf: (candidate: T) => Rectangle) =>
+  mostOverlappedBy(box, candidates, boxOf)?.candidate
+
+// The same, with how much it overlaps it, to weigh against others
+const mostOverlappedBy = <T>(box: Rectangle, candidates: T[], boxOf: (candidate: T) => Rectangle) => {
+  let best: {candidate: T, overlap: number} | undefined
   for (const candidate of candidates) {
     const shared = overlap(box, boxOf(candidate))
-    if (shared > most) {
-      best = candidate
-      most = shared
+    if (shared > (best?.overlap ?? 0)) {
+      best = {candidate, overlap: shared}
     }
   }
   return best
 }
 
-export {mostOverlapped, overlap, screenBox}
+export {mostOverlapped, mostOverlappedBy, overlap, screenBox}

@@ -50,27 +50,28 @@ type Aim = {target: object, at: () => PointData, light: () => void}
 
 // Things in the scene a held match can light, whichever bar it was taken from
 type Lightable = {
-  // What a match drawn in a box on screen touches that could be lit, picked out as
-  // its target, or nothing
-  aimAt: (box: Rectangle) => Aim | undefined
-  // Stops picking out whatever was
-  clearAim: () => void
+  // Of what it has that could be lit, what a match drawn in a box on screen touches
+  // most, and how much it overlaps it, or nothing
+  touching: (box: Rectangle) => {aim: Aim, overlap: number} | undefined
+  // Picks out what the match is held to, if it's one of its own, and stops picking out
+  // whatever was
+  pick: (target: object | undefined) => void
 }
 
-// What the first that has anything the match touches has, and the rest stop picking
-// anything out
+// Whatever the match touches most, of everything any of them has, picked out as its
+// target, so a diya doesn't win over a firework it barely touches just for being asked first
 const aimAt = (lightables: Lightable[], box: Rectangle) => {
-  let aim: Aim | undefined
+  let best: {aim: Aim, overlap: number} | undefined
   for (const lightable of lightables) {
-    if (aim) {
-      lightable.clearAim()
-    } else {
-      aim = lightable.aimAt(box)
+    const touched = lightable.touching(box)
+    if (touched && touched.overlap > (best?.overlap ?? 0)) {
+      best = touched
     }
   }
-  return aim
+  lightables.forEach(lightable => lightable.pick(best?.aim.target))
+  return best?.aim
 }
-const clearAims = (lightables: Lightable[]) => lightables.forEach(lightable => lightable.clearAim())
+const clearAims = (lightables: Lightable[]) => lightables.forEach(lightable => lightable.pick(undefined))
 
 // A copy of the match just lit, left in its place to burn down and fade away on its own,
 // below the fresh one in hand, and then let go of
