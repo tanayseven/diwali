@@ -133,16 +133,19 @@ jobs:
           whatsNewDirectory: ${{ runner.temp }}/whatsnew
 
       # Then the same build, which Play now has, goes on its other tracks without being
-      # uploaded again: to everyone on closed (alpha) and open (beta) testing, and to
-      # production as a staged rollout to a fifth of its users, each once Google's
-      # reviewed it. It's rolled out to everyone by hand in Play Console, and a newer
+      # uploaded again: to everyone on closed (alpha) testing, once Google's reviewed it.
+      # Open testing (beta) and production are left out for now: Play refuses both
+      # ("Precondition check failed") until a new personal account's closed test has run
+      # long enough. Once it gives access, add back `beta production:0.2`, which releases
+      # to everyone on open testing and to production as a staged rollout to a fifth of
+      # its users. It's rolled out to everyone by hand in Play Console, and a newer
       # release replaces it. Each track's changed on its own, so one Play won't take, such
       # as a testing track that isn't set up, doesn't stop the others, and what Play said
       # is in the log. The script's taken from this workflow's own commit, which is never
       # older than the tag, so a fix to it applies when an older tag's run again
-      - name: Release it on Google Play's closed and open testing, and production for 20% of users
+      - name: Release it on Google Play's closed testing
         if: steps.play.outcome == 'success'
         run: |
           git worktree add --detach "$RUNNER_TEMP/workflow" "$GITHUB_SHA"
           "$RUNNER_TEMP/workflow/scripts/release/play-release.sh" tech.tanay.diwali "$TAG" \
-            "$RUNNER_TEMP/whatsnew/whatsnew-en-US" alpha beta production:0.2
+            "$RUNNER_TEMP/whatsnew/whatsnew-en-US" alpha
