@@ -5,7 +5,8 @@ import {createBackground, sceneHeight, sceneWidth} from "./background"
 import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
-import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
+import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
+import {mostOverlapped, screenBox} from "./overlap"
 import {createShownParticles} from "./shownParticles"
 import {addHint} from "./hints"
 import {setOutline} from "./outline"
@@ -521,14 +522,18 @@ type Drag = {sprite: Sprite, firework: Placed, fromScene?: PointData}
 // and laddis (strings of firecrackers) are dragged from their stacks onto the porch,
 // and can be picked up to move them or dropped on the bar to put them back; burnt-out
 // ones are cleared away the same way. The matchstick dragged out of the bar and held
-// over an unlit one is struck, and a ring round it fills until its fuse catches; it
-// goes back once it's let go. An anar's fizzes down to the nozzle; then it throws up a fountain of sparks
+// to an unlit one is struck, and a ring round it fills until its fuse catches; it
+// goes back once it's let go. It lights whatever else the lightables have too, such as
+// diyas, and their matches light fireworks. An anar's fizzes down to the nozzle; then it throws up a fountain of sparks
 // that crackle and glitter, shedding embers and smoke and lighting up the porch, and
 // sputters out after a while. A laddi's fizzes along to its crackers, which go off one
 // after another, each with a blast. A chakri's fizzes to its coil, and it spins about
 // in a ring of fire. A sutli bomb's fizzes slowly down its wick, and it goes off all at
 // once in one great blast. Expects fireworksAssets to have been loaded
-const createFireworks = (app: Application, background: Background, lighting: Lighting, audio: AudioControl, wind: Wind) => {
+const createFireworks = (
+  app: Application, background: Background, lighting: Lighting, audio: AudioControl, wind: Wind,
+  lightables: Lightable[],
+) => {
   // A firework's slot shows its unlit drawing, cropped to the area it's picked up by
   const itemFor = (shape: Shape, url: string): Item => ({
     url,
@@ -804,20 +809,18 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     firework.sprite.scale.set(scale / density * factor)
   }
 
-  // The nearest placed firework under a point on screen that could be lit
-  const fireworkAt = (point: PointData) => {
-    const at = background.toScene(point)
-    return placed
-      .filter(firework => firework.state === "unlit")
-      .sort((a, b) => b.sprite.zIndex - a.sprite.zIndex)
-      .find(firework => {
-        const {origin, area, scale} = shapes[firework.kind]
-        return area.contains(
-          origin.x + (at.x - firework.sprite.x) / scale,
-          origin.y + (at.y - firework.sprite.y) / scale,
-        )
-      })
-  }
+  // The unlit placed firework something drawn in a box on screen touches most, the
+  // nearest if it touches more than one as much
+  const fireworkAt = (box: Rectangle) => mostOverlapped(
+    box,
+    placed.filter(firework => firework.state === "unlit").sort((a, b) => b.sprite.zIndex - a.sprite.zIndex),
+    firework => {
+      const {area} = shapes[firework.kind]
+      const from = background.decorations.toGlobal(onFirework(firework, {x: area.left, y: area.top}))
+      const to = background.decorations.toGlobal(onFirework(firework, {x: area.right, y: area.bottom}))
+      return new Rectangle(from.x, from.y, to.x - from.x, to.y - from.y)
+    },
+  )
 
   const setTarget = (firework: Placed | undefined) => {
     if (target !== firework) {
@@ -934,19 +937,36 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
   const pointer = new Point()
   let pressedSlotAt: Point | undefined
 
-  // Points the held match at whatever unlit firework it's over, to light it once it's
-  // been pressed there long enough
+  // The unlit fireworks, for whichever bar's match is held, which is put to the end
+  // of the fuse
+  const fireworkLightable: Lightable = {
+    aimAt(box) {
+      const firework = fireworkAt(box)
+      setTarget(firework)
+      return firework && {
+        target: firework,
+        at: () => background.decorations.toGlobal(onFirework(firework, shapes[firework.kind].fuseAt)),
+        light: () => light(firework),
+      }
+    },
+    clearAim() {
+      setTarget(undefined)
+    },
+  }
+  lightables.push(fireworkLightable)
+
+  // Points the held match at whatever it's touching that it could light, a firework or
+  // anything else, to light it once it's been held there long enough
   const aimMatch = () => {
     if (!held) {
       return
     }
     held.moveTo(pointer, background.scale())
     touch.holdAt(held.grip())
-    const firework = fireworkAt(pointer)
-    setTarget(firework)
-    held.setAim(firework && {target: firework, light: () => {
-      light(firework)
-      // Whatever else is under it now could be lit next
+    const aim = aimAt(lightables, held.box())
+    held.setAim(aim && {...aim, light: () => {
+      aim.light()
+      // Whatever else it's touching now could be lit next
       aimMatch()
     }})
   }
@@ -958,7 +978,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     held.destroy()
     held = undefined
     touch.hide()
-    setTarget(undefined)
+    clearAims(lightables)
     placed.forEach(makePickable)
     render()
   }
@@ -978,7 +998,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     }
   })
   const takeMatch = () => {
-    held = matchstick.hold(pointer)
+    held = matchstick.hold(pointer, () => held && touch.holdAt(held.grip()))
     dragLayer.addChild(held.container)
     placed.forEach(makePickable)
     aimMatch()
@@ -1853,6 +1873,7 @@ const createFireworks = (app: Application, background: Background, lighting: Lig
     },
     destroy() {
       putAwayMatch()
+      lightables.splice(lightables.indexOf(fireworkLightable), 1)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)

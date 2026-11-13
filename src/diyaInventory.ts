@@ -5,7 +5,8 @@ import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {addHint} from "./hints"
-import {createMatchstick, draggedFrom, HeldMatch, matchFrameUrls} from "./matchstick"
+import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
+import {mostOverlapped, screenBox} from "./overlap"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
@@ -102,6 +103,8 @@ const diyaBowl = new Rectangle(
   diyaCrop.x - diyaCanvas.width * diyaAnchor.x, diyaCrop.y - diyaCanvas.height * diyaAnchor.y,
   diyaCrop.width, diyaCrop.height,
 )
+// A diya's wick's tip, this far below the middle of the flame it'll have, in its canvas's units
+const wickBelowFlame = 40
 // A diya that can take a wick or oil grows this much while one is dragged over it
 const targetGrowth = 1.12
 
@@ -203,10 +206,13 @@ type Drag =
 // into the scene one at a time; placed ones can be picked up and moved, or dropped
 // anywhere on the bar to go back on their stack. A wick dragged onto a placed diya
 // goes into it, and the bottle dragged onto one pours oil into it, in either order.
-// The matchstick dragged out of the bar and held over a diya with both is struck, and a
-// ring round it fills until the diya lights; it goes back once it's let go.
-// Expects diyaAssets to have been loaded already
-const createDiyaInventory = (app: Application, background: Background, lighting: Lighting, audio: AudioControl) => {
+// The matchstick dragged out of the bar and held to a diya with both is struck, and a
+// ring round it fills until the diya lights; it goes back once it's let go. It lights
+// whatever else the lightables have too, such as fireworks, and their matches light
+// diyas. Expects diyaAssets to have been loaded already
+const createDiyaInventory = (
+  app: Application, background: Background, lighting: Lighting, audio: AudioControl, lightables: Lightable[],
+) => {
   const {emptyDiyas, wicks, oilBottle} = createItems()
   const matchstick = createMatchstick(app, audio)
   // Each only drawn while a lit diya on the porch facing its way is on screen, or one
@@ -311,17 +317,16 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
   }
 
-  // The nearest placed diya under a point on screen that could take what's dragged
-  const diyaAt = (point: PointData, wants: (diya: PlacedDiya) => boolean) => {
-    const at = background.toScene(point)
-    return placed
-      .filter(diya => !diya.busy && wants(diya))
-      .sort((a, b) => b.sprite.zIndex - a.sprite.zIndex)
-      .find(({sprite}) => diyaTarget.contains(
-        diyaCanvas.width * diyaAnchor.x + (at.x - sprite.x) / diyaScale,
-        diyaCanvas.height * diyaAnchor.y + (at.y - sprite.y) / diyaScale,
-      ))
-  }
+  // The placed diya that could take what's dragged that it touches most, drawn in a
+  // box on screen, the nearest if it touches more than one as much
+  const diyaAt = (box: Rectangle, wants: (diya: PlacedDiya) => boolean) => mostOverlapped(
+    box,
+    placed.filter(diya => !diya.busy && wants(diya)).sort((a, b) => b.sprite.zIndex - a.sprite.zIndex),
+    ({sprite}) => screenBox(sprite, new Rectangle(
+      diyaTarget.x - diyaCanvas.width * diyaAnchor.x, diyaTarget.y - diyaCanvas.height * diyaAnchor.y,
+      diyaTarget.width, diyaTarget.height,
+    )),
+  )
 
   const setTarget = (diya: PlacedDiya | undefined) => {
     if (target !== diya) {
@@ -447,19 +452,41 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
   // The diyas ready to light under the held match
   const lightable = (diya: PlacedDiya) => diya.wick && diya.oil && !diya.lit
 
-  // Points the held match at whatever diya ready to light it's over, to light it once
-  // it's been pressed there long enough
+  // Where a diya's wick is, on the stage, for the match to be put to: where its flame
+  // will be, facing right as it does before it's turned
+  const wickOf = (diya: PlacedDiya) => {
+    const {sprite} = diya
+    const {flame} = facings.right
+    return background.decorations.toGlobal({
+      x: sprite.x + flame.x * Math.abs(sprite.scale.x), y: sprite.y + (flame.y + wickBelowFlame) * sprite.scale.y,
+    })
+  }
+
+  // The diyas ready to light, for whichever bar's match is held
+  const diyaLightable: Lightable = {
+    aimAt(box) {
+      const diya = diyaAt(box, lightable)
+      setTarget(diya)
+      return diya && {target: diya, at: () => wickOf(diya), light: () => light(diya)}
+    },
+    clearAim() {
+      setTarget(undefined)
+    },
+  }
+  lightables.push(diyaLightable)
+
+  // Points the held match at whatever it's touching that it could light, a diya or
+  // anything else, to light it once it's been held there long enough
   const aimMatch = () => {
     if (!held) {
       return
     }
     held.moveTo(pointer, background.scale())
     touch.holdAt(held.grip())
-    const diya = diyaAt(pointer, lightable)
-    setTarget(diya)
-    held.setAim(diya && {target: diya, light: () => {
-      light(diya)
-      // Whatever else is under it now could be lit next
+    const aim = aimAt(lightables, held.box())
+    held.setAim(aim && {...aim, light: () => {
+      aim.light()
+      // Whatever else it's touching now could be lit next
       aimMatch()
     }})
   }
@@ -471,7 +498,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     held.destroy()
     held = undefined
     touch.hide()
-    setTarget(undefined)
+    clearAims(lightables)
     placed.forEach(makePickable)
     render()
   }
@@ -513,7 +540,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     }
   })
   const takeMatch = () => {
-    held = matchstick.hold(pointer)
+    held = matchstick.hold(pointer, () => held && touch.holdAt(held.grip()))
     dragLayer.addChild(held.container)
     placed.forEach(makePickable)
     aimMatch()
@@ -645,9 +672,9 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
       // Faded while it's somewhere it can't be put down
       drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (drag.kind === "wick") {
-      setTarget(diyaAt(at, diya => !diya.wick))
+      setTarget(diyaAt(screenBox(drag.sprite), diya => !diya.wick))
     } else {
-      setTarget(diyaAt(at, diya => !diya.oil))
+      setTarget(diyaAt(screenBox(drag.sprite), diya => !diya.oil))
     }
   }
   // Letting go puts the match back, and a diya pressed and let go without dragging it
@@ -735,6 +762,7 @@ const createDiyaInventory = (app: Application, background: Background, lighting:
     },
     destroy() {
       putAwayMatch()
+      lightables.splice(lightables.indexOf(diyaLightable), 1)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)

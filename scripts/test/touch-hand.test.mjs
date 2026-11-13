@@ -1,5 +1,7 @@
 // Plays the game in headless Chromium as a phone held sideways, with touch, and checks
-// that a finger dragging something has a hand drawn holding it, and that a mouse doesn't.
+// that a finger dragging something from any bar has a hand drawn holding it, and that a
+// mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
+// either bar's matchstick lights diyas and fireworks alike.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -21,7 +23,7 @@ const port = 4175
 // A Pixel 7 held sideways, at the size the positions below are for
 const screen = {width: 844, height: 390}
 const phone = {...devices["Pixel 7 landscape"], viewport: screen, screen}
-const rail = {diyas: 43, fireworks: 110}
+const rail = {diyas: 43, fireworks: 110, kandil: 177}
 const slot = index => ({x: 125 + 66 * index, y: 300})
 const porch = {x: 450, y: 225}
 
@@ -154,4 +156,54 @@ test("a mouse drag has no hand", async () => {
   const holding = await handPixels(at)
   await page.mouse.up()
   assert.ok(holding < notShown, `no hand with a mouse (${holding.toFixed(3)} of the square)`)
+})
+
+test("a kandil's frame dragged by a finger is held by a hand", async () => {
+  await page.touchscreen.tap(52, rail.kandil)
+  await page.waitForTimeout(800)
+  const at = {x: porch.x - 100, y: porch.y - 45}
+  await touchDown(slot(0), at)
+  const holding = await handPixels(at)
+  await touchUp()
+  assert.ok(holding > shown, `the hand holds the frame (${holding.toFixed(3)} of the square)`)
+  assert.ok(await handPixels(at) < notShown, "the hand's gone once the frame's let go")
+})
+
+// Something dragged from a bar with the mouse, let go at a point
+const mouseDrag = async (from, to, hold = 300) => {
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+  await page.mouse.move(to.x, to.y, {steps: 12})
+  await page.waitForTimeout(hold)
+  await page.mouse.up()
+  await page.waitForTimeout(300)
+}
+// What a placed diya's tooltip says of it, from hovering over it with the mouse
+const diyaSays = async (at, text) => {
+  await page.mouse.move(at.x - 60, at.y - 60)
+  await page.mouse.move(at.x, at.y - 4, {steps: 4})
+  await page.getByText(text, {exact: true}).waitFor({timeout: 3000})
+  await page.mouse.move(at.x - 60, at.y - 60)
+}
+// Where a diya's put down, standing on the porch, away from what the tests before left
+const diya = {x: porch.x + 70, y: porch.y - 10}
+
+test("oil goes into a diya the bottle only touches, not just one under the pointer", async () => {
+  await page.mouse.click(52, rail.diyas)
+  await page.waitForTimeout(800)
+  await mouseDrag(slot(0), diya)
+  await mouseDrag(slot(1), diya)
+  await diyaSays(diya, "Needs oil")
+  // The pointer's above the bowl, clear of it, but the bottle reaches down onto it
+  await mouseDrag(slot(2), {x: diya.x, y: diya.y - 22})
+  await page.waitForTimeout(2000)
+  await diyaSays(diya, "Ready to light with the matchstick")
+})
+
+test("the Fireworks bar's matchstick lights a diya", async () => {
+  await page.mouse.click(52, rail.fireworks)
+  await page.waitForTimeout(800)
+  // Held there while it's struck, put to the wick, and catches
+  await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 1500)
+  await diyaSays(diya, "Lit")
 })
