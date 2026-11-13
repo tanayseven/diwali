@@ -1,5 +1,6 @@
-import {Application, Assets, Container, Graphics, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, Graphics, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {stereoPan, type createAudioControl} from "./audioControl"
+import {screenBox} from "./overlap"
 
 type AudioControl = ReturnType<typeof createAudioControl>
 
@@ -38,7 +39,39 @@ const ringRadius = 22
 const ringWidth = 4
 const ringColour = 0xffd700
 
-type Aim = {target: object, light: () => void}
+// While it's struck, the match is moved from the pointer to where its head's put to
+// what it's lighting, closing this share of the way each ms, and back once it's lit or
+// moved off
+const settleRate = 1 / 60
+
+// Something the match is held to: where on the stage its head's put to it, and how to
+// light it
+type Aim = {target: object, at: () => PointData, light: () => void}
+
+// Things in the scene a held match can light, whichever bar it was taken from
+type Lightable = {
+  // Of what it has that could be lit, what a match drawn in a box on screen touches
+  // most, and how much it overlaps it, or nothing
+  touching: (box: Rectangle) => {aim: Aim, overlap: number} | undefined
+  // Picks out what the match is held to, if it's one of its own, and stops picking out
+  // whatever was
+  pick: (target: object | undefined) => void
+}
+
+// Whatever the match touches most, of everything any of them has, picked out as its
+// target, so a diya doesn't win over a firework it barely touches just for being asked first
+const aimAt = (lightables: Lightable[], box: Rectangle) => {
+  let best: {aim: Aim, overlap: number} | undefined
+  for (const lightable of lightables) {
+    const touched = lightable.touching(box)
+    if (touched && touched.overlap > (best?.overlap ?? 0)) {
+      best = touched
+    }
+  }
+  lightables.forEach(lightable => lightable.pick(best?.aim.target))
+  return best?.aim
+}
+const clearAims = (lightables: Lightable[]) => lightables.forEach(lightable => lightable.pick(undefined))
 
 // A copy of the match just lit, left in its place to burn down and fade away on its own,
 // below the fresh one in hand, and then let go of
@@ -82,15 +115,19 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
   return {
     // The HUD slot's item for it
     item: {url: matchFrameUrls[0], crop: matchCrop, rotation: Math.PI / 4},
-    // Takes an unlit match in hand at a point on screen, held by its head. Over
-    // something it can light, it's struck, and a ring round its head fills as it flares
-    // and catches; moved off, the ring holds where it's got to until it's over something
-    // again. Once it's full that thing's lit, and a fresh match is in hand straight away,
-    // ready for the next, while the one that lit it burns down and goes out where it was
-    hold(at: PointData) {
+    // Takes an unlit match in hand at a point on screen, held by its head. Touching
+    // something it can light, it's struck, moved to put its head to it, and a ring round
+    // its head fills as it flares and catches; moved off, it goes back to the pointer and
+    // the ring holds where it's got to until it's touching something again. Once it's
+    // full that thing's lit, and a fresh match is in hand straight away, back at the
+    // pointer, ready for the next, while the one that lit it burns down and goes out
+    // where it was. Told whenever it's moved, for whatever holds it to follow
+    hold(at: PointData, onMoved?: () => void) {
       const container = new Container()
       container.eventMode = "none"
       container.position.copyFrom(at)
+      // Where the pointer has it, whether or not it's been moved off it to be struck
+      const pointer = new Point(at.x, at.y)
       const match = new Sprite(Assets.get<Texture>(matchFrameUrls[0]))
       match.anchor.set(matchHead.x, matchHead.y)
       match.rotation = matchTilt
@@ -119,6 +156,20 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
             .stroke({width: ringWidth, color: ringColour, cap: "round"})
         }
       }
+      // Moves it towards where it's held to what it's lighting, or to the pointer
+      const settle = (dt: number) => {
+        const goal = phase === "striking" && aim
+          ? (container.parent ? container.parent.toLocal(aim.at()) : aim.at())
+          : pointer
+        const dx = goal.x - container.x
+        const dy = goal.y - container.y
+        if (dx === 0 && dy === 0) {
+          return
+        }
+        const step = Math.hypot(dx, dy) < 0.5 ? 1 : 1 - Math.exp(-dt * settleRate)
+        container.position.set(container.x + dx * step, container.y + dy * step)
+        onMoved?.()
+      }
       const tick = () => {
         const dt = app.ticker.deltaMS
         if (phase === "ready" && aim) {
@@ -139,6 +190,7 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
             light()
           }
         }
+        settle(dt)
         drawRing()
       }
       app.ticker.add(tick)
@@ -147,14 +199,33 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
         container,
         // Moves it, and sizes it as the scene is shown, in screen pixels per scene unit
         moveTo(point: PointData, sceneScale: number) {
-          container.position.copyFrom(point)
+          pointer.copyFrom(point)
           match.scale.set(sceneScale * matchScale)
+          if (phase !== "striking" || !aim) {
+            container.position.copyFrom(point)
+          }
+        },
+        // Where its stick is drawn on screen, as it would be at the pointer, for what
+        // it's touching there
+        box(): Rectangle {
+          const {width, height} = match.texture
+          const kx = width / matchCanvas.width
+          const ky = height / matchCanvas.height
+          const box = screenBox(match, new Rectangle(
+            matchCrop.x * kx - match.anchor.x * width, matchCrop.y * ky - match.anchor.y * height,
+            matchCrop.width * kx, matchCrop.height * ky,
+          ))
+          const from = container.parent ? container.parent.toGlobal(container.position) : container.position
+          const to = container.parent ? container.parent.toGlobal(pointer) : pointer
+          box.x += to.x - from.x
+          box.y += to.y - from.y
+          return box
         },
         // Where a hand holding it holds it, well away from its head, on the stage
         grip(): PointData {
           return match.toGlobal(matchGrip)
         },
-        // What it's over that it could light, and how to light it
+        // What it's touching that it could light, and how to light it
         setAim(next: Aim | undefined) {
           aim = next
         },
@@ -173,5 +244,5 @@ type HeldMatch = ReturnType<ReturnType<typeof createMatchstick>["hold"]>
 // match out of its slot
 const draggedFrom = (from: PointData, to: PointData, slop = dragSlop) => Math.hypot(to.x - from.x, to.y - from.y) >= slop
 
-export {createMatchstick, draggedFrom, matchFrameUrls}
-export type {HeldMatch}
+export {aimAt, clearAims, createMatchstick, draggedFrom, matchFrameUrls}
+export type {Aim, HeldMatch, Lightable}

@@ -1,14 +1,16 @@
-import {Application, Assets, Container, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import Matter from "matter-js"
 import type {Background} from "./background"
 import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {draggedFrom} from "./matchstick"
+import {mostOverlapped, screenBox} from "./overlap"
 import {accelerate, airFriction, createParticleBody, hangingWorld, place as placeBody, velocityOf} from "./physics"
 import {addHint} from "./hints"
 import {setOutline} from "./outline"
 import {addTooltip, Tooltip} from "./tooltip"
+import {createTouchMarker} from "./touchMarker"
 import type {Wind} from "./wind"
 
 // An akash kandil is built up in layers, each drawn on the same 200 by 480 canvas,
@@ -113,6 +115,10 @@ const createKandils = (app: Application, background: Background, lighting: Light
   // Above the bar, so whatever is being dragged is never hidden behind it
   const dragLayer = new Container()
   container.addChild(bar.container, dragLayer)
+  // A hand holding whatever a finger drags, its forefinger's tip over it
+  const touch = createTouchMarker()
+  dragLayer.sortableChildren = true
+  dragLayer.addChild(touch.marker, touch.front)
   // Lit ones shine through the night; unlit ones stand among the diyas on the porch,
   // nearer ones in front, or hang in the dark
   const litLayer = new Container()
@@ -251,10 +257,11 @@ const createKandils = (app: Application, background: Background, lighting: Light
   }
 
   // Where a kandil held by the top of its string at a point on screen would go if let
-  // go there: standing on the porch if its foot's on the floor, or else hung from the
-  // eave above, if there's house there to hang it on
-  const placeAt = (at: PointData): Kandil["place"] | undefined => {
-    if (hudShown && bar.isOver(at)) {
+  // go there, by a pointer at another: standing on the porch if its foot's on the floor,
+  // or else hung from the eave above, if there's house there to hang it on. Nowhere,
+  // with the pointer over the bar, as letting go there puts it back
+  const placeAt = (at: PointData, finger: PointData): Kandil["place"] | undefined => {
+    if (hudShown && bar.isOver(finger)) {
       return undefined
     }
     const top = background.toScene(at)
@@ -276,15 +283,13 @@ const createKandils = (app: Application, background: Background, lighting: Light
     string.rotation = Math.atan2(from.x - to.x, to.y - from.y)
   }
 
-  // The placed kandil under a point on screen that could take what's dragged, the
-  // nearest if there's more than one
-  const kandilAt = (point: PointData, wants: (kandil: Kandil) => boolean) => placed
-    .filter(wants)
-    .sort((a, b) => b.container.zIndex - a.container.zIndex)
-    .find(kandil => {
-      const local = kandil.container.toLocal(point)
-      return bodyArea.contains(local.x, local.y)
-    })
+  // The placed kandil that could take what's dragged that it touches most, drawn in a
+  // box on screen, the nearest if it touches more than one as much
+  const kandilAt = (box: Rectangle, wants: (kandil: Kandil) => boolean) => mostOverlapped(
+    box,
+    placed.filter(wants).sort((a, b) => b.container.zIndex - a.container.zIndex),
+    kandil => screenBox(kandil.container, bodyArea),
+  )
 
   const setTarget = (kandil: Kandil | undefined) => {
     if (target === kandil) {
@@ -362,8 +367,11 @@ const createKandils = (app: Application, background: Background, lighting: Light
     frames.count! += 1
   }
 
-  const startDrag = (at: PointData, next: Drag, scale: number) => {
+  // Started by a pointer at a point, of a type, which on touch screens shows it beside
+  // the finger instead of under it
+  const startDrag = (finger: PointData, pointerType: string, next: Drag, scale: number) => {
     const {sprite} = next
+    const at = touch.follow(finger, pointerType)
     sprite.rotation = 0
     sprite.scale.set(scale)
     sprite.position.copyFrom(at)
@@ -377,16 +385,18 @@ const createKandils = (app: Application, background: Background, lighting: Light
       // Carried, its tails hang down again
       next.kandil.tailsSprite.scale.set(1)
     }
-    showDrag(at)
+    showDrag(at, finger)
     render()
   }
 
   // A sheet of paper, the tails or the bulb, held by its middle at the size it'd be
   // on a kandil
-  const startItemDrag = (at: PointData, next: Exclude<Drag, {kind: "kandil"}>, url: string, crop: Rectangle) => {
+  const startItemDrag = (
+    e: FederatedPointerEvent, next: Exclude<Drag, {kind: "kandil"}>, url: string, crop: Rectangle,
+  ) => {
     next.sprite.texture = cropped(url, crop)
     next.sprite.anchor.set(0.5)
-    startDrag(at, next, background.scale() * kandilScale)
+    startDrag(e.global, e.pointerType, next, background.scale() * kandilScale)
   }
 
   frameSlot.container.on("pointerdown", e => {
@@ -395,21 +405,21 @@ const createKandils = (app: Application, background: Background, lighting: Light
     }
     frames.count! -= 1
     const kandil = createKandil()
-    startDrag(e.global, {kind: "kandil", sprite: kandil.container, kandil}, background.scale() * kandilScale)
+    startDrag(e.global, e.pointerType, {kind: "kandil", sprite: kandil.container, kandil}, background.scale() * kandilScale)
   })
   papers.forEach((paper, idx) => paperSlots[idx].container.on("pointerdown", e => {
     if (!drag) {
-      startItemDrag(e.global, {kind: "paper", sprite: new Sprite(), paper}, paperUrl(paper), bodyCrop)
+      startItemDrag(e, {kind: "paper", sprite: new Sprite(), paper}, paperUrl(paper), bodyCrop)
     }
   }))
   tailColours.forEach((tails, idx) => tailsSlots[idx].container.on("pointerdown", e => {
     if (!drag) {
-      startItemDrag(e.global, {kind: "tails", sprite: new Sprite(), tails}, tailsUrl(tails), tailsCrop)
+      startItemDrag(e, {kind: "tails", sprite: new Sprite(), tails}, tailsUrl(tails), tailsCrop)
     }
   }))
   bulbSlot.container.on("pointerdown", e => {
     if (!drag) {
-      startItemDrag(e.global, {kind: "bulb", sprite: new Sprite()}, bulbUrl, bulbCrop)
+      startItemDrag(e, {kind: "bulb", sprite: new Sprite()}, bulbUrl, bulbCrop)
     }
   })
 
@@ -422,15 +432,16 @@ const createKandils = (app: Application, background: Background, lighting: Light
   }
 
   // A kandil that can't go where it is shows faded, with the string it'd hang from
-  // where it'd hang, and the bar lights up while it's over it, as letting go there
-  // puts it back. Paper, tails or the bulb pick out the kandil they'd go onto
-  const showDrag = (at: PointData) => {
+  // where it'd hang, and the bar lights up while the pointer's over it, as letting go
+  // there puts it back. Paper, tails or the bulb pick out the kandil they touch most,
+  // that they'd go onto. It's shown at one point, dragged by a pointer at another
+  const showDrag = (at: PointData, finger: PointData) => {
     if (!drag) {
       return
     }
     if (drag.kind === "kandil") {
-      const place = placeAt(at)
-      setOverBar(hudShown && bar.isOver(at))
+      const place = placeAt(at, finger)
+      setOverBar(hudShown && bar.isOver(finger))
       drag.sprite.alpha = place || overBar ? 1 : 0.4
       if (place?.on === "house") {
         drawString(dragString, place.tiedAt, {x: place.tiedAt.x, y: place.tiedAt.y + place.length})
@@ -438,7 +449,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
         dragString.visible = false
       }
     } else {
-      setTarget(kandilAt(at, takes[drag.kind]))
+      setTarget(kandilAt(screenBox(drag.sprite), takes[drag.kind]))
     }
   }
 
@@ -456,16 +467,19 @@ const createKandils = (app: Application, background: Background, lighting: Light
     showKandil(kandil)
   }
 
-  const pickUp = (kandil: Kandil, at: PointData) => {
+  const pickUp = (kandil: Kandil, finger: PointData, pointerType: string) => {
     placed.splice(placed.indexOf(kandil), 1)
     unhang(kandil)
-    startDrag(at, {kind: "kandil", sprite: kandil.container, kandil, from: kandil.place}, background.scale() * kandilScale)
+    startDrag(finger, pointerType, {kind: "kandil", sprite: kandil.container, kandil, from: kandil.place}, background.scale() * kandilScale)
   }
 
-  const endDrag = (at: PointData) => {
+  // Let go of by a pointer at a point, of a type
+  const endDrag = (finger: PointData, pointerType: string) => {
     if (!drag) {
       return
     }
+    const at = touch.follow(finger, pointerType)
+    touch.hide()
     const current = drag
     const into = target
     drag = undefined
@@ -474,10 +488,10 @@ const createKandils = (app: Application, background: Background, lighting: Light
     dragString.visible = false
     setOutline(current.sprite, "selected", false)
     if (current.kind === "kandil") {
-      const place = placeAt(at)
+      const place = placeAt(at, finger)
       if (place) {
         putKandil(current.kandil, place, true)
-      } else if (current.from && !(hudShown && bar.isOver(at))) {
+      } else if (current.from && !(hudShown && bar.isOver(finger))) {
         // Back where it was if it can't go where it was let go
         putKandil(current.kandil, current.from, false)
       } else {
@@ -504,20 +518,21 @@ const createKandils = (app: Application, background: Background, lighting: Light
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
-    const at = toStage(e)
-    if (pressed && draggedFrom(pressed.at, at, pickUpSlop)) {
+    const finger = toStage(e)
+    if (pressed && draggedFrom(pressed.at, finger, pickUpSlop)) {
       const {kandil} = pressed
       pressed = undefined
-      pickUp(kandil, at)
+      pickUp(kandil, finger, e.pointerType)
     }
     if (drag) {
+      const at = touch.follow(finger, e.pointerType)
       drag.sprite.position.copyFrom(at)
-      showDrag(at)
+      showDrag(at, finger)
     }
   }
   const onPointerUp = (e: PointerEvent) => {
     pressed = undefined
-    endDrag(toStage(e))
+    endDrag(toStage(e), e.pointerType)
   }
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)

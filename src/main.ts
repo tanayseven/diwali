@@ -11,6 +11,7 @@ import {createHudToggle} from "./hudToggle"
 import {createKandils, kandilAssets} from "./kandil"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
+import type {Lightable} from "./matchstick"
 import {showLanguagePicker} from "./languagePicker"
 import {LL, loadLocale, preferredLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
@@ -106,13 +107,15 @@ const main = async () => {
   // Each tool has a bar of things to use, shown while it's the one picked. What's
   // placed in the scene stays there, and can be picked up again, whichever tool is picked
   const controls: Partial<Record<Tool, ToolControls>> = {}
+  // What either bar's matchstick can light: diyas and fireworks alike
+  const lightables: Lightable[] = []
   if (loaded(diyaAssets)) {
-    const diyas = createDiyaInventory(app, background, lighting, audio)
+    const diyas = createDiyaInventory(app, background, lighting, audio, lightables)
     diyas.setInteractive(true)
     controls.diyas = diyas
   }
   if (loaded(fireworksAssets)) {
-    const fireworks = createFireworks(app, background, lighting, audio, wind)
+    const fireworks = createFireworks(app, background, lighting, audio, wind, lightables)
     fireworks.setInteractive(true)
     controls.fireworks = fireworks
   }
