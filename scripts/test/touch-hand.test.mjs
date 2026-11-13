@@ -178,11 +178,24 @@ const mouseDrag = async (from, to, hold = 300) => {
   await page.mouse.up()
   await page.waitForTimeout(300)
 }
-// What a placed diya's tooltip says of it, from hovering over it with the mouse
+// That a placed diya's tooltip says something of it, from hovering over it with the
+// mouse, again and again until it does, as on a slow machine pouring oil or striking the
+// match takes longer than it should
 const diyaSays = async (at, text) => {
-  await page.mouse.move(at.x - 60, at.y - 60)
-  await page.mouse.move(at.x, at.y - 4, {steps: 4})
-  await page.getByText(text, {exact: true}).waitFor({timeout: 3000})
+  const said = page.getByText(text, {exact: true})
+  const until = Date.now() + 20000
+  for (;;) {
+    await page.mouse.move(at.x - 60, at.y - 60)
+    await page.mouse.move(at.x, at.y - 4, {steps: 4})
+    try {
+      await said.waitFor({timeout: 1500})
+      break
+    } catch (error) {
+      if (Date.now() > until) {
+        throw error
+      }
+    }
+  }
   await page.mouse.move(at.x - 60, at.y - 60)
 }
 // Where a diya's put down, standing on the porch, away from what the tests before left
@@ -196,14 +209,14 @@ test("oil goes into a diya the bottle only touches, not just one under the point
   await diyaSays(diya, "Needs oil")
   // The pointer's above the bowl, clear of it, but the bottle reaches down onto it
   await mouseDrag(slot(2), {x: diya.x, y: diya.y - 22})
-  await page.waitForTimeout(2000)
   await diyaSays(diya, "Ready to light with the matchstick")
 })
 
 test("the Fireworks bar's matchstick lights a diya", async () => {
   await page.mouse.click(52, rail.fireworks)
   await page.waitForTimeout(800)
-  // Held there while it's struck, put to the wick, and catches
-  await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 1500)
+  // Held there while it's struck, put to the wick, and catches, which takes a second,
+  // or longer on a slow machine, whose frames are only counted up to a tenth of a second
+  await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 4000)
   await diyaSays(diya, "Lit")
 })

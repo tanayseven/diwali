@@ -10,8 +10,9 @@
 # butler must be on the path, logged in with BUTLER_API_KEY. ITCH_GAME overrides the game.
 #
 # Each goes to a channel of its own, which itch.io tells the platform from by its name.
-# Everything there is gets pushed; anything missing from the release is listed at the
-# end, and fails it, so a build that didn't make it is noticed.
+# Everything there is gets pushed, even past one butler fails on; anything missing from
+# the release, or that butler couldn't push, is listed at the end, and fails it, so a
+# build that didn't make it is noticed.
 #
 # The channels only ever hold the newest release: a tag older than the newest date tag
 # on GitHub isn't pushed, so a slow run for an older one can't replace a newer one that
@@ -38,15 +39,17 @@ if [[ $tag != "$newest" ]]; then
 fi
 
 missing=()
+failed=()
 staging=$(mktemp -d)
 trap 'rm -rf "$staging"' EXIT
 
-# Pushes a folder, or a .zip, to a channel, labelled with the tag. An unchanged build
-# isn't pushed again
+# Pushes a folder, or a .zip, to a channel, labelled with the tag, with any more of
+# butler's options. If butler fails, the channel's noted and the rest still go
 push() {
   local src=$1 channel=$2
+  shift 2
   echo "Pushing $(basename "$src") to $game:$channel"
-  butler push "$src" "$game:$channel" --userversion "$tag" --if-changed
+  butler push "$src" "$game:$channel" --userversion "$tag" "$@" || failed+=("$channel")
 }
 # Pushes one file of the release as it is, from a folder of its own, as butler pushes
 # folders. A folder holding just a .zip would be unzipped, which is wanted for the apps
@@ -61,9 +64,11 @@ pushFile() {
   push "$staging/$channel" "$channel"
 }
 
-# The game in the browser
+# The game in the browser, unless it's no different. Only it can be: every other build's
+# files are named with the tag, and butler's check for a change breaks on a channel
+# that's a .zip, looking for the last build's folder inside the new .zip
 if [[ -f $web/index.html ]]; then
-  push "$web" html5
+  push "$web" html5 --if-changed
 else
   missing+=("$web/index.html (html5)")
 fi
@@ -98,6 +103,11 @@ pushFile "diwali-$tag.apk" android
 if (( ${#missing[@]} )); then
   echo "Not in the release, so not pushed to itch.io:" >&2
   printf '  %s\n' "${missing[@]}" >&2
+fi
+if (( ${#failed[@]} )); then
+  echo "butler couldn't push these channels to itch.io: ${failed[*]}" >&2
+fi
+if (( ${#missing[@]} || ${#failed[@]} )); then
   exit 1
 fi
 echo "Pushed $tag to every channel of $game"
