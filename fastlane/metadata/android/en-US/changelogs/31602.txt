@@ -1,0 +1,6 @@
+• Show the README's badges in the flat style
+• Wait for a slow runner in the diya tests instead of a fixed time
+• Push to itch.io past a channel butler fails on, and only skip unchanged web builds
+• Light whatever the match touches most, and put it to the fuse as drawn
+• Hold every bar's drags with the hand, and light anything with either match
+• Add badges for the tests, releases, platforms and the rest of the stack
