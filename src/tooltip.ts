@@ -290,16 +290,20 @@ const showTooltipBeside = (target: Container, describeTarget: () => Tooltip | un
 
 // Shows the tooltip given to something with addTooltip on its own, beside a box, by
 // default the box round it on screen: pinned until the next press, or for a while
-const showTooltipOf = (target: Container, box?: () => DOMRect | undefined, {pin = false, hideAfter = 0} = {}) => {
+// Or, if it can't be seen, as a slot in a bar that's hidden, beside something else it's
+// about that can, such as something taken from that slot
+const showTooltipOf = (target: Container, box?: () => DOMRect | undefined,
+  {pin = false, hideAfter = 0, near}: {pin?: boolean, hideAfter?: number, near?: Container} = {}) => {
   const given = describers.get(target)
-  if (!given || !isHoverable(target)) {
+  const shownBy = isHoverable(target) ? target : near && isHoverable(near) ? near : undefined
+  if (!given || !shownBy) {
     return false
   }
-  showTooltipBeside(target, given.describe, box ?? (() => {
-    const {x, y, width, height} = target.getBounds().rectangle
+  showTooltipBeside(shownBy, given.describe, box ?? (() => {
+    const {x, y, width, height} = shownBy.getBounds().rectangle
     const canvas = document.querySelector("canvas")?.getBoundingClientRect()
     return new DOMRect(x + (canvas?.left ?? 0), y + (canvas?.top ?? 0), width, height)
-  }), {pin, outline: given.outline})
+  }), {pin, outline: shownBy === target ? given.outline : true})
   const opening = opened
   if (hideAfter > 0) {
     window.setTimeout(() => {
@@ -308,7 +312,7 @@ const showTooltipOf = (target: Container, box?: () => DOMRect | undefined, {pin 
       }
     }, hideAfter)
   }
-  return owner === target
+  return owner === shownBy
 }
 
 // Whether the press that's just ended on a target was held long enough to show its

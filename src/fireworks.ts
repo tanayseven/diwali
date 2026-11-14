@@ -1052,7 +1052,8 @@ const createFireworks = (
       // and its slot says where it goes
       returnDrag(current)
       haptics.refused()
-      showTooltipOf(slots[current.firework.kind].container, undefined, {hideAfter: refusalShown})
+      // Beside the firework, if it's gone back onto the porch with the bar hidden
+      showTooltipOf(slots[current.firework.kind].container, undefined, {hideAfter: refusalShown, near: current.firework.sprite})
     }
     render()
   }

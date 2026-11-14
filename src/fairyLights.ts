@@ -393,6 +393,8 @@ const createHouseLights = (app: Application, background: Background, lighting: L
         string.to = to
         build(string)
         haptics.refused()
+        // Its colour's slot says how it hangs, or beside the string, if the bar's hidden
+        showTooltipOf(slots[choices.indexOf(string.choice)].container, undefined, {hideAfter: refusalShown, near: string.container})
       } else {
         haptics.done()
       }

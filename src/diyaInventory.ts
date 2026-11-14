@@ -596,9 +596,9 @@ const createDiyaInventory = (
 
   // Felt, and the tooltip of the slot it came from shown, saying where it goes, for
   // something that's gone back from where it was let go
-  const refuse = (slot: {container: Container}) => {
+  const refuse = (slot: {container: Container}, near?: Container) => {
     haptics.refused()
-    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown})
+    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown, near})
   }
 
   // Sends whatever's dragged back where it came from
@@ -648,7 +648,8 @@ const createDiyaInventory = (
         // Diyas only go on the porch's floor; let go anywhere else, it goes back, and
         // its slot says where it goes
         returnDrag(current)
-        refuse(diyaSlot)
+        // Beside the diya, if it's gone back onto the porch with the bar hidden
+        refuse(diyaSlot, current.diya.sprite)
       }
     } else if (current.kind === "wick" && into) {
       current.sprite.destroy()

@@ -477,9 +477,9 @@ const createKandils = (app: Application, background: Background, lighting: Light
 
   // Felt, and the tooltip of the slot it came from shown, saying where it goes, for
   // something that couldn't go where it was let go
-  const refuse = (slot: {container: Container}) => {
+  const refuse = (slot: {container: Container}, near?: Container) => {
     haptics.refused()
-    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown})
+    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown, near})
   }
 
   // Let go of by a pointer at a point, of a type
@@ -505,7 +505,8 @@ const createKandils = (app: Application, background: Background, lighting: Light
       } else if (current.from && !toBar) {
         // Back where it was if it can't go where it was let go
         putKandil(current.kandil, current.from, false)
-        refuse(frameSlot)
+        // Beside the kandil, as the bar may be hidden
+        refuse(frameSlot, current.kandil.container)
       } else {
         returnKandil(current.kandil)
         if (!toBar) {
