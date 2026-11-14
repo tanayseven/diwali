@@ -123,6 +123,8 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   let moving: {string: LightString, from: PointData, to: PointData, grabbedAt: PointData} | undefined
   // The pointer hanging or moving a string, so a second finger, to pinch, doesn't too
   let stringWith: number | undefined
+  // The fingers down, so no string's picked up while two are, pinching
+  const touchesDown = new Set<number>()
 
   const tips = LL.tooltip.lights
   const colourNames: Record<Choice, () => string> = {
@@ -323,7 +325,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     string.container.eventMode = "static"
     addTooltip(string.container, () => ({title: tips.name(), lines: [tips.move()]}))
     string.container.on("pointerdown", e => {
-      if (hanging || moving) {
+      if (hanging || moving || touchesDown.size > 1) {
         return
       }
       e.stopPropagation()
@@ -335,7 +337,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
 
   // With a colour picked, a press on the house starts a string there
   const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
-    if (!background.isOnHouse(at) || moving) {
+    if (!background.isOnHouse(at) || moving || touchesDown.size > 1) {
       return false
     }
     stringWith = e.pointerId
@@ -371,6 +373,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     }
   }
   const onPointerUp = (e: PointerEvent) => {
+    touchesDown.delete(e.pointerId)
     if (e.pointerId !== stringWith) {
       return
     }
@@ -405,6 +408,9 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   // pinch, so the string's dropped: one being hung isn't, and one being moved goes back
   // where it was
   const onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === "touch") {
+      touchesDown.add(e.pointerId)
+    }
     if (stringWith === undefined || e.pointerId === stringWith) {
       return
     }

@@ -655,7 +655,7 @@ const createFireworks = (
   const chakriDebts = new Map<Placed, {flames: number, skids: number, flung: number}>()
   let drag: Drag | undefined
   // A placed firework pressed, and where, until it's dragged far enough to pick it up
-  let pressedFirework: {firework: Placed, at: Point} | undefined
+  let pressedFirework: {firework: Placed, at: Point, pointerId: number} | undefined
   // Whether a dragged firework is over the bar, where letting go puts it back
   let overBar = false
   // The placed firework the match would light if let go now
@@ -877,7 +877,7 @@ const createFireworks = (
     // screens it's shown up beside the finger once it's picked up
     sprite.on("pointerdown", e => {
       if (!drag) {
-        pressedFirework = {firework, at: e.global.clone()}
+        pressedFirework = {firework, at: e.global.clone(), pointerId: e.pointerId}
       }
     })
     return firework
@@ -1065,7 +1065,12 @@ const createFireworks = (
   }
   const onPointerMove = (e: PointerEvent) => {
     const finger = toStage(e)
-    if (pressedFirework && draggedFrom(pressedFirework.at, finger, pickUpSlop)) {
+    // Picked up only by the finger that pressed it, and not while another's dragging
+    // something already, as from the bar
+    if (pressedFirework && (drag || held)) {
+      pressedFirework = undefined
+    }
+    if (pressedFirework && e.pointerId === pressedFirework.pointerId && draggedFrom(pressedFirework.at, finger, pickUpSlop)) {
       const {firework} = pressedFirework
       pressedFirework = undefined
       const fromScene = {x: firework.sprite.x, y: firework.sprite.y}

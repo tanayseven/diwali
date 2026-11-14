@@ -558,7 +558,7 @@ const createDiyaInventory = (
   let interactive = false
   let hudShown = false
   // A placed diya pressed on, and where, until it's dragged far enough to pick it up
-  let pressedDiya: {diya: PlacedDiya, at: Point} | undefined
+  let pressedDiya: {diya: PlacedDiya, at: Point, pointerId: number} | undefined
 
   const pickUp = (diya: PlacedDiya, at: PointData, pointerType: string) => {
     const {sprite} = diya
@@ -583,7 +583,7 @@ const createDiyaInventory = (
     sprite.cursor = diya.lit ? "pointer" : "grab"
     sprite.removeAllListeners("pointerdown")
     sprite.on("pointerdown", e => {
-      pressedDiya = {diya, at: e.global.clone()}
+      pressedDiya = {diya, at: e.global.clone(), pointerId: e.pointerId}
     })
   }
 
@@ -656,7 +656,12 @@ const createDiyaInventory = (
   }
   const onPointerMove = (e: PointerEvent) => {
     const finger = toStage(e)
-    if (pressedDiya && draggedFrom(pressedDiya.at, finger, pickUpSlop)) {
+    // Picked up only by the finger that pressed it, and not while another's dragging
+    // something already, as from the bar
+    if (pressedDiya && (drag || held)) {
+      pressedDiya = undefined
+    }
+    if (pressedDiya && e.pointerId === pressedDiya.pointerId && draggedFrom(pressedDiya.at, finger, pickUpSlop)) {
       const {diya} = pressedDiya
       pressedDiya = undefined
       pickUp(diya, finger, e.pointerType)
