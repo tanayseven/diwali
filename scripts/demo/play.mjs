@@ -1,20 +1,26 @@
 // Plays through the whole game in a Chromium window, as a phone held sideways (a Pixel
-// 7, with touch), so the hand drawn holding whatever's dragged shows: diyas filled and
-// lit with the matchstick, every firework lit, kandils made on the house and the porch,
-// fairy lights hung, a rangoli drawn, then the city zoomed out to, the volume slider
-// and a photo. The window's left open at the end to play on, until it's closed.
+// 7, with touch), so the hand drawn holding whatever's dragged shows: zoomed right in,
+// diyas filled and lit with the matchstick; out a little, every firework lit; out a
+// little more, kandils made on the house and the porch and fairy lights hung; in again
+// for a rangoli; then the city zoomed out to, the volume slider and a photo. The
+// window's left open at the end to play on, until it's closed.
 //
 //   npm run demo [-- out-dir]
 //
-// SLOW stretches every wait and drag (2 by default, 1 is as fast as it goes),
+// SLOW stretches every wait and drag (1.25 by default, about as quickly as a person
+// would, and 1 is as fast as it goes),
 // HEADLESS=1 plays it without a window, and an out-dir saves a screenshot of each step.
 // It exits with an error if the game logged any. It starts the dev server itself, and
 // needs Playwright's Chromium (npx playwright-core install chromium), or another one in
 // PLAYWRIGHT_CHROMIUM.
 //
-// The positions below are where the rail's buttons, the bar's slots and the porch are on
-// that screen, in CSS pixels, as in scripts/store/screenshots.mjs, so a change to the
-// layout needs them moved too
+// Everything's laid out symmetrically about the house's middle, its front door, at x 640
+// in the scene's own units, as in src/background.ts. Where things go is put on
+// screen through a camera kept in step with the game's: zoomed with its keys, which zoom
+// about the middle of the screen, and moved with the wheel, which pans by exactly as
+// much. The rail's buttons and the bar's slots are where they are on that screen, in CSS
+// pixels, as in scripts/store/screenshots.mjs, so a change to the layout or the camera
+// needs them moved too
 import {mkdirSync} from "node:fs"
 import {fileURLToPath} from "node:url"
 import {chromium, devices} from "playwright-core"
@@ -23,8 +29,8 @@ import {createServer} from "vite"
 const root = fileURLToPath(new URL("../../", import.meta.url))
 const out = process.argv[2]
 const headless = process.env.HEADLESS === "1"
-const slow = Number(process.env.SLOW ?? 2)
-const port = 4176
+const slow = Number(process.env.SLOW ?? 1.25)
+const port = Number(process.env.DEMO_PORT ?? 4176)
 
 const screen = {width: 844, height: 390}
 const phone = {...devices["Pixel 7 landscape"], viewport: screen, screen}
@@ -39,6 +45,20 @@ const camera = {x: 793, y: 262}
 // What's dragged by touch is shown this far up and to the left of the finger, as in
 // src/touchMarker.ts, and is put down there
 const lift = 64
+
+// The game's camera, as src/background.ts has it: the scene's 1280 x 720 units scaled
+// to cover the screen at the least, framing the porch to begin with, a diya and a half
+// across at the most, and each press of a zoom key zooming by half again
+const cover = Math.max(screen.width / 1280, screen.height / 720)
+const fit = view => Math.max(cover, Math.min(screen.width / view.width, screen.height / view.height))
+const view = {scale: fit({width: 490, height: 220}), x: 640, y: 580}
+const closest = fit({width: 180, height: 80})
+const zoomStep = 1.5
+// Where a point in the scene is on screen
+const onScreen = at => ({
+  x: (at.x - view.x) * view.scale + screen.width / 2,
+  y: (at.y - view.y) * view.scale + screen.height / 2,
+})
 
 if (out) {
   mkdirSync(out, {recursive: true})
@@ -82,32 +102,46 @@ const swipe = async (from, to, hold = 300) => {
   await touch("touchEnd")
   await wait(300)
 }
-// Drags what's in a bar's slot so it's shown, and put down, at a point in the scene
-const put = (index, at, hold) => swipe(slot(index), {x: at.x + lift, y: at.y + lift}, hold)
-// A quick swipe, not slowed
-const flick = async (from, to) => {
-  await touch("touchStart", from)
-  for (let i = 1; i <= 8; i++) {
-    await touch("touchMove", {x: from.x + (to.x - from.x) * i / 8, y: from.y + (to.y - from.y) * i / 8})
-    await page.waitForTimeout(16)
-  }
-  await touch("touchEnd")
+// Drags what's in a bar's slot so it's shown, and put down, at a point in the scene. The
+// finger has to stay above the bar for it to go down there, not back on the bar
+const put = (index, at, hold) => {
+  const shown = onScreen(at)
+  return swipe(slot(index), {x: shown.x + lift, y: shown.y + lift}, hold)
 }
-// A finger drawn along a line of points
+// A point in the scene moved by a distance in scene units
+const by = (at, dx, dy) => ({x: at.x + dx, y: at.y + dy})
+// A finger drawn through points in the scene
 const draw = async points => {
-  await touch("touchStart", points[0])
-  for (const point of points.slice(1)) {
+  const [first, ...rest] = points.map(onScreen)
+  await touch("touchStart", first)
+  for (const point of rest) {
     await touch("touchMove", point)
     await page.waitForTimeout(25 * slow)
   }
   await touch("touchEnd")
   await wait(200)
 }
-const zoom = async (key, times) => {
-  for (let i = 0; i < times; i++) {
-    await page.keyboard.press(key)
-    await wait(150)
+// Zooms in (more than 0) or out by a number of presses of the zoom keys, about the
+// middle of the screen, and waits for it to ease there
+const zoom = async (presses, settle = 400 * slow) => {
+  for (let i = 0; i < Math.abs(presses); i++) {
+    await page.keyboard.press(presses > 0 ? "+" : "-")
+    await page.waitForTimeout(60)
   }
+  view.scale = Math.min(closest, Math.max(cover, view.scale * zoomStep ** presses))
+  await page.waitForTimeout(settle)
+}
+// Pans by a distance on screen with the wheel, as a trackpad scrolls the scenery past
+const scroll = async (dx, dy) => {
+  await page.mouse.move(screen.width / 2, 20)
+  await page.mouse.wheel(dx, dy)
+  view.x += dx / view.scale
+  view.y += dy / view.scale
+}
+// Pans so a point in the scene is in the middle of the screen
+const lookAt = async (x, y, settle = 600 * slow) => {
+  await scroll((x - view.x) * view.scale, (y - view.y) * view.scale)
+  await page.waitForTimeout(settle)
 }
 
 await page.goto(`http://localhost:${port}/`)
@@ -122,45 +156,48 @@ for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
 }
 await wait(2000)
 
-// The porch moved up, so what's put on it is put down with the finger still above the bar
-step("Panning the porch up")
+step("Zooming right in on the porch")
 await tap({x: 52, y: rail.diyas})
-await swipe({x: 450, y: 200}, {x: 450, y: 130}, 200)
-await wait(600)
+await zoom(2)
+await lookAt(640, 612)
 
-step("Diyas, with a wick and oil")
-const diyas = [{x: 600, y: 160}, {x: 690, y: 160}]
+step("Diyas, a pair either side of the door's steps, with a wick and oil")
+const diyas = [{x: 590, y: 597}, {x: 690, y: 597}]
 for (const diya of diyas) {
   await put(0, diya, 500)
-  await put(1, {x: diya.x, y: diya.y - 8}, 500)
-  await put(2, {x: diya.x, y: diya.y - 10}, 800)
+  await put(1, by(diya, 0, -4.6), 500)
+  await put(2, by(diya, 0, -5.8), 800)
   await wait(1500)
 }
 await shot("diyas")
 step("Lighting them with the matchstick")
 for (const diya of diyas) {
-  await put(3, {x: diya.x + 8, y: diya.y - 14}, 1800)
+  await put(3, by(diya, 4.6, -8), 1800)
 }
 await wait(800)
 await shot("diyas-lit")
 step("Turning one")
-await tap({x: diyas[1].x, y: diyas[1].y - 4})
+await tap(onScreen(by(diyas[1], 0, -2.3)))
 await wait(800)
 
-step("Fireworks")
+step("Fireworks, zoomed out a little, in pairs either side of the rocket at the door")
 await tap({x: 52, y: rail.fireworks})
-const fireworks = [{x: 220, y: 175}, {x: 310, y: 180}, {x: 400, y: 180}, {x: 480, y: 175}, {x: 540, y: 170}]
+await zoom(-3)
+await lookAt(640, 635)
+// In the bar's order: anar, laddi, chakri, sutli bomb and rocket
+const fireworks = [{x: 540, y: 620}, {x: 450, y: 622}, {x: 830, y: 622}, {x: 740, y: 620}, {x: 640, y: 628}]
 for (const [index, at] of fireworks.entries()) {
   await put(index, at, 500)
 }
 await wait(500)
+await shot("fireworks")
 step("What to do next")
 await page.locator('button:text-is("?"):visible').first().tap()
 await wait(2500)
 await shot("hint")
-await tap({x: 450, y: 60})
+await tap({x: screen.width / 2, y: 40})
 const [anar, laddi, chakri, sutli, rocket] = fireworks
-const light = at => put(5, {x: at.x + 4, y: at.y - 14}, 1800)
+const light = at => put(5, by(at, 2.3, -8), 1800)
 step("Anar")
 await light(anar)
 await wait(3000)
@@ -179,61 +216,56 @@ step("Rocket, zoomed out to see it go up")
 // Its fuse burns for under 2 s once it's caught, which takes about a second, and it
 // bursts high over the roof a second after it's away. So the match is only held that
 // long, and the zoom out and the pan up to the sky aren't slowed, to be there in time
-await put(5, {x: rocket.x + 4, y: rocket.y - 14}, 1400 / slow)
-for (let i = 0; i < 2; i++) {
-  await page.keyboard.press("-")
-}
-// Once the zoom's settled, as a swipe pans less the further in it is, so the swipe back
-// down cancels it exactly
-await page.waitForTimeout(300)
-const sky = {from: {x: 600, y: 60}, to: {x: 600, y: 300}}
-await flick(sky.from, sky.to)
+await put(5, by(rocket, 2.3, -8), 1400 / slow)
+await zoom(-1, 300)
+const sky = 240
+await scroll(0, -sky)
 await page.waitForTimeout(600)
 await shot("rocket")
 await wait(2500)
-// Back down to the porch, and in again to where it was
-await flick(sky.to, sky.from)
-await zoom("+", 2)
-await wait(1500)
-
-step("Kandils, one hung from the house and one on the porch")
-await tap({x: 52, y: rail.kandil})
-const hung = {x: 280, y: 50}
-const standing = {x: 160, y: 140}
-await put(0, hung, 600)
-await wait(2000)
-await put(0, standing, 600)
+// Back down to the porch, left zoomed out for the kandils
+await scroll(0, sky)
 await wait(1000)
-// Paper, tails and the bulb onto each
-for (const [kandil, paper, tails] of [[hung, 1, 5], [standing, 4, 8]]) {
-  await put(paper, {x: kandil.x, y: kandil.y + 30}, 600)
+
+step("Kandils, hung from the porch roof either side of the door")
+await tap({x: 52, y: rail.kandil})
+const kandils = [{x: 570, y: 525}, {x: 710, y: 525}]
+for (const kandil of kandils) {
+  await put(0, kandil, 600)
+  await wait(1500)
+}
+// Red paper, green tails and the bulb onto each
+for (const [kandil, paper, tails] of kandils.map(kandil => [kandil, 1, 5])) {
+  await put(paper, by(kandil, 0, 17), 600)
   await wait(600)
-  await put(tails, {x: kandil.x, y: kandil.y + 40}, 600)
+  await put(tails, by(kandil, 0, 23), 600)
   await wait(600)
-  await put(9, {x: kandil.x, y: kandil.y + 30}, 600)
+  await put(9, by(kandil, 0, 17), 600)
   await wait(1200)
 }
 await shot("kandils")
 
-step("Fairy lights, red and mixed")
+step("Fairy lights, mixed, across the front of each wing")
 await tap({x: 52, y: rail.decorate})
-await tap(slot(0))
-await swipe({x: 380, y: 30}, {x: 520, y: 40}, 300)
-await wait(1500)
 await tap(slot(6))
-await swipe({x: 540, y: 40}, {x: 760, y: 30}, 300)
+const line = (from, to) => Array.from({length: 5}, (_, i) => ({x: from.x + (to.x - from.x) * i / 4, y: from.y}))
+await draw(line({x: 250, y: 472}, {x: 470, y: 472}))
+await wait(1500)
+await draw(line({x: 810, y: 472}, {x: 1030, y: 472}))
 await wait(2500)
 await shot("fairy-lights")
 
-step("Rangoli")
+step("Rangoli, zoomed right in, in front of the door")
+await zoom(4)
+await lookAt(640, 650)
 await tap({x: 52, y: rail.rangoli})
 const ring = (x, y, radius) => Array.from({length: 37}, (_, i) => ({
   x: x + radius * Math.cos(i / 36 * 2 * Math.PI),
   y: y + radius * 0.5 * Math.sin(i / 36 * 2 * Math.PI),
 }))
-for (const [colour, radius] of [[0, 45], [3, 30], [6, 15]]) {
+for (const [colour, radius] of [[0, 22], [3, 14], [6, 7]]) {
   await tap(slot(colour))
-  await draw(ring(460, 225, radius))
+  await draw(ring(640, 646, radius))
 }
 await wait(1500)
 await shot("rangoli")
@@ -241,15 +273,15 @@ await shot("rangoli")
 step("The whole scene, with the bar hidden")
 await page.keyboard.press("h")
 await wait(600)
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 6; i++) {
   await tap(zoomOut)
 }
 await wait(5000)
 await shot("city")
-await zoom("+", 2)
-await wait(1500)
+await zoom(2)
 step("Panning")
-await swipe({x: 600, y: 120}, {x: 420, y: 180}, 300)
+// Across the ground in front of the porch, where there's nothing to pick up
+await swipe({x: 650, y: 340}, {x: 450, y: 320}, 300)
 await wait(1500)
 await page.keyboard.press("h")
 await wait(600)
@@ -260,7 +292,7 @@ await wait(1500)
 await touch("touchEnd")
 await wait(2000)
 await shot("volume")
-await tap({x: 450, y: 60})
+await tap({x: screen.width / 2, y: 40})
 step("Photo")
 await tap(camera)
 await wait(3000)
