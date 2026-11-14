@@ -80,9 +80,12 @@ const main = async () => {
   }, progress => loader.setProgress(progress))
   loader.destroy()
   screens = []
+  // Who made it, with the privacy policy, shown only over the splashes
+  const footer = createFooter()
   await showSplashWarning()
   await showSoundSplash()
-  createFooter()
+  // Fading away as the scene comes in, without holding it up
+  void footer.remove()
 
   // Without the background there's nowhere to put anything, so nothing more to show
   if (backgroundAssets.some(url => failed.has(url))) {

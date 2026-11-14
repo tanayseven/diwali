@@ -4,6 +4,8 @@ import {LL} from "./locale"
 
 const highlight = "#ffd700"
 const footerHeight = 40
+// How long it takes to fade in and out with the splashes, in ms
+const fadeDuration = 800
 const privacyUrl = "https://diwali.tanay.tech/privacy"
 
 // Tooltips are styled in a stylesheet, as inline styles can't reach ::after or :hover
@@ -97,7 +99,8 @@ const showBundledPrivacy = () => {
   document.body.appendChild(frame)
 }
 
-// A bar along the bottom of the screen crediting who made it
+// A bar along the bottom of the screen crediting who made it, shown over the splashes
+// and taken away once the game starts
 const createFooter = () => {
   const stylesheet = document.createElement("style")
   stylesheet.textContent = style
@@ -118,6 +121,10 @@ const createFooter = () => {
     color: "#ffffff",
     fontFamily,
     fontSize: "20px",
+    // Over the splashes, which come after it, but under the speaker button
+    zIndex: "1",
+    opacity: "0",
+    transition: `opacity ${fadeDuration}ms ease-in-out`,
   })
 
   const link = createLink("https://blog.tanay.tech", "Tanay PrabhuDesai")
@@ -143,16 +150,22 @@ const createFooter = () => {
   }
   footer.append("·", privacyLink)
   document.body.appendChild(footer)
+  // Faded in as the first splash is, once the browser's seen it hidden
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    footer.style.opacity = "1"
+  }))
 
   return {
-    height: footerHeight,
-    setOpacity(alpha: number) {
-      footer.style.opacity = String(alpha)
-      footer.style.visibility = alpha > 0 ? "visible" : "hidden"
-    },
-    setInteractive(interactive: boolean) {
-      footer.style.pointerEvents = interactive ? "auto" : "none"
-    },
+    // Fades it out, and takes it and its styles away. Resolves once it's gone
+    remove: () => new Promise<void>(resolve => {
+      footer.style.opacity = "0"
+      footer.style.pointerEvents = "none"
+      setTimeout(() => {
+        footer.remove()
+        stylesheet.remove()
+        resolve()
+      }, fadeDuration)
+    }),
   }
 }
 
