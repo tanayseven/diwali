@@ -1,7 +1,7 @@
 import {Application, Container, Graphics} from "pixi.js"
 import {hudFrame} from "./hud"
 import {LL} from "./locale"
-import {addTooltip} from "./tooltip"
+import {addTooltip, wasLongPressed} from "./tooltip"
 
 // Matches the zoom buttons
 const buttonRadius = 26
@@ -56,7 +56,11 @@ const createHudToggle = (app: Application, onChange: (shown: boolean) => void) =
     hovered = false
     render()
   })
-  container.on("pointertap", () => setShown(!shown))
+  container.on("pointertap", () => {
+    if (!wasLongPressed(container)) {
+      setShown(!shown)
+    }
+  })
   addTooltip(container, () => ({title: shown ? LL.hud.hide() : LL.hud.show()}), {outline: false})
 
   const layout = () => {
