@@ -42,9 +42,11 @@ const longPressSlop = 10
 // How far above the finger it's kept, clear of the fingertip
 const aboveFinger = 44
 let longPress: {pointerId: number, x: number, y: number, timer?: number, shown: boolean} | undefined
-// What the last press held long enough to show its tooltip was on, until the next press,
-// so what a tap does there can be left undone, whether or not it's still showing
-let longPressedOn: Container | undefined
+// What each press held long enough to show its tooltip was on, by its pointer, until
+// that pointer's lifted and what it lifting does is done, so what a tap does there can be
+// left undone, whether or not it's still showing. Another finger pressing meanwhile
+// doesn't forget it
+const longPressedOn = new Map<number, Container>()
 
 const getElement = () => {
   if (!element) {
@@ -73,8 +75,12 @@ const getElement = () => {
     window.addEventListener("pointerup", endLongPress)
     window.addEventListener("pointercancel", endLongPress)
     window.addEventListener("pointerdown", hide)
-    // Any new press, by finger or mouse, starts afresh
-    window.addEventListener("pointerdown", () => longPressedOn = undefined, true)
+    // A new press by the same pointer, as a mouse's always is, starts afresh
+    window.addEventListener("pointerdown", e => longPressedOn.delete(e.pointerId), true)
+    // Forgotten once whatever the pointer's lifting does has been done
+    const forget = (e: PointerEvent) => window.setTimeout(() => longPressedOn.delete(e.pointerId))
+    window.addEventListener("pointerup", forget)
+    window.addEventListener("pointercancel", forget)
     window.addEventListener("blur", hide)
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
@@ -186,7 +192,7 @@ const startLongPress = (target: Container, e: FederatedPointerEvent) => {
     if (longPress !== press || !isHoverable(target)) {
       return
     }
-    longPressedOn = target
+    longPressedOn.set(press.pointerId, target)
     showTooltipOf(target, () => new DOMRect(press.x - 20, press.y - aboveFinger, 40, window.innerHeight), {pin: true})
     press.shown = owner === target
   }, longPressTime)
@@ -313,7 +319,7 @@ const showTooltipOf = (target: Container, box?: () => DOMRect | undefined, {pin 
 
 // Whether the press that's just ended on a target was held long enough to show its
 // tooltip, so it was to read it, not to do what a tap does
-const wasLongPressed = (target: Container) => longPressedOn === target
+const wasLongPressed = (target: Container) => [...longPressedOn.values()].includes(target)
 
 // Whether a tooltip's showing for a target, and whether it's pinned open
 const tooltipFor = (target: Container) =>
