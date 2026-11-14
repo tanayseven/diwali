@@ -1,7 +1,8 @@
 // Plays the game in headless Chromium as a phone held sideways, with touch, and checks
 // that a finger dragging something from any bar has a hand drawn holding it, and that a
 // mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
-// either bar's matchstick lights diyas and fireworks alike.
+// either bar's matchstick lights diyas and fireworks alike. And that a ready-made
+// rangoli design can be made and put down.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -219,4 +220,24 @@ test("the Fireworks bar's matchstick lights a diya", async () => {
   // or longer on a slow machine, whose frames are only counted up to a tenth of a second
   await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 4000)
   await diyaSays(diya, "Lit")
+})
+
+test("a ready-made rangoli design, mixed in its panel, is put down where the floor's tapped", async () => {
+  await page.touchscreen.tap(52, 311)
+  await page.waitForTimeout(800)
+  await page.getByRole("button", {name: "Draw Rangoli"}).tap()
+  const panel = page.getByRole("dialog", {name: "Draw Rangoli"})
+  await panel.waitFor({timeout: 3000})
+  await page.getByRole("button", {name: "centre star"}).tap()
+  await page.getByRole("button", {name: "border dots"}).tap()
+  await page.getByRole("button", {name: "✓"}).tap()
+  await panel.waitFor({state: "hidden", timeout: 3000})
+  // Well clear of what the tests before put on the porch
+  const at = {x: porch.x - 200, y: porch.y + 25}
+  const clip = {x: at.x - 50, y: at.y - 20, width: 100, height: 40}
+  const before = await page.screenshot({clip})
+  await page.touchscreen.tap(at.x, at.y)
+  await page.waitForTimeout(500)
+  const after = await page.screenshot({clip})
+  assert.notDeepEqual(after, before, "the floor there has the design on it")
 })
