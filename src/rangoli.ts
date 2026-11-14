@@ -4,7 +4,10 @@ import {Background, porchFloor} from "./background"
 import {createHud, slotSize} from "./hud"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
-import {addTooltip} from "./tooltip"
+import {addTooltip, hideTooltipFor, showTooltipOf, wasLongPressed} from "./tooltip"
+
+// How long Clear waits for a second tap, once it's asked, in ms
+const clearAskedFor = 3000
 
 // Rangoli powder colours, as drawn on the porch
 const powders = {
@@ -130,8 +133,30 @@ const createRangoli = (app: Application, background: Background) => {
   clearLabel.anchor.set(0.5)
   clearLabel.roundPixels = true
   clearSlot.container.addChild(clearLabel)
-  clearSlot.container.on("pointerdown", () => {
-    app.renderer.render({container: new Container(), target: drawing, clear: true})
+  // On a tap, not a press, so a finger held on it to read what it does doesn't clear it.
+  // And only on a second tap, as it can't be undone: the first asks, its label turning
+  // to a question, in the language's own question mark, and its tooltip saying what
+  // it'll do, outlined, until it's tapped again or a few seconds pass
+  let clearAsked: number | undefined
+  const stopAsking = () => {
+    window.clearTimeout(clearAsked)
+    clearAsked = undefined
+    clearLabel.text = tips.clear()
+  }
+  clearSlot.container.on("pointertap", () => {
+    if (wasLongPressed(clearSlot.container)) {
+      return
+    }
+    if (clearAsked !== undefined) {
+      stopAsking()
+      hideTooltipFor(clearSlot.container)
+      app.renderer.render({container: new Container(), target: drawing, clear: true})
+      return
+    }
+    const questionMark = document.documentElement.dir === "rtl" ? "؟" : "?"
+    clearLabel.text = `${tips.clear()}${questionMark}`
+    clearAsked = window.setTimeout(stopAsking, clearAskedFor)
+    showTooltipOf(clearSlot.container, undefined, {hideAfter: clearAskedFor})
   })
   addTooltip(clearSlot.container, () => ({title: tips.clear(), lines: [tips.clearHint()]}))
 
@@ -206,6 +231,8 @@ const createRangoli = (app: Application, background: Background) => {
   return {
     container,
     layout: bar.layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     pressHandler,
     // Shows its bar, while the Draw Rangoli tool is the one in use
     setHudShown(shown: boolean) {

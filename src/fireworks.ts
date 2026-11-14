@@ -7,10 +7,11 @@ import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy} from "./overlap"
+import {haptics, refusalShown} from "./feedback"
 import {createShownParticles} from "./shownParticles"
 import {addHint} from "./hints"
 import {setOutline} from "./outline"
-import {addTooltip, Tooltip} from "./tooltip"
+import {addTooltip, showTooltipOf, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 import type {Wind} from "./wind"
 
@@ -911,6 +912,7 @@ const createFireworks = (
 
   // The held match catches a firework's fuse
   const light = (firework: Placed) => {
+    haptics.lit()
     firework.state = "fuse"
     if (firework.kind === "anar") {
       firework.sprite.texture = Assets.get<Texture>(anarUrls.lit)
@@ -1044,9 +1046,14 @@ const createFireworks = (
       removeFirework(current.firework)
     } else if (background.isOnPorchFloor(scene)) {
       placeFirework(current.firework, scene)
+      haptics.placed()
     } else {
-      // Fireworks only go on the porch's floor; let go anywhere else, it goes back
+      // Fireworks only go on the porch's floor; let go anywhere else, it goes back,
+      // and its slot says where it goes
       returnDrag(current)
+      haptics.refused()
+      // Beside the firework, if it's gone back onto the porch with the bar hidden
+      showTooltipOf(slots[current.firework.kind].container, undefined, {hideAfter: refusalShown, near: current.firework.sprite})
     }
     render()
   }
@@ -1113,6 +1120,7 @@ const createFireworks = (
       if (anar.elapsed >= fuseDuration) {
         anar.state = "burning"
         anar.sound = playAnarSound(background.panOf(anar.sprite.position))
+        haptics.anar()
         for (let idx = 0; idx < catchPuffs; idx++) {
           addSmoke(nozzle.x + random(-6, 6), nozzle.y - random(0, 12))
         }
@@ -1196,6 +1204,7 @@ const createFireworks = (
     flashAlpha = screenFlashAlpha
     flashFade = blastFade
     blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(at))
+    haptics.cracker()
   }
 
   // Moves a laddi's burn on: the fuse fizzing along, then the crackers going off
@@ -1308,6 +1317,7 @@ const createFireworks = (
         chakri.state = "burning"
         chakri.burnFor = random(chakriBurn.min, chakriBurn.max)
         chakri.sound = playChakriSound(background.panOf(chakri.sprite.position))
+        haptics.chakri()
       }
     }
     if (chakri.state === "burning") {
@@ -1467,6 +1477,7 @@ const createFireworks = (
     flashAlpha = sutliFlashAlpha
     flashFade = sutliFade
     playSutliSound(background.panOf(at))
+    haptics.sutli()
   }
 
   // Moves a sutli bomb's burn on: the fuse fizzing slowly down its wick, then the blast
@@ -1533,6 +1544,7 @@ const createFireworks = (
     background.decorations.addChild(sprite)
     rocket.sprite.texture = Assets.get<Texture>(rocketUrls.bottle)
     rocket.sound = playRocketSound(background.panOf(nozzle))
+    haptics.rocketLaunch()
     for (let idx = 0; idx < catchPuffs; idx++) {
       addSmoke(nozzle.x + random(-4, 4), nozzle.y - random(0, 8))
     }
@@ -1570,6 +1582,7 @@ const createFireworks = (
     flashAlpha = screenFlashAlpha
     flashFade = blastFade
     blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(rocket.lightAt))
+    haptics.rocketBurst()
     rocket.sound?.stop()
     rocket.sound = undefined
     flight.sprite.destroy()
@@ -1853,6 +1866,8 @@ const createFireworks = (
   return {
     container,
     layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Fireworks tool is the one in use. The match is put away
     // with the bar
     setHudShown(shown: boolean) {

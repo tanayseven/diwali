@@ -7,8 +7,9 @@ import {LL} from "./locale"
 import {addHint} from "./hints"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
+import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
-import {addTooltip, Tooltip} from "./tooltip"
+import {addTooltip, showTooltipOf, Tooltip, wasLongPressed} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
@@ -413,6 +414,7 @@ const createDiyaInventory = (
 
   // The held match lights a diya's wick
   const light = (diya: PlacedDiya) => {
+    haptics.lit()
     diya.lit = true
     diya.light = lighting.addLight(diyaLightColour)
     diya.glow = new Sprite(lighting.glowTexture)
@@ -574,14 +576,29 @@ const createDiyaInventory = (
   // A placed diya can be picked up again to move it or put it back on the stack,
   // except while it's busy being filled, the match is in hand, or another scene is open.
   // It's picked up once it's dragged; a lit one tapped instead is turned
+  // What each placed diya does when pressed
+  const pressListeners = new WeakMap<Sprite, (e: FederatedPointerEvent) => void>()
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
     sprite.eventMode = interactive && !diya.busy && !held ? "static" : "none"
     sprite.cursor = diya.lit ? "pointer" : "grab"
-    sprite.removeAllListeners("pointerdown")
-    sprite.on("pointerdown", e => {
+    // Only its own press listener's replaced, as its tooltip listens for a held finger too
+    const press = (e: FederatedPointerEvent) => {
       pressedDiya = {diya, at: e.global.clone()}
-    })
+    }
+    const previous = pressListeners.get(sprite)
+    if (previous) {
+      sprite.off("pointerdown", previous)
+    }
+    pressListeners.set(sprite, press)
+    sprite.on("pointerdown", press)
+  }
+
+  // Felt, and the tooltip of the slot it came from shown, saying where it goes, for
+  // something that's gone back from where it was let go
+  const refuse = (slot: {container: Container}, near?: Container) => {
+    haptics.refused()
+    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown, near})
   }
 
   // Sends whatever's dragged back where it came from
@@ -626,19 +643,29 @@ const createDiyaInventory = (
         returnDiya(current.diya)
       } else if (background.isOnPorchFloor(scene)) {
         placeDiya(current.diya, scene)
+        haptics.placed()
       } else {
-        // Diyas only go on the porch's floor; let go anywhere else, it goes back
+        // Diyas only go on the porch's floor; let go anywhere else, it goes back, and
+        // its slot says where it goes
         returnDrag(current)
+        // Beside the diya, if it's gone back onto the porch with the bar hidden
+        refuse(diyaSlot, current.diya.sprite)
       }
     } else if (current.kind === "wick" && into) {
       current.sprite.destroy()
       into.wick = true
       showDiya(into)
+      haptics.done()
     } else if (current.kind === "oil" && into) {
       current.sprite.destroy()
       pour(into)
+      haptics.done()
     } else {
+      // Not touching a diya that wants it, it goes back, and its slot says what it's for
       returnDrag(current)
+      if (!(hudShown && bar.isOver(finger))) {
+        refuse(current.kind === "wick" ? wickSlot : bottleSlot)
+      }
     }
     render()
   }
@@ -684,10 +711,11 @@ const createDiyaInventory = (
   // Letting go puts the match back, and a diya pressed and let go without dragging it
   // is turned
   const onPointerUp = (e: PointerEvent) => {
-    if (pressedDiya) {
+    // A tap turns it, but not a finger held on it to read what it is
+    if (pressedDiya && !wasLongPressed(pressedDiya.diya.sprite)) {
       turn(pressedDiya.diya)
-      pressedDiya = undefined
     }
+    pressedDiya = undefined
     pressedSlotAt = undefined
     putAwayMatch()
     endDrag(toStage(e), e.pointerType)
@@ -736,6 +764,8 @@ const createDiyaInventory = (
   return {
     container,
     layout: bar.layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Diyas tool is the one in use. The match is put away
     // with the bar
     setHudShown(shown: boolean) {
