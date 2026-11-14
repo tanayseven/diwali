@@ -8,8 +8,9 @@ import {draggedFrom} from "./matchstick"
 import {mostOverlapped, screenBox} from "./overlap"
 import {accelerate, airFriction, createParticleBody, hangingWorld, place as placeBody, velocityOf} from "./physics"
 import {addHint} from "./hints"
+import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
-import {addTooltip, Tooltip} from "./tooltip"
+import {addTooltip, showTooltipOf, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 import type {Wind} from "./wind"
 
@@ -461,6 +462,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
   }
 
   const light = (kandil: Kandil) => {
+    haptics.lit()
     kandil.lit = true
     kandil.light = lighting.addLight(lampColours[kandil.paper!])
     litLayer.addChild(kandil.container)
@@ -471,6 +473,13 @@ const createKandils = (app: Application, background: Background, lighting: Light
     placed.splice(placed.indexOf(kandil), 1)
     unhang(kandil)
     startDrag(finger, pointerType, {kind: "kandil", sprite: kandil.container, kandil, from: kandil.place}, background.scale() * kandilScale)
+  }
+
+  // Felt, and the tooltip of the slot it came from shown, saying where it goes, for
+  // something that couldn't go where it was let go
+  const refuse = (slot: {container: Container}) => {
+    haptics.refused()
+    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown})
   }
 
   // Let go of by a pointer at a point, of a type
@@ -489,24 +498,37 @@ const createKandils = (app: Application, background: Background, lighting: Light
     setOutline(current.sprite, "selected", false)
     if (current.kind === "kandil") {
       const place = placeAt(at, finger)
+      const toBar = hudShown && bar.isOver(finger)
       if (place) {
         putKandil(current.kandil, place, true)
-      } else if (current.from && !(hudShown && bar.isOver(finger))) {
+        haptics.placed()
+      } else if (current.from && !toBar) {
         // Back where it was if it can't go where it was let go
         putKandil(current.kandil, current.from, false)
+        refuse(frameSlot)
       } else {
         returnKandil(current.kandil)
+        if (!toBar) {
+          refuse(frameSlot)
+        }
       }
     } else {
       current.sprite.destroy()
       if (into && current.kind === "paper") {
         into.paper = current.paper
         showKandil(into)
+        haptics.done()
       } else if (into && current.kind === "tails") {
         into.tails = current.tails
         showKandil(into)
+        haptics.done()
       } else if (into) {
         light(into)
+      } else if (!(hudShown && bar.isOver(finger))) {
+        // Not touching a kandil ready for it, as one still to be wrapped in paper for
+        // tails, and its slot says what it goes on
+        refuse(current.kind === "paper" ? paperSlots[papers.indexOf(current.paper)]
+          : current.kind === "tails" ? tailsSlots[tailColours.indexOf(current.tails)] : bulbSlot)
       }
     }
     render()

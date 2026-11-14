@@ -7,8 +7,9 @@ import {LL} from "./locale"
 import {addHint} from "./hints"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
+import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
-import {addTooltip, Tooltip} from "./tooltip"
+import {addTooltip, showTooltipOf, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
@@ -413,6 +414,7 @@ const createDiyaInventory = (
 
   // The held match lights a diya's wick
   const light = (diya: PlacedDiya) => {
+    haptics.lit()
     diya.lit = true
     diya.light = lighting.addLight(diyaLightColour)
     diya.glow = new Sprite(lighting.glowTexture)
@@ -592,6 +594,13 @@ const createDiyaInventory = (
     sprite.on("pointerdown", press)
   }
 
+  // Felt, and the tooltip of the slot it came from shown, saying where it goes, for
+  // something that's gone back from where it was let go
+  const refuse = (slot: {container: Container}) => {
+    haptics.refused()
+    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown})
+  }
+
   // Sends whatever's dragged back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
@@ -634,19 +643,28 @@ const createDiyaInventory = (
         returnDiya(current.diya)
       } else if (background.isOnPorchFloor(scene)) {
         placeDiya(current.diya, scene)
+        haptics.placed()
       } else {
-        // Diyas only go on the porch's floor; let go anywhere else, it goes back
+        // Diyas only go on the porch's floor; let go anywhere else, it goes back, and
+        // its slot says where it goes
         returnDrag(current)
+        refuse(diyaSlot)
       }
     } else if (current.kind === "wick" && into) {
       current.sprite.destroy()
       into.wick = true
       showDiya(into)
+      haptics.done()
     } else if (current.kind === "oil" && into) {
       current.sprite.destroy()
       pour(into)
+      haptics.done()
     } else {
+      // Not touching a diya that wants it, it goes back, and its slot says what it's for
       returnDrag(current)
+      if (!(hudShown && bar.isOver(finger))) {
+        refuse(current.kind === "wick" ? wickSlot : bottleSlot)
+      }
     }
     render()
   }

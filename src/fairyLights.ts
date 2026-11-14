@@ -5,9 +5,10 @@ import type {Background} from "./background"
 import {createHud, cropped, iconFill, slotSize} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
+import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
 import {accelerate, airFriction, createParticleBody, hangingWorld, place, velocityOf} from "./physics"
-import {addTooltip} from "./tooltip"
+import {addTooltip, showTooltipOf} from "./tooltip"
 import type {Wind} from "./wind"
 
 const colors = ["red", "orange", "yellow", "green", "blue", "white"] as const
@@ -371,8 +372,12 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       if (canHang(string.from, string.to)) {
         strings.push(string)
         makePickable(string)
+        haptics.done()
       } else {
+        // Too short, or off the house, so it's not hung, and the colour's slot says how
         removeString(string)
+        haptics.refused()
+        showTooltipOf(slots[choices.indexOf(chosen)].container, undefined, {hideAfter: refusalShown})
       }
     } else if (moving) {
       const {string, from, to} = moving
@@ -387,6 +392,9 @@ const createHouseLights = (app: Application, background: Background, lighting: L
         string.from = from
         string.to = to
         build(string)
+        haptics.refused()
+      } else {
+        haptics.done()
       }
     }
   }
