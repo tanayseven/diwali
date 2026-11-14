@@ -167,12 +167,16 @@ const main = async () => {
   // The first time a tool's used, what to take first from its bar, and what to do with
   // it, is shown beside it until the next press, as there's no hovering to find out on
   // a touch screen. After that, picking it from the rail shows its name for a moment
+  let introducing = 0
   const introduce = (tool: Tool, picked: boolean) => {
     const slot = controls[tool]?.firstSlot?.()
     if (slot && !introduced.has(tool)) {
       const startedAt = performance.now()
+      // Only the latest try goes on, so picking the tool again doesn't leave two
+      const attempt = ++introducing
       const tryShowing = () => {
-        if (selected !== tool || !hudToggle.isShown() || performance.now() - startedAt > introduceFor) {
+        if (attempt !== introducing || introduced.has(tool) || selected !== tool || !hudToggle.isShown()
+          || performance.now() - startedAt > introduceFor) {
           return
         }
         if (!showTooltipOf(slot, undefined, {pin: true})) {
