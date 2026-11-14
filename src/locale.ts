@@ -14,6 +14,19 @@ const rightToLeft: Locales[] = ["ks", "sd", "ur"]
 // (private windows, blocked site data), so it's only a convenience
 const storageKey = "diwali-locale"
 
+// The language picked on an earlier visit, if one was and it's still there
+const savedLocale = (): Locales | undefined => {
+  try {
+    const saved = localStorage.getItem(storageKey)
+    if (saved && isLocale(saved)) {
+      return saved
+    }
+  } catch {
+    // As if none was picked
+  }
+  return undefined
+}
+
 // The language picked last visit, else the browser's preferred language if there's a
 // translation for it, falling back to English
 const preferredLocale = (): Locales => {
@@ -28,13 +41,18 @@ const preferredLocale = (): Locales => {
   return detectLocale(navigatorDetector)
 }
 
-// Loads just the picked language's translation, and remembers it for next time
-const loadLocale = async (locale: Locales) => {
+// Remembers a language for next time
+const rememberLocale = (locale: Locales) => {
   try {
     localStorage.setItem(storageKey, locale)
   } catch {
     // Not saving is fine
   }
+}
+
+// Loads just the picked language's translation, and remembers it for next time
+const loadLocale = async (locale: Locales) => {
+  rememberLocale(locale)
   await loadLocaleAsync(locale)
   LL = i18nObject(locale)
   document.documentElement.lang = locale
@@ -43,4 +61,4 @@ const loadLocale = async (locale: Locales) => {
   document.title = LL.title()
 }
 
-export {LL, loadLocale, preferredLocale}
+export {LL, loadLocale, preferredLocale, rememberLocale, savedLocale}

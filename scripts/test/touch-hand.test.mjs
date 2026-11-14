@@ -270,3 +270,20 @@ test("a diya put down on the porch by a finger is felt", async () => {
   await touchUp()
   assert.deepEqual(await page.evaluate(() => window.vibrations), [12])
 })
+
+// Last, as it starts the game again
+test("the language picked is used again next time, and the globe button picks another", async () => {
+  await page.reload()
+  // Straight to the warning, in English, with no picker
+  await page.getByText("flashing and twinkling lights", {exact: false}).waitFor({timeout: 60000})
+  assert.equal(await page.getByRole("dialog", {name: "Choose a language"}).count(), 0)
+  for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+    await page.getByText(text).waitFor({timeout: 60000})
+    await page.waitForTimeout(900)
+    await page.touchscreen.tap(screen.width / 2, screen.height / 2)
+  }
+  const globe = page.getByRole("button", {name: "English", exact: true})
+  await globe.waitFor({timeout: 10000})
+  await globe.tap()
+  await page.getByRole("dialog", {name: "Choose a language"}).waitFor({timeout: 5000})
+})

@@ -53,6 +53,8 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
     color: "#ffffff",
     fontFamily,
     textAlign: "center",
+    // Over the game and its buttons when it's opened again from the globe button
+    zIndex: "3",
     opacity: "0",
     transition: `opacity ${fadeDuration}ms ease-in-out`,
   })
@@ -129,4 +131,7 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
   }))
 })
 
-export {showLanguagePicker}
+// A language's name, in itself
+const languageName = (locale: Locales) => languages.find(language => language.locale === locale)?.name ?? locale
+
+export {languageName, showLanguagePicker}
