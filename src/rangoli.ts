@@ -4,7 +4,7 @@ import {Background, porchFloor} from "./background"
 import {createHud, slotSize} from "./hud"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
-import {addTooltip, tooltipFor} from "./tooltip"
+import {addTooltip, wasLongPressed} from "./tooltip"
 
 // Rangoli powder colours, as drawn on the porch
 const powders = {
@@ -132,7 +132,7 @@ const createRangoli = (app: Application, background: Background) => {
   clearSlot.container.addChild(clearLabel)
   // On a tap, not a press, so a finger held on it to read what it does doesn't clear it
   clearSlot.container.on("pointertap", () => {
-    if (tooltipFor(clearSlot.container)?.pinned) {
+    if (wasLongPressed(clearSlot.container)) {
       return
     }
     app.renderer.render({container: new Container(), target: drawing, clear: true})

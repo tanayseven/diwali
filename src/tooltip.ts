@@ -42,6 +42,9 @@ const longPressSlop = 10
 // How far above the finger it's kept, clear of the fingertip
 const aboveFinger = 44
 let longPress: {pointerId: number, x: number, y: number, timer?: number, shown: boolean} | undefined
+// What the last press held long enough to show its tooltip was on, until the next press,
+// so what a tap does there can be left undone, whether or not it's still showing
+let longPressedOn: Container | undefined
 
 const getElement = () => {
   if (!element) {
@@ -70,6 +73,8 @@ const getElement = () => {
     window.addEventListener("pointerup", endLongPress)
     window.addEventListener("pointercancel", endLongPress)
     window.addEventListener("pointerdown", hide)
+    // Any new press, by finger or mouse, starts afresh
+    window.addEventListener("pointerdown", () => longPressedOn = undefined, true)
     window.addEventListener("blur", hide)
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
@@ -181,6 +186,7 @@ const startLongPress = (target: Container, e: FederatedPointerEvent) => {
     if (longPress !== press || !isHoverable(target)) {
       return
     }
+    longPressedOn = target
     showTooltipOf(target, () => new DOMRect(press.x - 20, press.y - aboveFinger, 40, window.innerHeight), {pin: true})
     press.shown = owner === target
   }, longPressTime)
@@ -305,6 +311,10 @@ const showTooltipOf = (target: Container, box?: () => DOMRect | undefined, {pin 
   return owner === target
 }
 
+// Whether the press that's just ended on a target was held long enough to show its
+// tooltip, so it was to read it, not to do what a tap does
+const wasLongPressed = (target: Container) => longPressedOn === target
+
 // Whether a tooltip's showing for a target, and whether it's pinned open
 const tooltipFor = (target: Container) =>
   owner === target ? {pinned} : undefined
@@ -324,5 +334,5 @@ const refreshTooltip = () => {
   }
 }
 
-export {addTooltip, hideTooltipFor, isHoverable, refreshTooltip, showTooltipBeside, showTooltipOf, tooltipFor}
+export {addTooltip, hideTooltipFor, isHoverable, refreshTooltip, showTooltipBeside, showTooltipOf, tooltipFor, wasLongPressed}
 export type {Tooltip}
