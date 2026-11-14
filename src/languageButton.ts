@@ -50,6 +50,9 @@ const createLanguageButton = (current: Locales) => {
     picking = false
     if (picked !== current) {
       restartIn(picked)
+    } else {
+      // Back where the keyboard was, to carry on
+      button.focus()
     }
   })
   document.body.appendChild(button)

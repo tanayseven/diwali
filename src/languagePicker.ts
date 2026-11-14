@@ -41,6 +41,7 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
   const overlay = document.createElement("div")
   overlay.setAttribute("role", "dialog")
   overlay.setAttribute("aria-label", "Choose a language")
+  overlay.setAttribute("aria-modal", "true")
   Object.assign(overlay.style, {
     position: "fixed",
     inset: "0",
@@ -85,6 +86,7 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
     }
     picked = true
     open--
+    behind.forEach(element => element.inert = false)
     overlay.style.pointerEvents = "none"
     overlay.style.opacity = "0"
     setTimeout(() => overlay.remove(), fadeDuration)
@@ -127,6 +129,10 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
   choices.append(...buttons)
 
   overlay.append(heading, choices)
+  // Everything behind it, such as the speaker and globe buttons, is out of reach of the
+  // keyboard and screen readers while it's open, so focus stays in it
+  const behind = [...document.body.children].filter(element => element instanceof HTMLElement && !element.inert) as HTMLElement[]
+  behind.forEach(element => element.inert = true)
   document.body.appendChild(overlay)
   buttons[languages.findIndex(language => language.locale === preferred)]?.focus()
 
