@@ -84,6 +84,15 @@ const swipe = async (from, to, hold = 300) => {
 }
 // Drags what's in a bar's slot so it's shown, and put down, at a point in the scene
 const put = (index, at, hold) => swipe(slot(index), {x: at.x + lift, y: at.y + lift}, hold)
+// A quick swipe, not slowed
+const flick = async (from, to) => {
+  await touch("touchStart", from)
+  for (let i = 1; i <= 8; i++) {
+    await touch("touchMove", {x: from.x + (to.x - from.x) * i / 8, y: from.y + (to.y - from.y) * i / 8})
+    await page.waitForTimeout(16)
+  }
+  await touch("touchEnd")
+}
 // A finger drawn along a line of points
 const draw = async points => {
   await touch("touchStart", points[0])
@@ -167,11 +176,20 @@ step("Sutli bomb")
 await light(sutli)
 await wait(5000)
 step("Rocket, zoomed out to see it go up")
-await light(rocket)
-await wait(800)
-await zoom("-", 2)
-await wait(3500)
+// Its fuse burns for under 2 s once it's caught, which takes about a second, and it
+// bursts high over the roof a second after it's away. So the match is only held that
+// long, and the zoom out and the pan up to the sky aren't slowed, to be there in time
+await put(5, {x: rocket.x + 4, y: rocket.y - 14}, 1400 / slow)
+for (let i = 0; i < 2; i++) {
+  await page.keyboard.press("-")
+}
+const sky = {from: {x: 600, y: 60}, to: {x: 600, y: 300}}
+await flick(sky.from, sky.to)
+await page.waitForTimeout(600)
 await shot("rocket")
+await wait(2500)
+// Back down to the porch, and in again to where it was
+await flick(sky.to, sky.from)
 await zoom("+", 2)
 await wait(1500)
 
@@ -212,7 +230,7 @@ const ring = (x, y, radius) => Array.from({length: 37}, (_, i) => ({
 }))
 for (const [colour, radius] of [[0, 45], [3, 30], [6, 15]]) {
   await tap(slot(colour))
-  await draw(ring(330, 120, radius))
+  await draw(ring(460, 225, radius))
 }
 await wait(1500)
 await shot("rangoli")
@@ -244,16 +262,17 @@ step("Photo")
 await tap(camera)
 await wait(3000)
 
-if (errors.length) {
-  console.error("The game logged errors:\n" + errors.join("\n"))
-  process.exitCode = 1
-}
 if (!headless) {
   step("Done: play on, and close the window to finish")
   await new Promise(resolve => {
     page.on("close", resolve)
     browser.on("disconnected", resolve)
   })
+}
+// Whatever went wrong, while it played or while it was played on
+if (errors.length) {
+  console.error("The game logged errors:\n" + errors.join("\n"))
+  process.exitCode = 1
 }
 await browser.close()
 await server.close()
