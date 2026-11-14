@@ -8,7 +8,7 @@ import {addHint} from "./hints"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
 import {setOutline} from "./outline"
-import {addTooltip, Tooltip} from "./tooltip"
+import {Tooltip, addTooltip, wasLongPressed} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
@@ -692,10 +692,11 @@ const createDiyaInventory = (
   // Letting go puts the match back, and a diya pressed and let go without dragging it
   // is turned
   const onPointerUp = (e: PointerEvent) => {
-    if (pressedDiya) {
+    // A tap turns it, but not a finger held on it to read what it is
+    if (pressedDiya && !wasLongPressed(pressedDiya.diya.sprite)) {
       turn(pressedDiya.diya)
-      pressedDiya = undefined
     }
+    pressedDiya = undefined
     pressedSlotAt = undefined
     putAwayMatch()
     endDrag(toStage(e), e.pointerType)
