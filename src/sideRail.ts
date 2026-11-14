@@ -15,7 +15,7 @@ const highlight = 0xffd700
 // Share of a button an icon fills
 const iconFill = 0.62
 // The bar is centred and always leaves room either side of it, and the speaker button
-// is on the right, so the rail runs from near the top down to the footer
+// is on the right, so the rail runs from near the top down to the bar's bottom margin
 const clearTop = 16
 const clearBottom = 52
 
