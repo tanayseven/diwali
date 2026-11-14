@@ -344,3 +344,25 @@ test("a ready-made rangoli design, mixed in its panel, is put down where the flo
   const after = await bluePixels(clip)
   assert.ok(after > before + 0.02, `the design's blue ring is on the floor there (${before.toFixed(3)} to ${after.toFixed(3)} of it blue)`)
 })
+
+// Last, as it starts the game again
+test("the language picked is used again next time, and the globe button picks another, which it starts again in", async () => {
+  await page.reload()
+  // Straight to the warning, in English, with no picker
+  await page.getByText("flashing and twinkling lights", {exact: false}).waitFor({timeout: 60000})
+  assert.equal(await page.getByRole("dialog", {name: "Choose a language"}).count(), 0)
+  for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+    await page.getByText(text).waitFor({timeout: 60000})
+    await page.waitForTimeout(900)
+    await page.touchscreen.tap(screen.width / 2, screen.height / 2)
+  }
+  const globe = page.getByRole("button", {name: "English", exact: true})
+  await globe.waitFor({timeout: 10000})
+  await globe.tap()
+  await page.getByRole("dialog", {name: "Choose a language"}).waitFor({timeout: 5000})
+  // Another, and the game starts again in it, with nothing left in the URL
+  await page.getByRole("button", {name: /हिन्दी/}).tap()
+  await page.waitForFunction(() => document.documentElement.lang === "hi", undefined, {timeout: 60000})
+  assert.equal(new URL(page.url()).search, "")
+  assert.equal(await page.getByRole("dialog", {name: "Choose a language"}).count(), 0)
+})

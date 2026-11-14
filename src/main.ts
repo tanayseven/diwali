@@ -12,8 +12,9 @@ import {createKandils, kandilAssets} from "./kandil"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
 import type {Lightable} from "./matchstick"
-import {showLanguagePicker} from "./languagePicker"
-import {LL, loadLocale, preferredLocale} from "./locale"
+import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
+import {createLanguageButton} from "./languageButton"
+import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {createScreenshotButton} from "./screenshot"
@@ -71,7 +72,10 @@ const toolNameShown = 1500
 const main = async () => {
   const app = await createApp()
   // Everything after shows text, so the language comes first
-  await loadLocale(await showLanguagePicker(preferredLocale()))
+  // Picked only on the first visit; after that, the one picked is used straight away,
+  // and the globe button opens the picker again
+  const locale = savedLocale() ?? await showLanguagePicker(preferredLocale())
+  await loadLocale(locale)
   // Only now is it known which script the text is in, so which font it needs
   await loadFont(LL.title())
   const portraitWarning = createPortraitWarning()
@@ -106,6 +110,8 @@ const main = async () => {
   await showSoundSplash()
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
+  // Beside the speaker, to pick another language
+  createLanguageButton(locale)
 
   // Without the background there's nowhere to put anything, so nothing more to show
   if (backgroundAssets.some(url => failed.has(url))) {
@@ -259,7 +265,8 @@ const main = async () => {
 
   window.addEventListener("keydown", e => {
     // Don't let the keyboard drive anything while it's hidden behind the warning
-    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown()) {
+    // or the language picker
+    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown() || isLanguagePickerOpen()) {
       return
     }
     if (e.key === "+" || e.key === "=") {

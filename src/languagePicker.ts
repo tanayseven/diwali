@@ -33,10 +33,15 @@ const languages: {locale: Locales, name: string, english: string}[] = [
 // Shown first, before anything else has text, to pick the language everything after
 // is in. The preferred one is highlighted and focused, so Enter picks it.
 // Resolves with the picked language as soon as one's picked, while it fades out
+// How many are showing, at most one
+let open = 0
+
 const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve => {
+  open++
   const overlay = document.createElement("div")
   overlay.setAttribute("role", "dialog")
   overlay.setAttribute("aria-label", "Choose a language")
+  overlay.setAttribute("aria-modal", "true")
   Object.assign(overlay.style, {
     position: "fixed",
     inset: "0",
@@ -53,6 +58,8 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
     color: "#ffffff",
     fontFamily,
     textAlign: "center",
+    // Over the game and its buttons when it's opened again from the globe button
+    zIndex: "3",
     opacity: "0",
     transition: `opacity ${fadeDuration}ms ease-in-out`,
   })
@@ -78,6 +85,8 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
       return
     }
     picked = true
+    open--
+    behind.forEach(element => element.inert = false)
     overlay.style.pointerEvents = "none"
     overlay.style.opacity = "0"
     setTimeout(() => overlay.remove(), fadeDuration)
@@ -120,6 +129,10 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
   choices.append(...buttons)
 
   overlay.append(heading, choices)
+  // Everything behind it, such as the speaker and globe buttons, is out of reach of the
+  // keyboard and screen readers while it's open, so focus stays in it
+  const behind = [...document.body.children].filter(element => element instanceof HTMLElement && !element.inert) as HTMLElement[]
+  behind.forEach(element => element.inert = true)
   document.body.appendChild(overlay)
   buttons[languages.findIndex(language => language.locale === preferred)]?.focus()
 
@@ -129,4 +142,10 @@ const showLanguagePicker = (preferred: Locales) => new Promise<Locales>(resolve 
   }))
 })
 
-export {showLanguagePicker}
+// Whether it's showing, so nothing behind it, such as the game's keys, does anything
+const isLanguagePickerOpen = () => open > 0
+
+// A language's name, in itself
+const languageName = (locale: Locales) => languages.find(language => language.locale === locale)?.name ?? locale
+
+export {isLanguagePickerOpen, languageName, showLanguagePicker}

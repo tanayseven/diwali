@@ -5,8 +5,10 @@ import {pulseHints, setOutline} from "./outline"
 import {hideTooltipFor, isHoverable, refreshTooltip, showTooltipBeside, Tooltip, tooltipFor} from "./tooltip"
 
 const highlight = "#ffd700"
-// The badge's size on screen, in CSS pixels
-const badgeSize = 24
+// Whether the screen's pressed with a finger, which needs bigger things to tap
+const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches
+// The badge's size on screen, in CSS pixels, bigger for a finger to tap
+const badgeSize = coarse ? 36 : 24
 // Smaller than this on screen, in CSS pixels, a thing's zoomed too far out to have a
 // badge, which would hide it
 const leastSize = 14
@@ -54,7 +56,7 @@ const createBadge = (hint: Hint) => {
     background: "rgba(26, 26, 26, 0.92)",
     color: highlight,
     fontFamily,
-    fontSize: "16px",
+    fontSize: coarse ? "22px" : "16px",
     fontWeight: "bold",
     lineHeight: "1",
     cursor: "help",
