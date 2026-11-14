@@ -410,6 +410,8 @@ const createDiyaInventory = (
         bottle.destroy()
         diya.busy = false
         makePickable(diya)
+        // Outlined as ready to light, if it is, with the match in hand
+        hand.refreshReady()
       }
     }
     app.ticker.add(tick)

@@ -1,5 +1,6 @@
 import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {stereoPan, type createAudioControl} from "./audioControl"
+import {hideBadges} from "./hints"
 import {screenBox} from "./overlap"
 import type {createTouchMarker} from "./touchMarker"
 
@@ -300,6 +301,9 @@ const createMatchHand = (options: {
   // While something's catching that it's been let go on or tapped, it's held there till
   // it has, whatever the pointer does, then kept or put away
   let finishing: "keep" | "putAway" | undefined
+  // Taps on the scene while it's finishing, to act on in turn once it's done, so taps on
+  // one thing after another light each of them, and a tap on nothing puts it away after
+  let tapsAfter: {at: PointData, pointerType: string}[] = []
 
   const markReady = (on: boolean) => lightables.forEach(lightable => lightable.markReady(on))
 
@@ -311,6 +315,15 @@ const createMatchHand = (options: {
     finishing = undefined
     if (then === "putAway") {
       putAway()
+      return
+    }
+    // Taps on what's just been lit, as a second tap on it, don't count
+    const lit = aim.at()
+    const reach = (pointerType: string) => pointerType === "touch" ? tapReach.touch : tapReach.mouse
+    tapsAfter = tapsAfter.filter(tap => Math.hypot(tap.at.x - lit.x, tap.at.y - lit.y) > 2 * reach(tap.pointerType))
+    const next = tapsAfter.shift()
+    if (next) {
+      tapAt(next.at, next.pointerType)
     } else {
       // Whatever else it's touching now could be lit next
       follow()
@@ -336,14 +349,17 @@ const createMatchHand = (options: {
     held = matchstick.hold(pointer, () => held && touch.holdAt(held.grip()))
     layer.addChild(held.container)
     markReady(true)
+    hideBadges(true)
     options.changed()
     follow()
   }
 
   const putAway = () => {
+    pressedSlot = undefined
     pressedScene = undefined
     pressedToPutAway = false
     finishing = undefined
+    tapsAfter = []
     if (!held) {
       return
     }
@@ -352,6 +368,7 @@ const createMatchHand = (options: {
     touch.hide()
     clearAims(lightables)
     markReady(false)
+    hideBadges(false)
     options.changed()
   }
 
@@ -402,6 +419,12 @@ const createMatchHand = (options: {
   return {
     isHeld: () => held !== undefined,
     putAway,
+    // Outlines afresh what's ready to light, as something's become ready while it's in hand
+    refreshReady() {
+      if (held) {
+        markReady(true)
+      }
+    },
     // The pointer's moved, to a point on the stage
     move(finger: PointData, e: PointerEvent) {
       if (pressedSlot && e.pointerId === pressedSlot.pointerId && draggedFrom(pressedSlot.at, finger)) {
@@ -450,8 +473,12 @@ const createMatchHand = (options: {
       }
       const tapped = pressedScene && e.pointerId === pressedScene.pointerId
       pressedScene = undefined
-      if (tapped && !cancelled && !finishing) {
-        tapAt(finger, e.pointerType)
+      if (tapped && !cancelled) {
+        if (finishing) {
+          tapsAfter.push({at: {x: finger.x, y: finger.y}, pointerType: e.pointerType})
+        } else {
+          tapAt(finger, e.pointerType)
+        }
       }
     },
     destroy() {

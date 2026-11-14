@@ -334,6 +334,24 @@ test("a tap on the matchstick, then on a diya, lights it, and a tap on nothing p
   await says(at, "Lit")
 })
 
+test("taps on one diya after another, without waiting, light each of them in turn", async () => {
+  const first = {x: porch.x - 170, y: porch.y - 30}
+  const second = {x: porch.x + 210, y: porch.y - 30}
+  await readyDiya(first)
+  await readyDiya(second)
+  await page.touchscreen.tap(slot(3).x, slot(3).y)
+  await page.waitForTimeout(300)
+  await page.touchscreen.tap(first.x, first.y - 6)
+  await page.waitForTimeout(150)
+  await page.touchscreen.tap(second.x, second.y - 6)
+  // Then put away, once both have caught
+  await page.waitForTimeout(150)
+  await page.touchscreen.tap(porch.x, 60)
+  await page.waitForTimeout(4000)
+  await says(first, "Lit")
+  await says(second, "Lit")
+})
+
 test("the match let go a moment after it's put to a diya still lights it", async () => {
   const at = {x: porch.x - 110, y: porch.y - 10}
   await readyDiya(at)

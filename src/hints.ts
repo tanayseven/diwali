@@ -33,6 +33,9 @@ let canvas: HTMLCanvasElement | undefined
 // Where a press on the scene began, and whether it's become a drag
 let pressedAt: {x: number, y: number} | undefined
 let dragging = false
+// Whether the badges are out of the way, as they are while the match is in hand, so
+// they don't take the taps meant for what it lights, which is outlined brightly instead
+let badgesHidden = false
 
 // The badge's box on screen while it shows, for its tooltip to sit beside
 const badgeBox = (hint: Hint) =>
@@ -128,7 +131,7 @@ const update = () => {
       hint.outlined = unfinished
       setOutline(hint.target, "hint", unfinished)
     }
-    let shown = unfinished && !dragging
+    let shown = unfinished && !dragging && !badgesHidden
     if (shown) {
       const box = screenBox(hint, view)
       const onScreen = box.right > 0 && box.left < window.innerWidth && box.bottom > 0 && box.top < window.innerHeight
@@ -188,4 +191,9 @@ const addHint = (target: Container, describe: () => Tooltip | undefined, box: Re
   hints.push({target, describe, box, outlined: false})
 }
 
-export {addHint, startHints}
+// Hides the badges, or shows them again, keeping the outlines
+const hideBadges = (hidden: boolean) => {
+  badgesHidden = hidden
+}
+
+export {addHint, hideBadges, startHints}
