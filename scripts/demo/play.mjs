@@ -102,7 +102,7 @@ const put = async (index, at, hold) => {
 // Takes the match from a bar's slot and, without letting go, holds it to each of a run
 // of things in the scene in turn, long enough for each to catch, as a fresh match is in
 // hand as soon as one has
-const lightEach = async (index, targets, hold = 1300) => {
+const lightEach = async (index, targets, hold = 1300, after = 300) => {
   let from = slot(index)
   await touch("touchStart", from)
   await wait(150)
@@ -118,7 +118,7 @@ const lightEach = async (index, targets, hold = 1300) => {
     from = to
   }
   await touch("touchEnd")
-  await wait(300)
+  await wait(after)
 }
 // A point in the scene moved by a distance in scene units
 const by = (at, dx, dy) => ({x: at.x + dx, y: at.y + dy})
@@ -146,6 +146,18 @@ const zoom = async (presses, settle = 400 * slow) => {
 const scroll = async (dx, dy) => {
   await page.mouse.move(screen.width / 2, 20)
   await page.mouse.wheel(dx, dy)
+}
+// Drags the scenery down by a distance on screen with the mouse, quickly, in strokes
+// down the sky between the rail and the buttons, which pans by exactly as far
+const flingBy = async dy => {
+  const strokes = Math.max(1, Math.ceil(Math.abs(dy) / 220))
+  for (let i = 0; i < strokes; i++) {
+    const from = {x: screen.width / 2, y: dy > 0 ? 30 : 250}
+    await page.mouse.move(from.x, from.y)
+    await page.mouse.down()
+    await page.mouse.move(from.x, from.y + dy / strokes, {steps: 6})
+    await page.mouse.up()
+  }
 }
 // Pans so a point in the scene is in the middle of the screen, or as near as the camera
 // goes, scrolling until it's there
@@ -253,15 +265,24 @@ for (const [kind, name, after] of [["anar", "Anars", 1500], ["laddi", "Laddis", 
   await wait(after)
   await shot(kind)
 }
-step("Rockets, then up to the sky to see them burst")
-// Each bursts high over the roof a couple of seconds after it's caught, so the pan up to
-// the sky isn't slowed, to be there in time
-await lightEach(5, inTurn(fireworks.rocket).map(fuseOf))
-await lookAt(640, 330, 0)
-await page.waitForTimeout(800)
-await shot("rockets")
-await wait(3000)
-await lookAt(640, 560)
+step("Rockets, each watched up to the sky till it bursts")
+// A rocket goes up a couple of seconds after it's caught and bursts high over the roof,
+// out of sight of the porch with the bar below it. So each is lit on its own and
+// followed up to the sky straight away, without slowing, and then it's back down to the
+// porch for the next
+const porchView = await centre()
+for (const [i, rocket] of inTurn(fireworks.rocket).entries()) {
+  await lightEach(5, [fuseOf(rocket)], 2000, 0)
+  // Up at once, by dragging the sky down, as it's only a second or so from bursting
+  const shown = await onScreen({x: 640, y: 180})
+  await flingBy(screen.height / 2 - shown.y)
+  await page.waitForTimeout(3000)
+  if (i === 0) {
+    await shot("rocket")
+  }
+  await lookAt(porchView.x, porchView.y, 300)
+}
+await wait(800)
 
 // Fairy lights across the front of each wing, and five kandils hung from the house: one
 // in the middle over the door, a pair from the porch roof and a pair from the wings,
@@ -332,12 +353,18 @@ await wait(3000)
 
 if (!headless) {
   step("Done: the window closes in 30 s")
-  await page.waitForTimeout(30000)
+  // Or as soon as it's closed
+  await new Promise(resolve => {
+    setTimeout(resolve, 30000)
+    page.on("close", resolve)
+    browser.on("disconnected", resolve)
+  })
 }
 // Whatever went wrong while it played
 if (errors.length) {
   console.error("The game logged errors:\n" + errors.join("\n"))
   process.exitCode = 1
 }
-await browser.close()
+await browser.close().catch(() => {})
 await server.close()
+process.exit()
