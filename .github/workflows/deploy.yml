@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main  # Change this to the branch you want to trigger the deploy on
+  # Called by the nightly release tag workflow once a release's apps are built, so the
+  # home page's downloads link to them
+  workflow_call:
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -28,6 +31,18 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # The newest release's files, for the home page to link each download straight to
+      # its file. Without one, the downloads link to the releases page instead
+      - name: Find the newest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view --repo "$GITHUB_REPOSITORY" --json tagName,publishedAt,assets > "$RUNNER_TEMP/release.json"; then
+            echo "RELEASE_JSON=$RUNNER_TEMP/release.json" >> "$GITHUB_ENV"
+          else
+            echo "No release found, so the downloads link to the releases page"
+          fi
 
       - name: Build project
         # With the website's home page, which the apps don't have

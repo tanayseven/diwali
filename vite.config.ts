@@ -1,4 +1,5 @@
 import { defineConfig, Plugin } from "vite";
+import { releaseLinks } from "./scripts/web/release-links";
 
 // itch.io serves a browser game from a folder of its own on its own domain, so its build
 // (--mode itch) refers to everything relative to the page, and drops index.html's
@@ -11,7 +12,8 @@ const relativeToPage = (): Plugin => ({
 
 export default defineConfig(({ mode }) => ({
     base: mode === "itch" ? "./" : "/",
-    plugins: mode === "itch" ? [relativeToPage()] : [],
+    // The website's home page links each download straight to its file in the newest release
+    plugins: mode === "itch" ? [relativeToPage()] : mode === "web" ? [releaseLinks()] : [],
     build: {
         sourcemap: mode !== "itch",
         rollupOptions: {
