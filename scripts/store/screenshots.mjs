@@ -28,10 +28,10 @@ const page = await browser.newPage({
   deviceScaleFactor: screen.density,
 })
 page.on("pageerror", error => console.error("Page error:", error.message))
-// As someone who's used every tool before, so no tool's first step is shown over the
-// scene
+// As someone who's used every tool before and been shown how to zoom, so no tool's
+// first step, nor how to zoom, is shown over the scene
 await page.addInitScript(() => {
-  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["diyas", "fireworks", "kandil", "decorate", "rangoli"]))
+  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "diyas", "fireworks", "kandil", "decorate", "rangoli"]))
 })
 
 const drag = async (from, to, {hold = 0, steps = 12} = {}) => {

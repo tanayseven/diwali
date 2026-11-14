@@ -117,6 +117,13 @@ test("starts muted, and stays muted", async () => {
   await page.getByRole("button", {name: "Unmute music"}).waitFor()
 })
 
+test("the first visit shows how to zoom, in and then out", async () => {
+  // Zoomed in, then out, the zoom out button saying what it does as it does
+  await page.getByText("Zoom out", {exact: true}).waitFor({timeout: 6000})
+  // And then it's done, with nothing over the scene
+  await page.getByText("Zoom out", {exact: true}).waitFor({state: "hidden", timeout: 6000})
+})
+
 test("a diya dragged by a finger is held by a hand, which goes once it's let go", async () => {
   await page.touchscreen.tap(52, rail.diyas)
   await page.waitForTimeout(800)

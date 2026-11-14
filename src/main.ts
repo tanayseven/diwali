@@ -25,6 +25,7 @@ import {createWind} from "./wind"
 import {createWindBlown} from "./windBlown"
 import {showSoundSplash, showSplashWarning} from "./splashWarning"
 import {addTooltip, showTooltipOf} from "./tooltip"
+import {showZoomTutorial} from "./zoomTutorial"
 import {buttonRadius, createZoomControls} from "./zoomControls"
 
 type Tool = "diyas" | "fireworks" | "kandil" | "decorate" | "rangoli"
@@ -157,12 +158,14 @@ const main = async () => {
   // Only the picked tool's bar shows, unless the bars have been hidden with the eye
   const showBars = () => Object.entries(controls).forEach(([name, control]) =>
     control.setHudShown(name === selected && hudToggle.isShown()))
-  const select = (tool: Tool, picked = true) => {
+  const select = (tool: Tool, picked = true, introducing = true) => {
     selected = tool
     showBars()
     // The tool still draws or hangs things with whatever was last picked from its bar
     background.setPressHandler(controls[tool]?.pressHandler)
-    introduce(tool, picked)
+    if (introducing) {
+      introduce(tool, picked)
+    }
   }
   // The first time a tool's used, what to take first from its bar, and what to do with
   // it, is shown beside it until the next press, as there's no hovering to find out on
@@ -213,7 +216,22 @@ const main = async () => {
     app.stage.addChild(control.container)
     screens.push(control)
   })
-  select(selected, false)
+  select(selected, false, false)
+  // The first time, how to zoom is shown first, then the first tool's first step
+  const rememberIntroduced = (name: string) => {
+    introduced.add(name)
+    try {
+      localStorage.setItem(introducedKey, JSON.stringify([...introduced]))
+    } catch {
+      // Shown again next time, then
+    }
+  }
+  if (!introduced.has("zoom")) {
+    rememberIntroduced("zoom")
+    showZoomTutorial(background, zoomControls.zoomIn, zoomControls.zoomOut).then(() => introduce(selected, false))
+  } else {
+    introduce(selected, false)
+  }
 
   window.addEventListener("keydown", e => {
     // Don't let the keyboard drive anything while it's hidden behind the warning

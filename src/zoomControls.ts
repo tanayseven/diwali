@@ -88,6 +88,9 @@ const createZoomControls = (app: Application, background: Background, below: Con
   return {
     container,
     layout,
+    // The buttons themselves, to point out
+    zoomIn: zoomIn.container,
+    zoomOut: zoomOut.container,
     destroy() {
       app.ticker.remove(tick)
       container.destroy({children: true})
