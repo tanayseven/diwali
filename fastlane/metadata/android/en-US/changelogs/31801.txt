@@ -1,0 +1,5 @@
+• Keep focus in the language picker, and give it back to the globe button after
+• Start the zoom tutorial after turning sideways only once the scene's laid out for landscape
+• Close the zigzag rangoli border evenly, with 48 points
+• End the zoom tutorial on a key, leaving a keyboard zoom be, and wait for landscape to show it
+• Keep a tap on a wick, oil, paper, tails or bulb slot quiet, as it puts the item straight back
