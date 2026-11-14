@@ -3,9 +3,11 @@
 // mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
 // either bar's matchstick lights diyas and fireworks alike. And that what's let go
 // is put down where it's shown, above the finger, even with the finger over the bar, and
-// a tap on a placed firework doesn't move it. And that a finger held on a rail button
-// shows its tool's name, as there's no hovering on a touch screen. And that a ready-made
-// rangoli design can be made and put down.
+// a tap on a placed firework doesn't move it. And what's felt: a buzz for something
+// that's put down, and a double one, and where it goes shown, for something let go
+// where it can't go. And that a finger held on a rail button shows its tool's name, as
+// there's no hovering on a touch screen. And that a ready-made rangoli design can be
+// made and put down.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -51,6 +53,14 @@ before(async () => {
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
   }, muted)
+  // Every vibration asked for, kept to look at, in place of vibrating
+  await context.addInitScript(() => {
+    window.vibrations = []
+    navigator.vibrate = pattern => {
+      window.vibrations.push(pattern)
+      return true
+    }
+  })
   page = await context.newPage()
   page.on("pageerror", error => console.error("Page error:", error.message))
   touchscreen = await context.newCDPSession(page)
@@ -118,6 +128,13 @@ test("starts muted, and stays muted", async () => {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("diwali-audio")))
   assert.equal(saved.muted, true)
   await page.getByRole("button", {name: "Unmute music"}).waitFor()
+})
+
+test("the first visit shows how to zoom, in and then out", async () => {
+  // Zoomed in, then out, the zoom out button saying what it does as it does
+  await page.getByText("Zoom out", {exact: true}).waitFor({timeout: 6000})
+  // And then it's done, with nothing over the scene
+  await page.getByText("Zoom out", {exact: true}).waitFor({state: "hidden", timeout: 6000})
 })
 
 test("a diya dragged by a finger is held by a hand, which goes once it's let go", async () => {
@@ -285,6 +302,26 @@ test("a finger held on a placed diya shows what it is", async () => {
   const shownWhileHeld = await lit.waitFor({timeout: 5000}).then(() => true, () => false)
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
   assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
+})
+
+test("a diya let go off the porch goes back, buzzes, and its slot says where it goes", async () => {
+  await page.touchscreen.tap(52, rail.diyas)
+  await page.waitForTimeout(800)
+  await page.evaluate(() => window.vibrations.length = 0)
+  // Shown up in the sky, well off the porch
+  await touchDown(slot(0), {x: porch.x + 64, y: 40 + 64})
+  await touchUp()
+  await page.getByText("An oil lamp. Drag one onto the porch", {exact: true}).waitFor({timeout: 3000})
+  assert.deepEqual(await page.evaluate(() => window.vibrations), [[25, 60, 25]])
+})
+
+test("a diya put down on the porch by a finger is felt", async () => {
+  await page.evaluate(() => window.vibrations.length = 0)
+  // With the finger right of the bar
+  const shownAt = {x: porch.x + 250, y: porch.y + 10}
+  await touchDown(slot(0), {x: shownAt.x + 64, y: shownAt.y + 64})
+  await touchUp()
+  assert.deepEqual(await page.evaluate(() => window.vibrations), [12])
 })
 
 test("a ready-made rangoli design, mixed in its panel, is put down where the floor's tapped", async () => {

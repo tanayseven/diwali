@@ -7,8 +7,9 @@ import {LL} from "./locale"
 import {addHint} from "./hints"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
+import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
-import {Tooltip, addTooltip, wasLongPressed} from "./tooltip"
+import {addTooltip, showTooltipOf, Tooltip, wasLongPressed} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
@@ -200,8 +201,9 @@ type PlacedDiya = {
 type Drag =
   // A diya, from the stack or picked up from the scene, and where to put it back
   | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData, pressedAt?: PointData}
-  | {kind: "wick", sprite: Sprite}
-  | {kind: "oil", sprite: Sprite}
+  // A wick or the oil bottle, from the bar, and where the press that took it out was
+  | {kind: "wick", sprite: Sprite, pressedAt?: PointData}
+  | {kind: "oil", sprite: Sprite, pressedAt?: PointData}
 
 // A bar of inventory slots along the bottom of the screen, holding empty diyas, wicks
 // and an oil bottle, with badges counting how many are left. Empty diyas are dragged
@@ -415,6 +417,7 @@ const createDiyaInventory = (
 
   // The held match lights a diya's wick
   const light = (diya: PlacedDiya) => {
+    haptics.lit()
     diya.lit = true
     diya.light = lighting.addLight(diyaLightColour)
     diya.glow = new Sprite(lighting.glowTexture)
@@ -431,7 +434,8 @@ const createDiyaInventory = (
   // the finger instead of under it
   const startDrag = (at: PointData, pointerType: string, next: Drag, scale: number) => {
     const {sprite} = next
-    if (next.kind === "diya" && !next.fromScene) {
+    // From the bar, where it was pressed, so a tap that puts it straight back is quiet
+    if (next.kind !== "diya" || !next.fromScene) {
       next.pressedAt = {x: at.x, y: at.y}
     }
     sprite.scale.set(scale)
@@ -597,6 +601,13 @@ const createDiyaInventory = (
     sprite.on("pointerdown", press)
   }
 
+  // Felt, and the tooltip of the slot it came from shown, saying where it goes, for
+  // something that's gone back from where it was let go
+  const refuse = (slot: {container: Container}, near?: Container) => {
+    haptics.refused()
+    showTooltipOf(slot.container, undefined, {hideAfter: refusalShown, near})
+  }
+
   // Sends whatever's dragged back where it came from
   const returnDrag = (current: Drag) => {
     current.sprite.removeFromParent()
@@ -639,19 +650,29 @@ const createDiyaInventory = (
         returnDiya(current.diya)
       } else if (background.isOnPorchFloor(scene)) {
         placeDiya(current.diya, scene)
+        haptics.placed()
       } else {
-        // Diyas only go on the porch's floor; let go anywhere else, it goes back
+        // Diyas only go on the porch's floor; let go anywhere else, it goes back, and
+        // its slot says where it goes
         returnDrag(current)
+        // Beside the diya, if it's gone back onto the porch with the bar hidden
+        refuse(diyaSlot, current.diya.sprite)
       }
     } else if (current.kind === "wick" && into) {
       current.sprite.destroy()
       into.wick = true
       showDiya(into)
+      haptics.done()
     } else if (current.kind === "oil" && into) {
       current.sprite.destroy()
       pour(into)
+      haptics.done()
     } else {
+      // Not touching a diya that wants it, it goes back, and its slot says what it's for
       returnDrag(current)
+      if (!(hudShown && bar.takesBack(at, finger, current.pressedAt))) {
+        refuse(current.kind === "wick" ? wickSlot : bottleSlot)
+      }
     }
     render()
   }
