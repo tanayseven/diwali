@@ -96,9 +96,10 @@ type Kandil = {
 type Drag =
   // A kandil, a new one from the stack or one picked up, and where to put it back
   | {kind: "kandil", sprite: Container, kandil: Kandil, from?: Kandil["place"], pressedAt?: PointData}
-  | {kind: "paper", sprite: Sprite, paper: Paper}
-  | {kind: "tails", sprite: Sprite, tails: Tails}
-  | {kind: "bulb", sprite: Sprite}
+  // Paper, tails or the bulb, from the bar, and where the press that took it out was
+  | {kind: "paper", sprite: Sprite, paper: Paper, pressedAt?: PointData}
+  | {kind: "tails", sprite: Sprite, tails: Tails, pressedAt?: PointData}
+  | {kind: "bulb", sprite: Sprite, pressedAt?: PointData}
 
 // The Craft Kandil tool: akash kandils to make and hang on the house, prepared just as
 // diyas are. Its bar holds a stack of bamboo frames, paper in each colour, tails in each
@@ -260,7 +261,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
   // Whether the kandil being dragged, shown at one point by a pointer at another, would
   // go back on the bar if let go there
   const backOnBar = (at: PointData, finger: PointData, current = drag) =>
-    hudShown && bar.takesBack(at, finger, current?.kind === "kandil" ? current.pressedAt : undefined)
+    hudShown && bar.takesBack(at, finger, current?.pressedAt)
 
   // Where a kandil held by the top of its string at a point on screen would go if let
   // go there, by a pointer at another: standing on the porch if its foot's on the floor,
@@ -385,10 +386,11 @@ const createKandils = (app: Application, background: Background, lighting: Light
     dragLayer.addChild(sprite)
     setOutline(sprite, "selected", true)
     drag = next
+    // From the bar, where it was pressed, so a tap that puts it straight back is quiet
+    if (next.kind !== "kandil" || !next.from) {
+      next.pressedAt = {x: finger.x, y: finger.y}
+    }
     if (next.kind === "kandil") {
-      if (!next.from) {
-        next.pressedAt = {x: finger.x, y: finger.y}
-      }
       next.kandil.light?.off()
       next.kandil.string.visible = false
       // Carried, its tails hang down again

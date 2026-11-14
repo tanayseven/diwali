@@ -201,8 +201,9 @@ type PlacedDiya = {
 type Drag =
   // A diya, from the stack or picked up from the scene, and where to put it back
   | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData, pressedAt?: PointData}
-  | {kind: "wick", sprite: Sprite}
-  | {kind: "oil", sprite: Sprite}
+  // A wick or the oil bottle, from the bar, and where the press that took it out was
+  | {kind: "wick", sprite: Sprite, pressedAt?: PointData}
+  | {kind: "oil", sprite: Sprite, pressedAt?: PointData}
 
 // A bar of inventory slots along the bottom of the screen, holding empty diyas, wicks
 // and an oil bottle, with badges counting how many are left. Empty diyas are dragged
@@ -433,7 +434,8 @@ const createDiyaInventory = (
   // the finger instead of under it
   const startDrag = (at: PointData, pointerType: string, next: Drag, scale: number) => {
     const {sprite} = next
-    if (next.kind === "diya" && !next.fromScene) {
+    // From the bar, where it was pressed, so a tap that puts it straight back is quiet
+    if (next.kind !== "diya" || !next.fromScene) {
       next.pressedAt = {x: at.x, y: at.y}
     }
     sprite.scale.set(scale)
@@ -668,7 +670,7 @@ const createDiyaInventory = (
     } else {
       // Not touching a diya that wants it, it goes back, and its slot says what it's for
       returnDrag(current)
-      if (!(hudShown && bar.takesBack(at, finger))) {
+      if (!(hudShown && bar.takesBack(at, finger, current.pressedAt))) {
         refuse(current.kind === "wick" ? wickSlot : bottleSlot)
       }
     }
