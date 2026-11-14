@@ -197,7 +197,7 @@ type PlacedDiya = {
 
 type Drag =
   // A diya, from the stack or picked up from the scene, and where to put it back
-  | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData}
+  | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData, pressedAt?: PointData}
   | {kind: "wick", sprite: Sprite}
   | {kind: "oil", sprite: Sprite}
 
@@ -429,6 +429,9 @@ const createDiyaInventory = (
   // the finger instead of under it
   const startDrag = (at: PointData, pointerType: string, next: Drag, scale: number) => {
     const {sprite} = next
+    if (next.kind === "diya" && !next.fromScene) {
+      next.pressedAt = {x: at.x, y: at.y}
+    }
     sprite.scale.set(scale)
     sprite.position.copyFrom(touch.follow(at, pointerType))
     sprite.eventMode = "none"
@@ -621,7 +624,7 @@ const createDiyaInventory = (
     current.sprite.alpha = 1
     if (current.kind === "diya") {
       const scene = background.toScene(at)
-      if (hudShown && bar.isOver(finger)) {
+      if (hudShown && bar.takesBack(at, finger, current.pressedAt)) {
         placed.push(current.diya)
         returnDiya(current.diya)
       } else if (background.isOnPorchFloor(scene)) {
@@ -672,7 +675,7 @@ const createDiyaInventory = (
     const at = touch.follow(finger, e.pointerType)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
-      setOverBar(hudShown && bar.isOver(finger))
+      setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
       drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (drag.kind === "wick") {

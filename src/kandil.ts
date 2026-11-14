@@ -94,7 +94,7 @@ type Kandil = {
 
 type Drag =
   // A kandil, a new one from the stack or one picked up, and where to put it back
-  | {kind: "kandil", sprite: Container, kandil: Kandil, from?: Kandil["place"]}
+  | {kind: "kandil", sprite: Container, kandil: Kandil, from?: Kandil["place"], pressedAt?: PointData}
   | {kind: "paper", sprite: Sprite, paper: Paper}
   | {kind: "tails", sprite: Sprite, tails: Tails}
   | {kind: "bulb", sprite: Sprite}
@@ -256,12 +256,17 @@ const createKandils = (app: Application, background: Background, lighting: Light
     return kandil
   }
 
+  // Whether the kandil being dragged, shown at one point by a pointer at another, would
+  // go back on the bar if let go there
+  const backOnBar = (at: PointData, finger: PointData, current = drag) =>
+    hudShown && bar.takesBack(at, finger, current?.kind === "kandil" ? current.pressedAt : undefined)
+
   // Where a kandil held by the top of its string at a point on screen would go if let
   // go there, by a pointer at another: standing on the porch if its foot's on the floor,
   // or else hung from the eave above, if there's house there to hang it on. Nowhere,
-  // with the pointer over the bar, as letting go there puts it back
-  const placeAt = (at: PointData, finger: PointData): Kandil["place"] | undefined => {
-    if (hudShown && bar.isOver(finger)) {
+  // when letting go there would put it back on the bar
+  const placeAt = (at: PointData, finger: PointData, current = drag): Kandil["place"] | undefined => {
+    if (backOnBar(at, finger, current)) {
       return undefined
     }
     const top = background.toScene(at)
@@ -380,6 +385,9 @@ const createKandils = (app: Application, background: Background, lighting: Light
     setOutline(sprite, "selected", true)
     drag = next
     if (next.kind === "kandil") {
+      if (!next.from) {
+        next.pressedAt = {x: finger.x, y: finger.y}
+      }
       next.kandil.light?.off()
       next.kandil.string.visible = false
       // Carried, its tails hang down again
@@ -441,7 +449,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     }
     if (drag.kind === "kandil") {
       const place = placeAt(at, finger)
-      setOverBar(hudShown && bar.isOver(finger))
+      setOverBar(backOnBar(at, finger))
       drag.sprite.alpha = place || overBar ? 1 : 0.4
       if (place?.on === "house") {
         drawString(dragString, place.tiedAt, {x: place.tiedAt.x, y: place.tiedAt.y + place.length})
@@ -488,10 +496,10 @@ const createKandils = (app: Application, background: Background, lighting: Light
     dragString.visible = false
     setOutline(current.sprite, "selected", false)
     if (current.kind === "kandil") {
-      const place = placeAt(at, finger)
+      const place = placeAt(at, finger, current)
       if (place) {
         putKandil(current.kandil, place, true)
-      } else if (current.from && !(hudShown && bar.isOver(finger))) {
+      } else if (current.from && !backOnBar(at, finger, current)) {
         // Back where it was if it can't go where it was let go
         putKandil(current.kandil, current.from, false)
       } else {
