@@ -65,7 +65,7 @@ const shapes: Record<Layer, Record<string, () => Line[]>> = {
       const r = 0.82 + 0.12 * Math.abs(Math.sin(angle * 8))
       return {x: r * Math.cos(angle), y: r * Math.sin(angle)}
     })],
-    zigzag: () => [around(49, (angle, i) => {
+    zigzag: () => [around(48, (angle, i) => {
       const r = i % 2 === 0 ? 0.78 : 0.95
       return {x: r * Math.cos(angle), y: r * Math.sin(angle)}
     }).concat([{x: 0.78, y: 0}])],
