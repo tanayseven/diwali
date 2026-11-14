@@ -40,8 +40,8 @@ const rail = {diyas: 43, fireworks: 110, kandil: 177, decorate: 244, rangoli: 31
 const slot = index => ({x: 125 + 66 * index, y: 300})
 // The buttons down the right
 const speaker = {x: 793, y: 52}
-const zoomOut = {x: 793, y: 186}
-const camera = {x: 793, y: 262}
+const zoomOut = {x: 793, y: 174}
+const camera = {x: 793, y: 240}
 // What's dragged by touch is shown this far up and to the left of the finger, as in
 // src/touchMarker.ts, and is put down there
 const lift = 64

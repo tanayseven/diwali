@@ -13,10 +13,13 @@ const highlight = 0xffd700
 const clearTop = 96
 const eyeRadius = 26
 const clearGap = 12
+// The least they're shrunk to, however short the screen
+const leastScale = 0.5
 
 // Zoom in and zoom out buttons stacked down the right of the screen, with any other
-// buttons given stacked below them, set a little apart. A zoom button fades when the
-// camera can't zoom any further that way
+// buttons given stacked below them, set a little apart, all shrunk to fit between the
+// speaker button and the eye button. A zoom button fades when the camera can't zoom
+// any further that way
 const createZoomControls = (app: Application, background: Background, below: Container[] = []) => {
   const container = new Container()
 
@@ -78,9 +81,15 @@ const createZoomControls = (app: Application, background: Background, below: Con
     const height = buttonRadius * 2 * buttons + buttonGap * (buttons - 1) + (below.length > 0 ? buttonGap : 0)
     const bottom = hudFrame(app.screen).y - eyeRadius - clearGap
     const room = bottom - clearTop
+    // Shrunk to fit on short screens, like the side rail, so the last of them, the
+    // camera, doesn't cover the eye button. Never below half size, still big enough to
+    // press: a window too short even for that, which landscape ones can be, has them
+    // over the eye button rather than gone, or turned upside down by a scale of none
+    const scale = Math.max(leastScale, Math.min(1, room / height))
+    container.scale.set(scale)
     container.position.set(
       app.screen.width - sideMargin - buttonRadius,
-      clearTop + Math.max(0, (room - height) / 2) + buttonRadius,
+      clearTop + Math.max(0, (room - height * scale) / 2) + buttonRadius * scale,
     )
   }
   layout()

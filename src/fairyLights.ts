@@ -1,4 +1,4 @@
-import {Application, Assets, Container, Graphics, Point, PointData, Polygon, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Polygon, Rectangle, Sprite, Texture} from "pixi.js"
 import Matter from "matter-js"
 import {quality} from "./app"
 import type {Background} from "./background"
@@ -121,6 +121,10 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   // it started out and how far it's been dragged
   let hanging: LightString | undefined
   let moving: {string: LightString, from: PointData, to: PointData, grabbedAt: PointData} | undefined
+  // The pointer hanging or moving a string, so a second finger, to pinch, doesn't too
+  let stringWith: number | undefined
+  // The fingers down, so no string's picked up while two are, pinching
+  const touchesDown = new Set<number>()
 
   const tips = LL.tooltip.lights
   const colourNames: Record<Choice, () => string> = {
@@ -321,20 +325,22 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     string.container.eventMode = "static"
     addTooltip(string.container, () => ({title: tips.name(), lines: [tips.move()]}))
     string.container.on("pointerdown", e => {
-      if (hanging || moving) {
+      if (hanging || moving || touchesDown.size > 1) {
         return
       }
       e.stopPropagation()
+      stringWith = e.pointerId
       moving = {string, from: {...string.from}, to: {...string.to}, grabbedAt: background.toScene(e.global)}
       setOutline(string.container, "selected", true)
     })
   }
 
   // With a colour picked, a press on the house starts a string there
-  const pressHandler = (at: PointData) => {
-    if (!background.isOnHouse(at) || moving) {
+  const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
+    if (!background.isOnHouse(at) || moving || touchesDown.size > 1) {
       return false
     }
+    stringWith = e.pointerId
     hanging = createString(at, at, chosen)
     setOutline(hanging.container, "selected", true)
     hanging.container.eventMode = "none"
@@ -349,6 +355,9 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
+    if (e.pointerId !== stringWith) {
+      return
+    }
     const at = background.toScene(toStage(e))
     if (hanging) {
       hanging.to = at
@@ -364,6 +373,11 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     }
   }
   const onPointerUp = (e: PointerEvent) => {
+    touchesDown.delete(e.pointerId)
+    if (e.pointerId !== stringWith) {
+      return
+    }
+    stringWith = undefined
     if (hanging) {
       const string = hanging
       hanging = undefined
@@ -390,6 +404,33 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       }
     }
   }
+  // A second finger put down while a string's being hung or moved is the start of a
+  // pinch, so the string's dropped: one being hung isn't, and one being moved goes back
+  // where it was
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === "touch") {
+      touchesDown.add(e.pointerId)
+    }
+    if (stringWith === undefined || e.pointerId === stringWith) {
+      return
+    }
+    stringWith = undefined
+    if (hanging) {
+      const string = hanging
+      hanging = undefined
+      removeString(string)
+    } else if (moving) {
+      const {string, from, to} = moving
+      moving = undefined
+      string.from = from
+      string.to = to
+      string.container.alpha = 1
+      restrung = true
+      setOutline(string.container, "selected", false)
+      build(string)
+    }
+  }
+  window.addEventListener("pointerdown", onPointerDown, true)
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
@@ -458,6 +499,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       bar.setInteractive(shown)
     },
     destroy() {
+      window.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)

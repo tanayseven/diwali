@@ -1,7 +1,9 @@
 // Plays the game in headless Chromium as a phone held sideways, with touch, and checks
 // that a finger dragging something from any bar has a hand drawn holding it, and that a
 // mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
-// either bar's matchstick lights diyas and fireworks alike.
+// either bar's matchstick lights diyas and fireworks alike. And that what's let go
+// is put down where it's shown, above the finger, even with the finger over the bar, and
+// a tap on a placed firework doesn't move it.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -178,10 +180,10 @@ const mouseDrag = async (from, to, hold = 300) => {
   await page.mouse.up()
   await page.waitForTimeout(300)
 }
-// That a placed diya's tooltip says something of it, from hovering over it with the
+// That something placed's tooltip says something of it, from hovering over it with the
 // mouse, again and again until it does, as on a slow machine pouring oil or striking the
 // match takes longer than it should
-const diyaSays = async (at, text) => {
+const says = async (at, text) => {
   const said = page.getByText(text, {exact: true})
   const until = Date.now() + 20000
   for (;;) {
@@ -206,10 +208,10 @@ test("oil goes into a diya the bottle only touches, not just one under the point
   await page.waitForTimeout(800)
   await mouseDrag(slot(0), diya)
   await mouseDrag(slot(1), diya)
-  await diyaSays(diya, "Needs oil")
+  await says(diya, "Needs oil")
   // The pointer's above the bowl, clear of it, but the bottle reaches down onto it
   await mouseDrag(slot(2), {x: diya.x, y: diya.y - 22})
-  await diyaSays(diya, "Ready to light with the matchstick")
+  await says(diya, "Ready to light with the matchstick")
 })
 
 test("the Fireworks bar's matchstick lights a diya", async () => {
@@ -218,5 +220,26 @@ test("the Fireworks bar's matchstick lights a diya", async () => {
   // Held there while it's struck, put to the wick, and catches, which takes a second,
   // or longer on a slow machine, whose frames are only counted up to a tenth of a second
   await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 4000)
-  await diyaSays(diya, "Lit")
+  await says(diya, "Lit")
+})
+
+test("a diya let go by a finger with it shown just above the bar goes onto the porch", async () => {
+  await page.touchscreen.tap(52, rail.diyas)
+  await page.waitForTimeout(800)
+  // Shown on the porch, but with the finger, down and to the right of it, over the bar
+  const shownAt = {x: porch.x + 170, y: porch.y + 22}
+  await touchDown(slot(0), {x: shownAt.x + 64, y: shownAt.y + 64})
+  await touchUp()
+  await says(shownAt, "Needs a wick and oil")
+})
+
+test("a tap on a placed firework leaves it where it is", async () => {
+  await page.touchscreen.tap(52, rail.fireworks)
+  await page.waitForTimeout(800)
+  // Low on the porch, so if a tap picked it up, it'd be put down on the porch further up
+  const anar = {x: porch.x + 90, y: porch.y + 33}
+  await mouseDrag(slot(0), anar)
+  await page.touchscreen.tap(anar.x, anar.y - 6)
+  await page.waitForTimeout(500)
+  await says(anar, "Anar")
 })
