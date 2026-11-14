@@ -3,7 +3,8 @@
 // mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
 // either bar's matchstick lights diyas and fireworks alike. And that what's let go
 // is put down where it's shown, above the finger, even with the finger over the bar, and
-// a tap on a placed firework doesn't move it.
+// a tap on a placed firework doesn't move it. And that a finger held
+// on a rail button shows its tool's name, as there's no hovering on a touch screen.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -242,4 +243,23 @@ test("a tap on a placed firework leaves it where it is", async () => {
   await page.touchscreen.tap(anar.x, anar.y - 6)
   await page.waitForTimeout(500)
   await says(anar, "Anar")
+})
+
+test("a finger held on a rail button shows the tool's name", async () => {
+  const name = page.getByText("Craft Kandil", {exact: true})
+  const button = {x: 52, y: rail.kandil}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [button]})
+  // Shown after a moment, which on a slow machine can be a while
+  const shownWhileHeld = await name.waitFor({timeout: 5000}).then(() => true, () => false)
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the tool's name shows while the finger's held on its button")
+})
+
+test("a finger held on a placed diya shows what it is", async () => {
+  const lit = page.getByText("Lit", {exact: true})
+  const at = {x: diya.x, y: diya.y - 4}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [at]})
+  const shownWhileHeld = await lit.waitFor({timeout: 5000}).then(() => true, () => false)
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
 })

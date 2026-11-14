@@ -28,6 +28,11 @@ const page = await browser.newPage({
   deviceScaleFactor: screen.density,
 })
 page.on("pageerror", error => console.error("Page error:", error.message))
+// As someone who's used every tool before, so no tool's first step is shown over the
+// scene
+await page.addInitScript(() => {
+  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["diyas", "fireworks", "kandil", "decorate", "rangoli"]))
+})
 
 const drag = async (from, to, {hold = 0, steps = 12} = {}) => {
   await page.mouse.move(from.x, from.y)
