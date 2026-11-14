@@ -206,6 +206,8 @@ const createRangoli = (app: Application, background: Background) => {
   return {
     container,
     layout: bar.layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     pressHandler,
     // Shows its bar, while the Draw Rangoli tool is the one in use
     setHudShown(shown: boolean) {

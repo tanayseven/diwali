@@ -26,6 +26,7 @@ const createSideRail = <Name extends string>(app: Application, items: RailItem<N
   const container = new Container()
   let selected = items[0].name
 
+  const buttonsByName = new Map<Name, Container>()
   const buttons = items.map((item, idx) => {
     const button = new Container()
     const background = new Graphics()
@@ -48,6 +49,7 @@ const createSideRail = <Name extends string>(app: Application, items: RailItem<N
     button.on("pointertap", () => select(item.name))
     addTooltip(button, () => ({title: item.label()}), {outline: false})
     container.addChild(button)
+    buttonsByName.set(item.name, button)
     const render = () => {
       const active = item.name === selected
       background.clear()
@@ -84,7 +86,13 @@ const createSideRail = <Name extends string>(app: Application, items: RailItem<N
   renderAll()
   layout()
 
-  return {container, layout, select}
+  return {
+    container,
+    layout,
+    select,
+    // The button for a tool
+    buttonFor: (name: Name) => buttonsByName.get(name),
+  }
 }
 
 export {createSideRail}

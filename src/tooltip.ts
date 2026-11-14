@@ -27,6 +27,17 @@ let outlinedNow: Container | undefined
 // open, pinned, until something else is pressed
 let anchor: (() => DOMRect | undefined) | undefined
 let pinned = false
+// How to describe each thing given a tooltip, so one can be shown for it on its own
+const describers = new WeakMap<Container, () => Tooltip | undefined>()
+
+// Touch screens have no hover, so a finger held still on something for a moment shows
+// its tooltip instead, above the finger, pinned until the next press, as a hint's
+// badge does. Moving the finger, as to drag something out, puts it away
+const longPressTime = 450
+const longPressSlop = 10
+// How far above the finger it's kept, clear of the fingertip
+const aboveFinger = 44
+let longPress: {pointerId: number, x: number, y: number, timer?: number, shown: boolean} | undefined
 
 const getElement = () => {
   if (!element) {
@@ -51,6 +62,9 @@ const getElement = () => {
     })
     document.body.appendChild(element)
     window.addEventListener("pointermove", onWindowPointerMove)
+    window.addEventListener("pointermove", onLongPressMove)
+    window.addEventListener("pointerup", endLongPress)
+    window.addEventListener("pointercancel", endLongPress)
     window.addEventListener("pointerdown", hide)
     window.addEventListener("blur", hide)
     window.addEventListener("keydown", e => {
@@ -152,6 +166,40 @@ const showAnchored = () => {
   }
 }
 
+// Held still long enough, the finger's press shows the tooltip of what it's on
+const startLongPress = (target: Container, e: FederatedPointerEvent) => {
+  getElement()
+  endLongPress()
+  const press = {pointerId: e.pointerId, x: e.clientX, y: e.clientY, shown: false, timer: undefined as number | undefined}
+  press.timer = window.setTimeout(() => {
+    press.timer = undefined
+    if (longPress !== press || !isHoverable(target)) {
+      return
+    }
+    showTooltipOf(target, () => new DOMRect(press.x - 20, press.y - aboveFinger, 40, window.innerHeight), {pin: true})
+    press.shown = owner === target
+  }, longPressTime)
+  longPress = press
+}
+function onLongPressMove(e: PointerEvent) {
+  if (!longPress || e.pointerId !== longPress.pointerId
+    || Math.hypot(e.clientX - longPress.x, e.clientY - longPress.y) < longPressSlop) {
+    return
+  }
+  const {shown} = longPress
+  endLongPress()
+  if (shown) {
+    hide()
+  }
+}
+// Lifting the finger leaves a tooltip it opened showing, to be read
+function endLongPress() {
+  if (longPress?.timer !== undefined) {
+    clearTimeout(longPress.timer)
+  }
+  longPress = undefined
+}
+
 function onWindowPointerMove(e: PointerEvent) {
   // One opened from a badge stays by it, and is kept up to date by refreshTooltip
   if (!owner || anchor) {
@@ -174,6 +222,12 @@ function onWindowPointerMove(e: PointerEvent) {
 // While it shows, the target's outlined in yellow too, unless it's a button that has
 // its own way of showing it's hovered
 const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined, {outline = true} = {}) => {
+  describers.set(target, describeTarget)
+  target.on("pointerdown", e => {
+    if (e.pointerType === "touch") {
+      startLongPress(target, e)
+    }
+  })
   const show = (e: FederatedPointerEvent) => {
     // Nor while the pointer's over something on top of the canvas, such as a hint's
     // badge, which has its own
@@ -197,8 +251,10 @@ const addTooltip = (target: Container, describeTarget: () => Tooltip | undefined
   // Also on moving over it, as a drag that ends on it, such as pouring oil into a diya,
   // leaves the pointer already over it, so it's never entered afresh
   target.on("pointermove", show)
+  // Not one shown beside it rather than by hovering, which a finger lifted off it on a
+  // touch screen would otherwise put away as soon as it's shown
   target.on("pointerout", () => {
-    if (owner === target) {
+    if (owner === target && !anchor) {
       hide()
     }
   })
@@ -217,6 +273,24 @@ const showTooltipBeside = (target: Container, describeTarget: () => Tooltip | un
   setOutline(target, "hover", true)
   outlinedNow = target
   showAnchored()
+}
+
+// Shows the tooltip given to something with addTooltip on its own, beside a box, by
+// default the box round it on screen: pinned until the next press, or for a while
+const showTooltipOf = (target: Container, box?: () => DOMRect | undefined, {pin = false, hideAfter = 0} = {}) => {
+  const describeTarget = describers.get(target)
+  if (!describeTarget || !isHoverable(target)) {
+    return false
+  }
+  showTooltipBeside(target, describeTarget, box ?? (() => {
+    const {x, y, width, height} = target.getBounds().rectangle
+    const canvas = document.querySelector("canvas")?.getBoundingClientRect()
+    return new DOMRect(x + (canvas?.left ?? 0), y + (canvas?.top ?? 0), width, height)
+  }), {pin})
+  if (hideAfter > 0) {
+    window.setTimeout(() => hideTooltipFor(target), hideAfter)
+  }
+  return owner === target
 }
 
 // Whether a tooltip's showing for a target, and whether it's pinned open
@@ -238,5 +312,5 @@ const refreshTooltip = () => {
   }
 }
 
-export {addTooltip, hideTooltipFor, isHoverable, refreshTooltip, showTooltipBeside, tooltipFor}
+export {addTooltip, hideTooltipFor, isHoverable, refreshTooltip, showTooltipBeside, showTooltipOf, tooltipFor}
 export type {Tooltip}

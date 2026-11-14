@@ -450,6 +450,8 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   return {
     container,
     layout: bar.layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     pressHandler,
     // Shows its bar, while the Decorate House tool is the one in use
     setHudShown(shown: boolean) {
