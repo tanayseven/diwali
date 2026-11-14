@@ -139,8 +139,8 @@ const createDesignPicker = (
   Object.assign(overlay.style, {
     position: "fixed",
     inset: "0",
-    // Under the notice to turn the phone sideways
-    zIndex: "2",
+    // Above the scene's hint badges and tooltips, under the notice to turn the phone sideways
+    zIndex: "3",
     display: "none",
     alignItems: "center",
     justifyContent: "center",
