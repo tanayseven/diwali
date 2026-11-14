@@ -81,9 +81,23 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
     window.removeEventListener("pointerdown", end, true)
     window.removeEventListener("wheel", endByWheel, true)
     // Once any step under way has finished, back to as far in as it was, unless a
-    // trackpad's taken the camera over, as a scroll or pinch does
+    // trackpad's taken the camera over, as a scroll or pinch does.
+    // Any press or scroll before then takes the camera over, so it's left as it is
     if (zoomed && !byWheel) {
-      window.setTimeout(() => camera.zoomBy(startScale / camera.scale()), zoomEases)
+      const reset = window.setTimeout(() => {
+        stopWaiting()
+        camera.zoomBy(startScale / camera.scale())
+      }, zoomEases)
+      const takenOver = () => {
+        clearTimeout(reset)
+        stopWaiting()
+      }
+      const stopWaiting = () => {
+        window.removeEventListener("pointerdown", takenOver, true)
+        window.removeEventListener("wheel", takenOver, true)
+      }
+      window.addEventListener("pointerdown", takenOver, true)
+      window.addEventListener("wheel", takenOver, true)
     }
     hideTooltipFor(zoomIn)
     hideTooltipFor(zoomOut)
