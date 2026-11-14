@@ -1,5 +1,5 @@
 import {Application, Assets, Container, Graphics, Sprite, Texture} from "pixi.js"
-import {addTooltip} from "./tooltip"
+import {addTooltip, wasLongPressed} from "./tooltip"
 
 type RailItem<Name extends string> = {
   name: Name
@@ -46,7 +46,11 @@ const createSideRail = <Name extends string>(app: Application, items: RailItem<N
       hovered = false
       render()
     })
-    button.on("pointertap", () => select(item.name))
+    button.on("pointertap", () => {
+      if (!wasLongPressed(button)) {
+        select(item.name)
+      }
+    })
     addTooltip(button, () => ({title: item.label()}), {outline: false})
     container.addChild(button)
     buttonsByName.set(item.name, button)
