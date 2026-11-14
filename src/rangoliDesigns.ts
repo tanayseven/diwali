@@ -121,12 +121,17 @@ const createDesignPicker = (
       context.stroke()
     })
   }
+  // Drawn at the most it's shown at, sized to fit the screen whenever the panel opens
   const canvasOf = (size: number) => {
     const canvas = document.createElement("canvas")
     canvas.width = canvas.height = size * 2
-    Object.assign(canvas.style, {width: `${size}px`, height: `${size}px`})
     return canvas
   }
+  const fit = (canvas: HTMLCanvasElement, size: number) => {
+    Object.assign(canvas.style, {width: `${size}px`, height: `${size}px`})
+  }
+  const largestPreview = 190
+  const largestThumb = 44
 
   const overlay = document.createElement("div")
   overlay.setAttribute("role", "dialog")
@@ -152,11 +157,12 @@ const createDesignPicker = (
     maxWidth: "calc(100vw - 24px)",
     maxHeight: "calc(100vh - 24px)",
     boxSizing: "border-box",
+    // Scrolls if the screen's too small for it all, so nothing's out of reach
+    overflow: "auto",
   })
   overlay.appendChild(panel)
 
-  const previewSize = Math.round(Math.min(190, window.innerHeight * 0.5))
-  const preview = canvasOf(previewSize)
+  const preview = canvasOf(largestPreview)
   Object.assign(preview.style, {borderRadius: "12px", background: "#5a3a3a", flex: "none"})
   const left = document.createElement("div")
   Object.assign(left.style, {display: "flex", flexDirection: "column", alignItems: "center", gap: "10px"})
@@ -189,7 +195,6 @@ const createDesignPicker = (
   Object.assign(rows.style, {display: "flex", flexDirection: "column", gap: "min(10px, 2vh)"})
   panel.append(left, rows)
 
-  const thumbSize = Math.round(Math.min(44, window.innerHeight * 0.1))
   const rowParts = layers.map(layer => {
     const row = document.createElement("div")
     Object.assign(row.style, {display: "flex", flexDirection: "column", gap: "6px"})
@@ -206,7 +211,7 @@ const createDesignPicker = (
         cursor: "pointer",
         lineHeight: "0",
       })
-      const canvas = canvasOf(thumbSize)
+      const canvas = canvasOf(largestThumb)
       button.appendChild(canvas)
       button.addEventListener("click", () => {
         design = {...design, [layer]: {...design[layer], shape}}
@@ -275,6 +280,10 @@ const createDesignPicker = (
 
   return {
     show() {
+      // Sized for the screen as it is now, as the window may have changed since
+      fit(preview, Math.round(Math.min(largestPreview, window.innerHeight * 0.45)))
+      const thumbSize = Math.round(Math.min(largestThumb, window.innerHeight * 0.1))
+      rowParts.forEach(({thumbs}) => thumbs.forEach(({canvas}) => fit(canvas, thumbSize)))
       render()
       overlay.style.display = "flex"
     },

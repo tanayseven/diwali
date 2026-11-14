@@ -179,6 +179,28 @@ const mouseDrag = async (from, to, hold = 300) => {
   await page.mouse.up()
   await page.waitForTimeout(300)
 }
+// How much of a part of the screen is blue
+const bluePixels = async clip => {
+  const shot = await page.screenshot({clip})
+  return page.evaluate(async png => {
+    const image = new Image()
+    image.src = `data:image/png;base64,${png}`
+    await image.decode()
+    const canvas = document.createElement("canvas")
+    canvas.width = image.width
+    canvas.height = image.height
+    const context = canvas.getContext("2d")
+    context.drawImage(image, 0, 0)
+    const {data} = context.getImageData(0, 0, canvas.width, canvas.height)
+    let count = 0
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 2] > data[i] + 30 && data[i + 2] > data[i + 1] + 15) {
+        count += 1
+      }
+    }
+    return count / (canvas.width * canvas.height)
+  }, shot.toString("base64"))
+}
 // That a placed diya's tooltip says something of it, from hovering over it with the
 // mouse, again and again until it does, as on a slow machine pouring oil or striking the
 // match takes longer than it should
@@ -229,15 +251,16 @@ test("a ready-made rangoli design, mixed in its panel, is put down where the flo
   const panel = page.getByRole("dialog", {name: "Draw Rangoli"})
   await panel.waitFor({timeout: 3000})
   await page.getByRole("button", {name: "centre star"}).tap()
-  await page.getByRole("button", {name: "border dots"}).tap()
+  // Blue, which nothing else in the scene is, unlike leaves and petals blowing past
+  await page.getByRole("button", {name: "ring blue"}).tap()
   await page.getByRole("button", {name: "✓"}).tap()
   await panel.waitFor({state: "hidden", timeout: 3000})
   // Well clear of what the tests before put on the porch
   const at = {x: porch.x - 200, y: porch.y + 25}
-  const clip = {x: at.x - 50, y: at.y - 20, width: 100, height: 40}
-  const before = await page.screenshot({clip})
+  const clip = {x: at.x - 50, y: at.y - 25, width: 100, height: 50}
+  const before = await bluePixels(clip)
   await page.touchscreen.tap(at.x, at.y)
   await page.waitForTimeout(500)
-  const after = await page.screenshot({clip})
-  assert.notDeepEqual(after, before, "the floor there has the design on it")
+  const after = await bluePixels(clip)
+  assert.ok(after > before + 0.02, `the design's blue ring is on the floor there (${before.toFixed(3)} to ${after.toFixed(3)} of it blue)`)
 })
