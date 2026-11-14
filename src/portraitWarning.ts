@@ -28,8 +28,8 @@ const createPortraitWarning = () => {
   Object.assign(overlay.style, {
     position: "fixed",
     inset: "0",
-    // Above everything, including the speaker button
-    zIndex: "3",
+    // Above everything, including the speaker button and the rangoli designs picker
+    zIndex: "4",
     display: "none",
     flexDirection: "column",
     alignItems: "center",

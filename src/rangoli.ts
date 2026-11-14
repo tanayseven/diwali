@@ -1,9 +1,10 @@
 import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
 import {fontFamily} from "./app"
 import {Background, porchFloor} from "./background"
-import {createHud, slotSize} from "./hud"
+import {createHud, hudFrame, slotSize} from "./hud"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
+import {createDesignPicker, Design, designLines} from "./rangoliDesigns"
 import {addTooltip, hideTooltipFor, showTooltipOf, wasLongPressed} from "./tooltip"
 
 // How long Clear waits for a second tap, once it's asked, in ms
@@ -31,6 +32,15 @@ const eraserRadius = 4
 const stampSpacing = 0.35
 // How many texture pixels the drawing has per scene unit, so it stays crisp up close
 const resolution = 5
+// A ready-made design's size, from its middle to its edge, in scene units, and how
+// much it's squashed top to bottom, as it lies flat on the floor
+const designRadius = 58
+const floorTilt = 0.5
+// Its lines are finer than drawing by hand, so its shapes stay clear
+const designBrushRadius = 1.3
+// The button that opens the designs, above the bar's left end, in CSS pixels
+const designsButtonSize = 48
+const designsButtonGap = 8
 
 // A dab of powder: a dense middle that thins out to scattered grains at the edge
 const powderTexture = (size: number) => {
@@ -162,15 +172,59 @@ const createRangoli = (app: Application, background: Background) => {
   })
   addTooltip(clearSlot.container, () => ({title: tips.clear(), lines: [tips.clearHint()]}))
 
-  // What's picked is outlined as well as its box highlighted
+  // A ready-made design, made in the designs panel, put down wherever the floor's
+  // pressed while it's picked, until a colour or the eraser's picked instead
+  let design: Design | undefined
+  const picker = createDesignPicker(powders, LL.tools.rangoli(), made => {
+    design = made
+    render()
+  })
+  // A round button above the bar's left end, with a little rangoli on it, opening them
+  const designsButton = document.createElement("button")
+  designsButton.type = "button"
+  designsButton.setAttribute("aria-label", LL.tools.rangoli())
+  designsButton.title = LL.tools.rangoli()
+  Object.assign(designsButton.style, {
+    position: "fixed",
+    left: "0",
+    top: "0",
+    zIndex: "1",
+    width: `${designsButtonSize}px`,
+    height: `${designsButtonSize}px`,
+    display: "none",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0",
+    borderRadius: "50%",
+    background: "rgba(26, 26, 26, 0.9)",
+    cursor: "pointer",
+    touchAction: "manipulation",
+  })
+  designsButton.innerHTML = `<svg width="30" height="30" viewBox="-10 -10 20 20" aria-hidden="true">
+    <circle r="8.5" fill="none" stroke="#ffd23f" stroke-width="1.4"/>
+    ${[0, 45, 90, 135, 180, 225, 270, 315].map(angle => `<ellipse rx="1.6" ry="4" cy="-4.2" fill="#e23b2e" transform="rotate(${angle})"/>`).join("")}
+    <circle r="1.8" fill="#2fae4e"/></svg>`
+  designsButton.addEventListener("click", () => picker.show())
+  document.body.appendChild(designsButton)
+  const placeDesignsButton = () => {
+    const frame = hudFrame(app.screen)
+    const canvas = app.canvas.getBoundingClientRect()
+    designsButton.style.transform = `translate(${canvas.left + frame.x - frame.width / 2}px, ${
+      canvas.top + frame.y - frame.height / 2 - designsButtonSize - designsButtonGap}px)`
+  }
+
+  // What's picked is outlined as well as its box highlighted, or with a design picked,
+  // its button
   const render = () => {
-    const picked = tool === "eraser" ? eraserSlot : powderSlots[powderNames.indexOf(tool)]
-    bar.drawBoxes(picked.box)
+    const picked = design ? undefined : tool === "eraser" ? eraserSlot : powderSlots[powderNames.indexOf(tool)]
+    bar.drawBoxes(picked?.box)
     ;[...powderSlots, eraserSlot].forEach(slot => setOutline(slot.container, "selected", slot === picked))
+    designsButton.style.border = `3px solid ${design ? "#ffd700" : "#555555"}`
   }
 
   function select(next: Tool) {
     tool = next
+    design = undefined
     render()
   }
 
@@ -199,10 +253,54 @@ const createRangoli = (app: Application, background: Background) => {
     last = at
   }
 
-  // A press on the porch's floor starts drawing there
+  // Lays powder along a line, from point to point, in a colour, and draws it in
+  const powderAlong = (points: PointData[], colour: number, radius: number) => {
+    const dab = (at: PointData) => {
+      const stamp = new Sprite(powderStamp)
+      stamp.anchor.set(0.5)
+      stamp.width = stamp.height = radius * 2 * resolution
+      stamp.position.set((at.x - left) * resolution, (at.y - top) * resolution)
+      stamp.rotation = Math.random() * Math.PI * 2
+      stamp.tint = colour
+      stamps.addChild(stamp)
+    }
+    if (points.length > 0) {
+      dab(points[0])
+    }
+    for (let i = 1; i < points.length; i++) {
+      const from = points[i - 1]
+      const to = points[i]
+      const count = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / (radius * stampSpacing)))
+      for (let k = 1; k <= count; k++) {
+        dab({x: from.x + (to.x - from.x) * k / count, y: from.y + (to.y - from.y) * k / count})
+      }
+    }
+    app.renderer.render({container: stamps, target: drawing, clear: false})
+    stamps.removeChildren().forEach(stamp => stamp.destroy())
+  }
+
+  // Puts the picked design down on the floor, centred on a point, lying flat
+  const putDesign = (at: PointData, made: Design) => {
+    designLines(made).forEach(({points, colour}) => powderAlong(
+      points.map(point => ({x: at.x + point.x * designRadius, y: at.y + point.y * designRadius * floorTilt})),
+      powders[colour as Powder],
+      designBrushRadius,
+    ))
+  }
+
+  // A press on the floor with a design picked, to put it down there once it's a tap: let
+  // go without moving, and without another finger coming down, as for a pinch
+  let placing: {at: PointData, made: Design, pointerId: number, x: number, y: number} | undefined
+  const placeSlop = 10
+
+  // A press on the porch's floor starts drawing there, or puts the design down there
   const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
     if (!background.isOnPorchFloor(at)) {
       return false
+    }
+    if (design) {
+      placing = {at, made: design, pointerId: e.pointerId, x: e.clientX, y: e.clientY}
+      return true
     }
     drawingNow = true
     drawingWith = e.pointerId
@@ -217,11 +315,19 @@ const createRangoli = (app: Application, background: Background) => {
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
+    if (placing && e.pointerId === placing.pointerId
+      && Math.hypot(e.clientX - placing.x, e.clientY - placing.y) > placeSlop) {
+      placing = undefined
+    }
     if (drawingNow && e.pointerId === drawingWith) {
       strokeTo(background.toScene(toStage(e)))
     }
   }
-  const onPointerUp = () => {
+  const onPointerUp = (e?: PointerEvent) => {
+    if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId) {
+      putDesign(placing.at, placing.made)
+    }
+    placing = undefined
     drawingNow = false
     drawingWith = undefined
     last = undefined
@@ -229,6 +335,9 @@ const createRangoli = (app: Application, background: Background) => {
   // A second finger put down while drawing is the start of a pinch, so the stroke ends
   // there, before the scene zooms under it
   const onPointerDown = (e: PointerEvent) => {
+    if (placing && e.pointerId !== placing.pointerId) {
+      placing = undefined
+    }
     if (drawingNow && e.pointerId !== drawingWith) {
       onPointerUp()
     }
@@ -240,19 +349,31 @@ const createRangoli = (app: Application, background: Background) => {
 
   render()
 
+  placeDesignsButton()
+
   return {
     container,
-    layout: bar.layout,
+    layout() {
+      bar.layout()
+      placeDesignsButton()
+    },
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     pressHandler,
-    // Shows its bar, while the Draw Rangoli tool is the one in use
+    // Shows its bar, and the designs button above it, while the Draw Rangoli tool is
+    // the one in use
     setHudShown(shown: boolean) {
       bar.setShown(shown)
       bar.setInteractive(shown)
+      designsButton.style.display = shown ? "flex" : "none"
+      if (!shown) {
+        picker.hide()
+      }
     },
     destroy() {
       window.removeEventListener("pointerdown", onPointerDown, true)
+      designsButton.remove()
+      picker.destroy()
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
