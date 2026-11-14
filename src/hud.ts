@@ -152,11 +152,14 @@ const createHud = (app: Application) => {
     }
   }
 
+  const slots = new Map<number, Container>()
+
   // An empty slot to fill with anything, which can be pressed. Its content is drawn
   // centred on the slot, which is slotSize across. An unlimited one, such as a colour
   // of rangoli powder, has a badge showing it never runs out
   const addSlot = (idx: number, unlimited = false) => {
     const slot = new Container()
+    slots.set(idx, slot)
     slot.position.copyFrom(boxes[idx].position)
     slot.eventMode = "static"
     slot.cursor = "pointer"
@@ -206,6 +209,8 @@ const createHud = (app: Application) => {
     addSlot,
     drawBoxes,
     isOver,
+    // The slot at a place along the bar, if there's one there
+    slotAt: (idx: number) => slots.get(idx),
     layout,
     // Shows or hides it, sliding and fading it in or out
     setShown(value: boolean) {

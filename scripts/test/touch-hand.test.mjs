@@ -1,7 +1,10 @@
 // Plays the game in headless Chromium as a phone held sideways, with touch, and checks
 // that a finger dragging something from any bar has a hand drawn holding it, and that a
 // mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
-// either bar's matchstick lights diyas and fireworks alike.
+// either bar's matchstick lights diyas and fireworks alike. And what's felt: a buzz
+// for something that's put down, and a double one, and where it goes shown, for
+// something let go where it can't go. And that a finger held on a
+// rail button shows its tool's name, as there's no hovering on a touch screen.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -47,6 +50,14 @@ before(async () => {
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
   }, muted)
+  // Every vibration asked for, kept to look at, in place of vibrating
+  await context.addInitScript(() => {
+    window.vibrations = []
+    navigator.vibrate = pattern => {
+      window.vibrations.push(pattern)
+      return true
+    }
+  })
   page = await context.newPage()
   page.on("pageerror", error => console.error("Page error:", error.message))
   touchscreen = await context.newCDPSession(page)
@@ -219,4 +230,43 @@ test("the Fireworks bar's matchstick lights a diya", async () => {
   // or longer on a slow machine, whose frames are only counted up to a tenth of a second
   await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 4000)
   await diyaSays(diya, "Lit")
+})
+
+test("a finger held on a rail button shows the tool's name", async () => {
+  const name = page.getByText("Craft Kandil", {exact: true})
+  const button = {x: 52, y: rail.kandil}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [button]})
+  // Shown after a moment, which on a slow machine can be a while
+  const shownWhileHeld = await name.waitFor({timeout: 5000}).then(() => true, () => false)
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the tool's name shows while the finger's held on its button")
+})
+
+test("a finger held on a placed diya shows what it is", async () => {
+  const lit = page.getByText("Lit", {exact: true})
+  const at = {x: diya.x, y: diya.y - 4}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [at]})
+  const shownWhileHeld = await lit.waitFor({timeout: 5000}).then(() => true, () => false)
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
+})
+
+test("a diya let go off the porch goes back, buzzes, and its slot says where it goes", async () => {
+  await page.touchscreen.tap(52, rail.diyas)
+  await page.waitForTimeout(800)
+  await page.evaluate(() => window.vibrations.length = 0)
+  // Shown up in the sky, well off the porch
+  await touchDown(slot(0), {x: porch.x + 64, y: 40 + 64})
+  await touchUp()
+  await page.getByText("An oil lamp. Drag one onto the porch", {exact: true}).waitFor({timeout: 3000})
+  assert.deepEqual(await page.evaluate(() => window.vibrations), [[25, 60, 25]])
+})
+
+test("a diya put down on the porch by a finger is felt", async () => {
+  await page.evaluate(() => window.vibrations.length = 0)
+  // With the finger right of the bar
+  const shownAt = {x: porch.x + 250, y: porch.y + 10}
+  await touchDown(slot(0), {x: shownAt.x + 64, y: shownAt.y + 64})
+  await touchUp()
+  assert.deepEqual(await page.evaluate(() => window.vibrations), [12])
 })
