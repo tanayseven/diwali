@@ -8,7 +8,7 @@ import {addHint} from "./hints"
 import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
 import {setOutline} from "./outline"
-import {addTooltip, Tooltip} from "./tooltip"
+import {Tooltip, addTooltip, wasLongPressed} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 
 type Background = ReturnType<typeof createBackground>
@@ -574,14 +574,22 @@ const createDiyaInventory = (
   // A placed diya can be picked up again to move it or put it back on the stack,
   // except while it's busy being filled, the match is in hand, or another scene is open.
   // It's picked up once it's dragged; a lit one tapped instead is turned
+  // What each placed diya does when pressed
+  const pressListeners = new WeakMap<Sprite, (e: FederatedPointerEvent) => void>()
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
     sprite.eventMode = interactive && !diya.busy && !held ? "static" : "none"
     sprite.cursor = diya.lit ? "pointer" : "grab"
-    sprite.removeAllListeners("pointerdown")
-    sprite.on("pointerdown", e => {
+    // Only its own press listener's replaced, as its tooltip listens for a held finger too
+    const press = (e: FederatedPointerEvent) => {
       pressedDiya = {diya, at: e.global.clone()}
-    })
+    }
+    const previous = pressListeners.get(sprite)
+    if (previous) {
+      sprite.off("pointerdown", previous)
+    }
+    pressListeners.set(sprite, press)
+    sprite.on("pointerdown", press)
   }
 
   // Sends whatever's dragged back where it came from
@@ -684,10 +692,11 @@ const createDiyaInventory = (
   // Letting go puts the match back, and a diya pressed and let go without dragging it
   // is turned
   const onPointerUp = (e: PointerEvent) => {
-    if (pressedDiya) {
+    // A tap turns it, but not a finger held on it to read what it is
+    if (pressedDiya && !wasLongPressed(pressedDiya.diya.sprite)) {
       turn(pressedDiya.diya)
-      pressedDiya = undefined
     }
+    pressedDiya = undefined
     pressedSlotAt = undefined
     putAwayMatch()
     endDrag(toStage(e), e.pointerType)
@@ -736,6 +745,8 @@ const createDiyaInventory = (
   return {
     container,
     layout: bar.layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Diyas tool is the one in use. The match is put away
     // with the bar
     setHudShown(shown: boolean) {

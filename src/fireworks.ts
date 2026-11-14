@@ -1853,6 +1853,8 @@ const createFireworks = (
   return {
     container,
     layout,
+    // What to take first from its bar, to show someone new to it
+    firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Fireworks tool is the one in use. The match is put away
     // with the bar
     setHudShown(shown: boolean) {

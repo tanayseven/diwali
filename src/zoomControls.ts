@@ -2,7 +2,7 @@ import {Application, Container, Graphics} from "pixi.js"
 import type {Background} from "./background"
 import {hudFrame} from "./hud"
 import {LL} from "./locale"
-import {addTooltip} from "./tooltip"
+import {addTooltip, wasLongPressed} from "./tooltip"
 
 // Matches the side rail's buttons
 const buttonRadius = 26
@@ -35,7 +35,11 @@ const createZoomControls = (app: Application, background: Background, below: Con
     let hovered = false
     button.on("pointerover", () => hovered = true)
     button.on("pointerout", () => hovered = false)
-    button.on("pointertap", () => background.zoomBy(sign > 0 ? background.zoomStep : 1 / background.zoomStep))
+    button.on("pointertap", () => {
+      if (!wasLongPressed(button)) {
+        background.zoomBy(sign > 0 ? background.zoomStep : 1 / background.zoomStep)
+      }
+    })
     addTooltip(button, () => ({title: label()}), {outline: false})
     container.addChild(button)
     const canZoom = sign > 0 ? background.canZoomIn : background.canZoomOut
@@ -88,6 +92,9 @@ const createZoomControls = (app: Application, background: Background, below: Con
   return {
     container,
     layout,
+    // The buttons themselves, to point out
+    zoomIn: zoomIn.container,
+    zoomOut: zoomOut.container,
     destroy() {
       app.ticker.remove(tick)
       container.destroy({children: true})
