@@ -263,13 +263,18 @@ const createRangoli = (app: Application, background: Background) => {
     ))
   }
 
+  // A press on the floor with a design picked, to put it down there once it's a tap: let
+  // go without moving, and without another finger coming down, as for a pinch
+  let placing: {at: PointData, made: Design, pointerId: number, x: number, y: number} | undefined
+  const placeSlop = 10
+
   // A press on the porch's floor starts drawing there, or puts the design down there
   const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
     if (!background.isOnPorchFloor(at)) {
       return false
     }
     if (design) {
-      putDesign(at, design)
+      placing = {at, made: design, pointerId: e.pointerId, x: e.clientX, y: e.clientY}
       return true
     }
     drawingNow = true
@@ -285,11 +290,19 @@ const createRangoli = (app: Application, background: Background) => {
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
+    if (placing && e.pointerId === placing.pointerId
+      && Math.hypot(e.clientX - placing.x, e.clientY - placing.y) > placeSlop) {
+      placing = undefined
+    }
     if (drawingNow && e.pointerId === drawingWith) {
       strokeTo(background.toScene(toStage(e)))
     }
   }
-  const onPointerUp = () => {
+  const onPointerUp = (e?: PointerEvent) => {
+    if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId) {
+      putDesign(placing.at, placing.made)
+    }
+    placing = undefined
     drawingNow = false
     drawingWith = undefined
     last = undefined
@@ -297,6 +310,9 @@ const createRangoli = (app: Application, background: Background) => {
   // A second finger put down while drawing is the start of a pinch, so the stroke ends
   // there, before the scene zooms under it
   const onPointerDown = (e: PointerEvent) => {
+    if (placing && e.pointerId !== placing.pointerId) {
+      placing = undefined
+    }
     if (drawingNow && e.pointerId !== drawingWith) {
       onPointerUp()
     }

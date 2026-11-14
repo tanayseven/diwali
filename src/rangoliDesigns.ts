@@ -139,7 +139,8 @@ const createDesignPicker = (
   Object.assign(overlay.style, {
     position: "fixed",
     inset: "0",
-    zIndex: "3",
+    // Under the notice to turn the phone sideways
+    zIndex: "2",
     display: "none",
     alignItems: "center",
     justifyContent: "center",
