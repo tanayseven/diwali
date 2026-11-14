@@ -183,6 +183,9 @@ await put(5, {x: rocket.x + 4, y: rocket.y - 14}, 1400 / slow)
 for (let i = 0; i < 2; i++) {
   await page.keyboard.press("-")
 }
+// Once the zoom's settled, as a swipe pans less the further in it is, so the swipe back
+// down cancels it exactly
+await page.waitForTimeout(300)
 const sky = {from: {x: 600, y: 60}, to: {x: 600, y: 300}}
 await flick(sky.from, sky.to)
 await page.waitForTimeout(600)
