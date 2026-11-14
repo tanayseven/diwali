@@ -5,6 +5,7 @@ import {Application, Container, Graphics, Rectangle} from "pixi.js"
 import {fontFamily} from "./app"
 import {LL} from "./locale"
 import {withoutHints} from "./outline"
+import {wasLongPressed} from "./tooltip"
 
 const siteUrl = "https://diwali.tanay.tech"
 const highlight = "#ffd700"
@@ -152,7 +153,11 @@ const createScreenshotButton = (app: Application, scene: Container, radius: numb
   button.on("pointerover", () => render(true))
   button.on("pointerout", () => render(false))
   let busy = false
+  // Not after a finger's held on it to read what it does
   button.on("pointertap", async () => {
+    if (wasLongPressed(button)) {
+      return
+    }
     if (busy) {
       return
     }
