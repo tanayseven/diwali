@@ -51,4 +51,8 @@
          the internet, and isn't allowed it. Removed rather than left out, so a plugin or
          library can't add it back. Links still open, in the browser -->
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <!-- To be felt as well as seen: a tap as something's put down, a buzz when it can't
+         go where it was let go, and each firework going off. A normal permission,
+         granted without asking -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>
