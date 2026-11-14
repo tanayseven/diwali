@@ -371,7 +371,9 @@ test("a click on the matchstick takes it in hand, to light a diya by moving the 
   await page.mouse.click(slot(3).x, slot(3).y)
   // No button held, as it's carried
   await page.mouse.move(at.x + 14, at.y - 18, {steps: 12})
-  await page.waitForTimeout(2500)
+  // Held there till it's caught, which on a slow machine, whose frames are only counted
+  // up to a tenth of a second, takes a good deal longer than a second, then put away
+  await page.waitForTimeout(6000)
   await page.keyboard.press("Escape")
   await says(at, "Lit")
 })
