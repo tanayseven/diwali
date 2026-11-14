@@ -272,7 +272,7 @@ test("a diya put down on the porch by a finger is felt", async () => {
 })
 
 // Last, as it starts the game again
-test("the language picked is used again next time, and the globe button picks another", async () => {
+test("the language picked is used again next time, and the globe button picks another, which it starts again in", async () => {
   await page.reload()
   // Straight to the warning, in English, with no picker
   await page.getByText("flashing and twinkling lights", {exact: false}).waitFor({timeout: 60000})
@@ -286,4 +286,9 @@ test("the language picked is used again next time, and the globe button picks an
   await globe.waitFor({timeout: 10000})
   await globe.tap()
   await page.getByRole("dialog", {name: "Choose a language"}).waitFor({timeout: 5000})
+  // Another, and the game starts again in it, with nothing left in the URL
+  await page.getByRole("button", {name: /हिन्दी/}).tap()
+  await page.waitForFunction(() => document.documentElement.lang === "hi", undefined, {timeout: 60000})
+  assert.equal(new URL(page.url()).search, "")
+  assert.equal(await page.getByRole("dialog", {name: "Choose a language"}).count(), 0)
 })

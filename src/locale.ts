@@ -14,8 +14,23 @@ const rightToLeft: Locales[] = ["ks", "sd", "ur"]
 // (private windows, blocked site data), so it's only a convenience
 const storageKey = "diwali-locale"
 
-// The language picked on an earlier visit, if one was and it's still there
+// The URL's query parameter that carries a language picked from the globe button across
+// the reload that starts the game again in it, in case it can't be saved
+const urlKey = "lang"
+
+// The language picked on an earlier visit, if one was and it's still there: the one
+// just picked, carried in the URL, else the one saved
 const savedLocale = (): Locales | undefined => {
+  const url = new URL(window.location.href)
+  const carried = url.searchParams.get(urlKey)
+  if (carried !== null) {
+    // Taken out of the URL, so it's not kept if the page is bookmarked or shared
+    url.searchParams.delete(urlKey)
+    window.history.replaceState(null, "", url)
+    if (isLocale(carried)) {
+      return carried
+    }
+  }
   try {
     const saved = localStorage.getItem(storageKey)
     if (saved && isLocale(saved)) {
@@ -61,4 +76,13 @@ const loadLocale = async (locale: Locales) => {
   document.title = LL.title()
 }
 
-export {LL, loadLocale, preferredLocale, rememberLocale, savedLocale}
+// Starts the game again in another language, remembered for next time, and carried
+// across in the URL too, in case remembering it fails
+const restartIn = (locale: Locales) => {
+  rememberLocale(locale)
+  const url = new URL(window.location.href)
+  url.searchParams.set(urlKey, locale)
+  window.location.replace(url)
+}
+
+export {LL, loadLocale, preferredLocale, rememberLocale, restartIn, savedLocale}

@@ -12,7 +12,7 @@ import {createKandils, kandilAssets} from "./kandil"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
 import type {Lightable} from "./matchstick"
-import {showLanguagePicker} from "./languagePicker"
+import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
 import {createLanguageButton} from "./languageButton"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
@@ -223,7 +223,8 @@ const main = async () => {
 
   window.addEventListener("keydown", e => {
     // Don't let the keyboard drive anything while it's hidden behind the warning
-    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown()) {
+    // or the language picker
+    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown() || isLanguagePickerOpen()) {
       return
     }
     if (e.key === "+" || e.key === "=") {

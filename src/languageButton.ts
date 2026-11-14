@@ -1,6 +1,6 @@
 import type {Locales} from "./i18n/i18n-types"
 import {languageName, showLanguagePicker} from "./languagePicker"
-import {rememberLocale} from "./locale"
+import {restartIn} from "./locale"
 
 const highlight = "#ffd700"
 const size = 44
@@ -49,8 +49,7 @@ const createLanguageButton = (current: Locales) => {
     const picked = await showLanguagePicker(current)
     picking = false
     if (picked !== current) {
-      rememberLocale(picked)
-      window.location.reload()
+      restartIn(picked)
     }
   })
   document.body.appendChild(button)
