@@ -50,11 +50,11 @@
   </g>
 
   <g id="diya" transform="translate(-20,0)">
-    <ellipse cx="190" cy="341" rx="80" ry="6" fill="#000" opacity="0.35" filter="url(#blur6)"/>
-    <path d="M155,312 L148,334 Q200,346 252,334 L245,312 Z" fill="url(#clay)"/>
-    <path d="M148,334 Q200,346 252,334" fill="none" stroke="#F5C04A" stroke-width="2" opacity="0.8"/>
+    <ellipse cx="180" cy="341" rx="80" ry="6" fill="#000" opacity="0.35" filter="url(#blur6)"/>
+    <path d="M135,312 L128,334 Q180,346 232,334 L225,312 Z" fill="url(#clay)"/>
+    <path d="M128,334 Q180,346 232,334" fill="none" stroke="#F5C04A" stroke-width="2" opacity="0.8"/>
     <path d="M60,235 C65,300 120,322 180,322 C240,322 295,300 300,235 Z" fill="url(#clay)"/>
-    <g clip-path="url(#bowlClip)" transform="translate(10,0)">
+    <g clip-path="url(#bowlClip)">
       <g fill="none" stroke="#F5C04A" stroke-linecap="round">
         <path d="M62,254 C100,280 260,280 298,254" stroke-width="3"/>
         <path d="M80,282 C120,302 240,302 280,282" stroke-width="2"/>
