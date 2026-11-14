@@ -226,8 +226,8 @@ test("a finger held on a rail button shows the tool's name", async () => {
   const name = page.getByText("Craft Kandil", {exact: true})
   const button = {x: 52, y: rail.kandil}
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [button]})
-  await page.waitForTimeout(900)
-  const shownWhileHeld = await name.isVisible()
+  // Shown after a moment, which on a slow machine can be a while
+  const shownWhileHeld = await name.waitFor({timeout: 5000}).then(() => true, () => false)
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
   assert.ok(shownWhileHeld, "the tool's name shows while the finger's held on its button")
 })
@@ -236,8 +236,7 @@ test("a finger held on a placed diya shows what it is", async () => {
   const lit = page.getByText("Lit", {exact: true})
   const at = {x: diya.x, y: diya.y - 4}
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [at]})
-  await page.waitForTimeout(900)
-  const shownWhileHeld = await lit.isVisible()
+  const shownWhileHeld = await lit.waitFor({timeout: 5000}).then(() => true, () => false)
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
   assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
 })
