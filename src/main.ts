@@ -231,11 +231,25 @@ const main = async () => {
   const showZoomTutorialOnceSeen = () => {
     const portrait = window.matchMedia("(orientation: portrait)")
     if (portrait.matches) {
-      portrait.addEventListener("change", showZoomTutorialOnceSeen, {once: true})
+      portrait.addEventListener("change", showZoomTutorialOnceLaidOut, {once: true})
       return
     }
     rememberIntroduced("zoom")
     showZoomTutorial(background, zoomControls.zoomIn, zoomControls.zoomOut).then(() => introduce(selected, false))
+  }
+  // Turned sideways, once the window's landscape and the scene's been laid out for it, a
+  // frame after the resize, so the camera's zoom it puts back after is the landscape one
+  const showZoomTutorialOnceLaidOut = () => {
+    const waitFrames = (frames: number) => requestAnimationFrame(() => {
+      if (window.innerWidth < window.innerHeight) {
+        waitFrames(2)
+      } else if (frames > 1) {
+        waitFrames(frames - 1)
+      } else {
+        showZoomTutorialOnceSeen()
+      }
+    })
+    waitFrames(2)
   }
   if (!introduced.has("zoom")) {
     showZoomTutorialOnceSeen()
