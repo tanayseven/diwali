@@ -105,6 +105,12 @@ $ npm run test:e2e
 
 will play the game in headless Chromium as a phone held sideways (a Pixel 7, with touch) and check that a finger dragging a diya, the match, a firework or a kandil's frame has a hand drawn holding it, and a mouse doesn't; that oil goes into a diya the bottle only touches; and that the Fireworks bar's match lights a diya. It starts the dev server itself, and the game is muted from the start, so nothing is heard. It needs Playwright's Chromium (`npx playwright-core install chromium`), or another one in `PLAYWRIGHT_CHROMIUM`. It also runs `scripts/release/play-release.sh` against a local stand-in for Google's token endpoint and Play's API, with a throwaway key, checking the signed token, the release it makes on each track, that a track Play refuses doesn't stop the others, and that a refused token stops it, and `scripts/release/itch.sh` with a stand-in for butler, checking each build goes to its own itch.io channel, and a missing one, or one butler fails to push, fails it after the rest are pushed. The tests are in `scripts/test/`. The [Tests](.github/workflows/test.yml) workflow runs them on every pull request.
 
+```sh
+$ npm run demo
+```
+
+will play through the whole game in a Chromium window, as a phone held sideways with touch, so the hand holding whatever's dragged can be seen: diyas filled and lit with the matchstick, every firework lit, a kandil made on the house and another on the porch, fairy lights hung, a rangoli drawn, then the city zoomed out to, the volume slider and a photo. Its sound is on, quietly. It takes a few minutes, then leaves the window open to play on until it's closed. `SLOW` sets how slowly it goes (2 by default, 1 as fast as it can), `HEADLESS=1` plays it without a window, and `npm run demo -- <dir>` saves a screenshot of each step there. It fails if the game logs an error. It's in `scripts/demo/play.mjs`, and needs Chromium as the tests do.
+
 ## Build
 
 ```sh
