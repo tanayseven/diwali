@@ -170,12 +170,6 @@ const main = async () => {
   const introduce = (tool: Tool, picked: boolean) => {
     const slot = controls[tool]?.firstSlot?.()
     if (slot && !introduced.has(tool)) {
-      introduced.add(tool)
-      try {
-        localStorage.setItem(introducedKey, JSON.stringify([...introduced]))
-      } catch {
-        // Shown again next time, then
-      }
       const startedAt = performance.now()
       const tryShowing = () => {
         if (selected !== tool || !hudToggle.isShown() || performance.now() - startedAt > introduceFor) {
@@ -183,6 +177,15 @@ const main = async () => {
         }
         if (!showTooltipOf(slot, undefined, {pin: true})) {
           setTimeout(tryShowing, introduceEvery)
+          return
+        }
+        // Only once it's been shown, so one missed, as with the bar hidden, is shown
+        // the next time the tool's picked
+        introduced.add(tool)
+        try {
+          localStorage.setItem(introducedKey, JSON.stringify([...introduced]))
+        } catch {
+          // Shown again next time, then
         }
       }
       setTimeout(tryShowing, introduceEvery)

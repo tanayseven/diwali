@@ -231,3 +231,13 @@ test("a finger held on a rail button shows the tool's name", async () => {
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
   assert.ok(shownWhileHeld, "the tool's name shows while the finger's held on its button")
 })
+
+test("a finger held on a placed diya shows what it is", async () => {
+  const lit = page.getByText("Lit", {exact: true})
+  const at = {x: diya.x, y: diya.y - 4}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [at]})
+  await page.waitForTimeout(900)
+  const shownWhileHeld = await lit.isVisible()
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
+})

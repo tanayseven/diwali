@@ -4,7 +4,7 @@ import {Background, porchFloor} from "./background"
 import {createHud, slotSize} from "./hud"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
-import {addTooltip} from "./tooltip"
+import {addTooltip, tooltipFor} from "./tooltip"
 
 // Rangoli powder colours, as drawn on the porch
 const powders = {
@@ -130,7 +130,11 @@ const createRangoli = (app: Application, background: Background) => {
   clearLabel.anchor.set(0.5)
   clearLabel.roundPixels = true
   clearSlot.container.addChild(clearLabel)
-  clearSlot.container.on("pointerdown", () => {
+  // On a tap, not a press, so a finger held on it to read what it does doesn't clear it
+  clearSlot.container.on("pointertap", () => {
+    if (tooltipFor(clearSlot.container)?.pinned) {
+      return
+    }
     app.renderer.render({container: new Container(), target: drawing, clear: true})
   })
   addTooltip(clearSlot.container, () => ({title: tips.clear(), lines: [tips.clearHint()]}))

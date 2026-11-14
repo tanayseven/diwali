@@ -574,14 +574,22 @@ const createDiyaInventory = (
   // A placed diya can be picked up again to move it or put it back on the stack,
   // except while it's busy being filled, the match is in hand, or another scene is open.
   // It's picked up once it's dragged; a lit one tapped instead is turned
+  // What each placed diya does when pressed
+  const pressListeners = new WeakMap<Sprite, (e: FederatedPointerEvent) => void>()
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
     sprite.eventMode = interactive && !diya.busy && !held ? "static" : "none"
     sprite.cursor = diya.lit ? "pointer" : "grab"
-    sprite.removeAllListeners("pointerdown")
-    sprite.on("pointerdown", e => {
+    // Only its own press listener's replaced, as its tooltip listens for a held finger too
+    const press = (e: FederatedPointerEvent) => {
       pressedDiya = {diya, at: e.global.clone()}
-    })
+    }
+    const previous = pressListeners.get(sprite)
+    if (previous) {
+      sprite.off("pointerdown", previous)
+    }
+    pressListeners.set(sprite, press)
+    sprite.on("pointerdown", press)
   }
 
   // Sends whatever's dragged back where it came from
