@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"noEmit": true,
+		"strict": true,
+		"target": "esnext",
+		"lib": ["esnext"],
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"skipLibCheck": true,
+		"types": ["node"]
+	},
+	"include": [
+		"vite.config.ts",
+		"scripts/web/**/*.ts"
+	]
+}
