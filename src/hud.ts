@@ -6,7 +6,9 @@ const slotCount = 10
 const slotSize = 76
 const slotGap = 12
 const panelPadding = 12
-// Clear of the credit footer along the bottom of the screen
+// Clear of the bottom of the screen, as it was of the credit footer, which is now only
+// shown over the splashes. Kept, so the positions the tests, demo and store screenshots
+// use stay where they are
 const bottomMargin = 52
 const sideGutter = 16
 const highlight = 0xffd700
