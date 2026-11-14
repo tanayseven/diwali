@@ -1,4 +1,4 @@
-import {Application, Container, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
+import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
 import {fontFamily} from "./app"
 import {Background, porchFloor} from "./background"
 import {createHud, slotSize} from "./hud"
@@ -93,6 +93,8 @@ const createRangoli = (app: Application, background: Background) => {
   let tool: Tool = "red"
   let last: PointData | undefined
   let drawingNow = false
+  // The pointer drawing, so a second finger, to pinch, doesn't draw too
+  let drawingWith: number | undefined
 
   const tips = LL.tooltip.rangoli
   const colourNames: Record<Powder, () => string> = {
@@ -173,11 +175,12 @@ const createRangoli = (app: Application, background: Background) => {
   }
 
   // A press on the porch's floor starts drawing there
-  const pressHandler = (at: PointData) => {
+  const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
     if (!background.isOnPorchFloor(at)) {
       return false
     }
     drawingNow = true
+    drawingWith = e.pointerId
     last = undefined
     strokeTo(at)
     return true
@@ -189,14 +192,23 @@ const createRangoli = (app: Application, background: Background) => {
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
-    if (drawingNow) {
+    if (drawingNow && e.pointerId === drawingWith) {
       strokeTo(background.toScene(toStage(e)))
     }
   }
   const onPointerUp = () => {
     drawingNow = false
+    drawingWith = undefined
     last = undefined
   }
+  // A second finger put down while drawing is the start of a pinch, so the stroke ends
+  // there, before the scene zooms under it
+  const onPointerDown = (e: PointerEvent) => {
+    if (drawingNow && e.pointerId !== drawingWith) {
+      onPointerUp()
+    }
+  }
+  window.addEventListener("pointerdown", onPointerDown, true)
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
@@ -213,6 +225,7 @@ const createRangoli = (app: Application, background: Background) => {
       bar.setInteractive(shown)
     },
     destroy() {
+      window.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)

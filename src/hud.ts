@@ -11,6 +11,8 @@ const panelPadding = 12
 // use stay where they are
 const bottomMargin = 52
 const sideGutter = 16
+// How far a press on a slot can move and still be a tap, which puts what it took back
+const tapSlop = 12
 const highlight = 0xffd700
 // Share of a slot an item's icon fills
 const iconFill = 0.8
@@ -88,6 +90,14 @@ const createHud = (app: Application) => {
     const local = container.toLocal(point)
     return Math.abs(local.x) <= panelWidth / 2 && Math.abs(local.y) <= panelHeight / 2
   }
+
+  // Whether something dragged, shown at one point by a pointer at another, would go
+  // back on the bar if let go: when it's shown over the bar, as it's put down where it's
+  // shown, whatever the pointer's under. Or, taken from the bar by a press at a point,
+  // when it's let go without being dragged off it, as a tap on a slot puts it back,
+  // though on touch screens it's shown above the finger, clear of the bar
+  const takesBack = (shown: PointData, pointer: PointData, pressedAt?: PointData) =>
+    isOver(shown) || (pressedAt !== undefined && isOver(pointer) && Math.hypot(pointer.x - pressedAt.x, pointer.y - pressedAt.y) < tapSlop)
 
   // How far it's shown, from 0 to 1, whether it's being shown or hidden, and how long
   // it's waited to start showing
@@ -206,6 +216,7 @@ const createHud = (app: Application) => {
     addSlot,
     drawBoxes,
     isOver,
+    takesBack,
     layout,
     // Shows or hides it, sliding and fading it in or out
     setShown(value: boolean) {

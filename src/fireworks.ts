@@ -1,4 +1,4 @@
-import {Application, Assets, Container, FederatedPointerEvent, Graphics, Particle, ParticleContainer, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, Graphics, Particle, ParticleContainer, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
 import {createBackground, sceneHeight, sceneWidth} from "./background"
@@ -516,7 +516,10 @@ type Placed = {
 
 // A firework being dragged, from its stack or picked up from the scene, and where to
 // put it back
-type Drag = {sprite: Sprite, firework: Placed, fromScene?: PointData}
+// A press on a placed firework only picks it up once it's dragged this far, on screen
+const pickUpSlop = 6
+
+type Drag = {sprite: Sprite, firework: Placed, fromScene?: PointData, pressedAt?: PointData}
 
 // The fireworks scene's HUD and what's set off from it. Anars (flowerpot fireworks)
 // and laddis (strings of firecrackers) are dragged from their stacks onto the porch,
@@ -651,6 +654,8 @@ const createFireworks = (
   // Sparks and flames a spinning chakri owes from earlier frames
   const chakriDebts = new Map<Placed, {flames: number, skids: number, flung: number}>()
   let drag: Drag | undefined
+  // A placed firework pressed, and where, until it's dragged far enough to pick it up
+  let pressedFirework: {firework: Placed, at: Point, pointerId: number} | undefined
   // Whether a dragged firework is over the bar, where letting go puts it back
   let overBar = false
   // The placed firework the match would light if let go now
@@ -868,11 +873,12 @@ const createFireworks = (
     }
     addTooltip(sprite, fireworkTooltip(firework))
     addHint(sprite, fireworkHint(firework), fireworkBox(kind))
+    // Only picked up once it's dragged a little, so a tap doesn't move it, as on touch
+    // screens it's shown up beside the finger once it's picked up
     sprite.on("pointerdown", e => {
-      const fromScene = {x: sprite.x, y: sprite.y}
-      placed.splice(placed.indexOf(firework), 1)
-      sprite.removeFromParent()
-      startFireworkDrag(e, firework, fromScene)
+      if (!drag) {
+        pressedFirework = {firework, at: e.global.clone(), pointerId: e.pointerId}
+      }
     })
     return firework
   }
@@ -920,14 +926,14 @@ const createFireworks = (
   }
 
   // Fireworks are shown while dragged at the size they'll be placed at, so they land as seen
-  const startFireworkDrag = (e: FederatedPointerEvent, firework: Placed, fromScene?: PointData) => {
+  const startFireworkDrag = (finger: PointData, pointerType: string, firework: Placed, fromScene?: PointData) => {
     const {sprite} = firework
     scaleSprite(firework, background.scale())
-    sprite.position.copyFrom(touch.follow(e.global, e.pointerType))
+    sprite.position.copyFrom(touch.follow(finger, pointerType))
     sprite.eventMode = "none"
     dragLayer.addChild(sprite)
     setOutline(sprite, "selected", true)
-    drag = {sprite, firework, fromScene}
+    drag = {sprite, firework, fromScene, pressedAt: fromScene ? undefined : {x: finger.x, y: finger.y}}
     render()
   }
 
@@ -997,7 +1003,7 @@ const createFireworks = (
       return
     }
     stacks[kind].count! -= 1
-    startFireworkDrag(e, createFirework(kind))
+    startFireworkDrag(e.global, e.pointerType, createFirework(kind))
   }))
 
   // A press on the match's slot only takes the match out once it's dragged
@@ -1040,7 +1046,7 @@ const createFireworks = (
     setOutline(current.sprite, "selected", false)
     current.sprite.alpha = 1
     const scene = background.toScene(at)
-    if (hudShown && bar.isOver(finger)) {
+    if (hudShown && bar.takesBack(at, finger, current.pressedAt)) {
       removeFirework(current.firework)
     } else if (background.isOnPorchFloor(scene)) {
       placeFirework(current.firework, scene)
@@ -1059,10 +1065,23 @@ const createFireworks = (
   }
   const onPointerMove = (e: PointerEvent) => {
     const finger = toStage(e)
+    // Picked up only by the finger that pressed it, and not while another's dragging
+    // something already, as from the bar
+    if (pressedFirework && (drag || held)) {
+      pressedFirework = undefined
+    }
+    if (pressedFirework && e.pointerId === pressedFirework.pointerId && draggedFrom(pressedFirework.at, finger, pickUpSlop)) {
+      const {firework} = pressedFirework
+      pressedFirework = undefined
+      const fromScene = {x: firework.sprite.x, y: firework.sprite.y}
+      placed.splice(placed.indexOf(firework), 1)
+      firework.sprite.removeFromParent()
+      startFireworkDrag(finger, e.pointerType, firework, fromScene)
+    }
     if (drag) {
       const at = touch.follow(finger, e.pointerType)
       drag.sprite.position.copyFrom(at)
-      setOverBar(hudShown && bar.isOver(finger))
+      setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
       drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (held) {
@@ -1076,6 +1095,7 @@ const createFireworks = (
   }
   // Letting go puts the match back
   const onPointerUp = (e: PointerEvent) => {
+    pressedFirework = undefined
     pressedSlotAt = undefined
     putAwayMatch()
     endDrag(toStage(e), e.pointerType)
