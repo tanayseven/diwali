@@ -63,18 +63,20 @@ const litDiyaAnchor = {
 }
 // A lit diya can be turned to face either side, its spout to the right as drawn or to
 // the left, mirrored, or to face the front. It turns about the middle of its foot,
-// which is 45.5 units left of where it's held, and is at x 249.5 in the front-facing
-// drawing, standing on the same line. Each way, it's held by the same point, and its
-// flame is that far from there, in its canvas's units
+// right under the middle of its bowl, which is 65.5 units left of where it's held, and
+// is at x 229.5 in the front-facing drawing, standing on the same line. Each way, it's
+// held by the same point, and its flame is that far from there, in its canvas's units:
+// facing left, the other side of its foot from facing right
 type Facing = "right" | "front" | "left"
 const turnOrder: Facing[] = ["right", "front", "left"]
-const footFromAnchor = 45.5
+const footFromAnchor = 65.5
+const rightFlame = {x: 92.5, y: -167}
 const facings: Record<Facing, {anchor: PointData, flame: PointData}> = {
-  right: {anchor: litDiyaAnchor, flame: {x: 92.5, y: -167}},
-  front: {anchor: {x: (249.5 + footFromAnchor) / diyaCanvas.width, y: diyaAnchor.y}, flame: {x: -65.5, y: -92}},
+  right: {anchor: litDiyaAnchor, flame: rightFlame},
+  front: {anchor: {x: (229.5 + footFromAnchor) / diyaCanvas.width, y: diyaAnchor.y}, flame: {x: -65.5, y: -92}},
   left: {
-    anchor: {x: (189.5 - footFromAnchor) / diyaCanvas.width, y: litDiyaAnchor.y},
-    flame: {x: -92.5, y: -167},
+    anchor: {x: (169.5 - footFromAnchor) / diyaCanvas.width, y: litDiyaAnchor.y},
+    flame: {x: -2 * footFromAnchor - rightFlame.x, y: rightFlame.y},
   },
 }
 // It turns by narrowing to nothing and widening again the new way, in ms
@@ -198,9 +200,10 @@ type PlacedDiya = {
 
 type Drag =
   // A diya, from the stack or picked up from the scene, and where to put it back
-  | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData}
-  | {kind: "wick", sprite: Sprite}
-  | {kind: "oil", sprite: Sprite}
+  | {kind: "diya", sprite: Sprite, diya: PlacedDiya, fromScene?: PointData, pressedAt?: PointData}
+  // A wick or the oil bottle, from the bar, and where the press that took it out was
+  | {kind: "wick", sprite: Sprite, pressedAt?: PointData}
+  | {kind: "oil", sprite: Sprite, pressedAt?: PointData}
 
 // A bar of inventory slots along the bottom of the screen, holding empty diyas, wicks
 // and an oil bottle, with badges counting how many are left. Empty diyas are dragged
@@ -431,6 +434,10 @@ const createDiyaInventory = (
   // the finger instead of under it
   const startDrag = (at: PointData, pointerType: string, next: Drag, scale: number) => {
     const {sprite} = next
+    // From the bar, where it was pressed, so a tap that puts it straight back is quiet
+    if (next.kind !== "diya" || !next.fromScene) {
+      next.pressedAt = {x: at.x, y: at.y}
+    }
     sprite.scale.set(scale)
     sprite.position.copyFrom(touch.follow(at, pointerType))
     sprite.eventMode = "none"
@@ -557,7 +564,7 @@ const createDiyaInventory = (
   let interactive = false
   let hudShown = false
   // A placed diya pressed on, and where, until it's dragged far enough to pick it up
-  let pressedDiya: {diya: PlacedDiya, at: Point} | undefined
+  let pressedDiya: {diya: PlacedDiya, at: Point, pointerId: number} | undefined
 
   const pickUp = (diya: PlacedDiya, at: PointData, pointerType: string) => {
     const {sprite} = diya
@@ -584,7 +591,7 @@ const createDiyaInventory = (
     sprite.cursor = diya.lit ? "pointer" : "grab"
     // Only its own press listener's replaced, as its tooltip listens for a held finger too
     const press = (e: FederatedPointerEvent) => {
-      pressedDiya = {diya, at: e.global.clone()}
+      pressedDiya = {diya, at: e.global.clone(), pointerId: e.pointerId}
     }
     const previous = pressListeners.get(sprite)
     if (previous) {
@@ -638,7 +645,7 @@ const createDiyaInventory = (
     current.sprite.alpha = 1
     if (current.kind === "diya") {
       const scene = background.toScene(at)
-      if (hudShown && bar.isOver(finger)) {
+      if (hudShown && bar.takesBack(at, finger, current.pressedAt)) {
         placed.push(current.diya)
         returnDiya(current.diya)
       } else if (background.isOnPorchFloor(scene)) {
@@ -663,7 +670,7 @@ const createDiyaInventory = (
     } else {
       // Not touching a diya that wants it, it goes back, and its slot says what it's for
       returnDrag(current)
-      if (!(hudShown && bar.isOver(finger))) {
+      if (!(hudShown && bar.takesBack(at, finger, current.pressedAt))) {
         refuse(current.kind === "wick" ? wickSlot : bottleSlot)
       }
     }
@@ -680,7 +687,12 @@ const createDiyaInventory = (
   }
   const onPointerMove = (e: PointerEvent) => {
     const finger = toStage(e)
-    if (pressedDiya && draggedFrom(pressedDiya.at, finger, pickUpSlop)) {
+    // Picked up only by the finger that pressed it, and not while another's dragging
+    // something already, as from the bar
+    if (pressedDiya && (drag || held)) {
+      pressedDiya = undefined
+    }
+    if (pressedDiya && e.pointerId === pressedDiya.pointerId && draggedFrom(pressedDiya.at, finger, pickUpSlop)) {
       const {diya} = pressedDiya
       pressedDiya = undefined
       pickUp(diya, finger, e.pointerType)
@@ -699,7 +711,7 @@ const createDiyaInventory = (
     const at = touch.follow(finger, e.pointerType)
     drag.sprite.position.copyFrom(at)
     if (drag.kind === "diya") {
-      setOverBar(hudShown && bar.isOver(finger))
+      setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
       drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
     } else if (drag.kind === "wick") {
