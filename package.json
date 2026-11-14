@@ -11,6 +11,7 @@
 		"zip": "npm run build && mkdir -p dist && zip -r dist/game.zip www -x \"**/.DS_Store\"",
 		"check": "tsc",
 		"test:e2e": "node --test scripts/test/",
+		"demo": "node scripts/demo/play.mjs",
 		"i18n": "typesafe-i18n",
 		"bench": "vite build && node scripts/bench/run.mjs",
 		"android:sync": "vite build && cap sync android",
