@@ -1,6 +1,7 @@
-import {Application, Assets, Container, Graphics, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {stereoPan, type createAudioControl} from "./audioControl"
 import {screenBox} from "./overlap"
+import type {createTouchMarker} from "./touchMarker"
 
 type AudioControl = ReturnType<typeof createAudioControl>
 
@@ -56,6 +57,10 @@ type Lightable = {
   // Picks out what the match is held to, if it's one of its own, and stops picking out
   // whatever was
   pick: (target: object | undefined) => void
+  // Whether it has anything ready to light
+  anyReady: () => boolean
+  // Outlines everything it has that's ready to light, while a match is in hand, or stops
+  markReady: (on: boolean) => void
 }
 
 // Whatever the match touches most, of everything any of them has, picked out as its
@@ -188,6 +193,10 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
             playSound(stereoPan(container.x, app.screen.width))
             takeFresh()
             light()
+            // Put away, as it is once what it was let go on has caught
+            if (container.destroyed) {
+              return
+            }
           }
         }
         settle(dt)
@@ -229,6 +238,8 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
         setAim(next: Aim | undefined) {
           aim = next
         },
+        // Whether it's being struck, held to something
+        striking: () => phase === "striking" && aim !== undefined,
         destroy() {
           app.ticker.remove(tick)
           container.destroy({children: true})
@@ -239,10 +250,221 @@ const createMatchstick = (app: Application, audio: AudioControl) => {
 }
 
 type HeldMatch = ReturnType<ReturnType<typeof createMatchstick>["hold"]>
+type Matchstick = ReturnType<typeof createMatchstick>
+type TouchMarker = ReturnType<typeof createTouchMarker>
+
+// How far a press can move and still be a tap, on screen
+const tapSlop = 10
+// How far round a tap something to light can be, on screen, more for a fingertip
+const tapReach = {mouse: 16, touch: 28}
+
+// The match in a bar's hand, taken from its slot one of two ways:
+// - dragged out, it's held while the pointer's down, and lights whatever it's held to
+//   for long enough. Let go while something's catching, it stays there till it has,
+//   rather than the light being lost for letting go a moment too soon
+// - tapped, it stays in hand till it's put away. A mouse carries it about without a
+//   button held, to hold it to things as when it's dragged; a tap or click on
+//   something ready to light puts it to that, by mouse or finger, which on a touch
+//   screen, with nothing to hover, is how it's done. A tap on the slot again, on
+//   nothing to light, or Escape, puts it away; dragging the scene about doesn't
+// Taken with nothing anywhere ready to light, it isn't, and nothingToLight says so.
+// While it's in hand, everything ready to light is outlined, whichever bar has it
+const createMatchHand = (options: {
+  app: Application,
+  matchstick: Matchstick,
+  // The slot it's taken from, the layer it's carried on, and the hand that holds it
+  slot: Container,
+  layer: Container,
+  touch: TouchMarker,
+  // The scene's size on screen, in screen pixels per scene unit
+  sceneScale: () => number,
+  lightables: Lightable[],
+  // Whether it can be taken now, as it can't while something else is being dragged
+  canTake: () => boolean,
+  // Told when it's taken or put away
+  changed: () => void,
+  nothingToLight: () => void,
+}) => {
+  const {app, matchstick, slot, layer, touch, sceneScale, lightables} = options
+  let held: HeldMatch | undefined
+  let how: "dragged" | "tapped" = "dragged"
+  // Where it's held, as the pointer has it
+  const pointer = new Point()
+  // A press on its slot, till it's dragged far enough to take it out or let go as a tap
+  let pressedSlot: {at: Point, pointerId: number} | undefined
+  // A press on its slot while it's in hand by a tap, to put it away
+  let pressedToPutAway = false
+  // A press on the scene while it's in hand by a tap, to light what's there, or put it
+  // away, unless it's dragged, as to move the scene about
+  let pressedScene: {at: Point, pointerId: number} | undefined
+  // While something's catching that it's been let go on or tapped, it's held there till
+  // it has, whatever the pointer does, then kept or put away
+  let finishing: "keep" | "putAway" | undefined
+
+  const markReady = (on: boolean) => lightables.forEach(lightable => lightable.markReady(on))
+
+  // Holds it to what it's aimed at, to light it once it's been held there long enough
+  const holdTo = (aim: Aim | undefined) => held?.setAim(aim && {...aim, light: () => {
+    aim.light()
+    markReady(true)
+    const then = finishing
+    finishing = undefined
+    if (then === "putAway") {
+      putAway()
+    } else {
+      // Whatever else it's touching now could be lit next
+      follow()
+    }
+  }})
+
+  // Moves it to where it's held, and aims it at whatever it's touching there that it
+  // could light, unless it's finishing lighting something
+  const follow = () => {
+    if (!held) {
+      return
+    }
+    held.moveTo(pointer, sceneScale())
+    touch.holdAt(held.grip())
+    if (!finishing) {
+      holdTo(aimAt(lightables, held.box()))
+    }
+  }
+
+  const take = (finger: PointData, pointerType: string, taken: typeof how) => {
+    how = taken
+    pointer.copyFrom(touch.follow(finger, pointerType))
+    held = matchstick.hold(pointer, () => held && touch.holdAt(held.grip()))
+    layer.addChild(held.container)
+    markReady(true)
+    options.changed()
+    follow()
+  }
+
+  const putAway = () => {
+    pressedScene = undefined
+    pressedToPutAway = false
+    finishing = undefined
+    if (!held) {
+      return
+    }
+    held.destroy()
+    held = undefined
+    touch.hide()
+    clearAims(lightables)
+    markReady(false)
+    options.changed()
+  }
+
+  // A tap at a point on screen puts it to whatever's there ready to light, or puts it away
+  const tapAt = (at: PointData, pointerType: string) => {
+    const reach = pointerType === "touch" ? tapReach.touch : tapReach.mouse
+    const aim = aimAt(lightables, new Rectangle(at.x - reach, at.y - reach, reach * 2, reach * 2))
+    if (!aim || !held) {
+      putAway()
+      return
+    }
+    // Held by the stick, put to it, and the hand with it on a touch screen
+    pointer.copyFrom(aim.at())
+    touch.follow(pointer, pointerType)
+    held.moveTo(pointer, sceneScale())
+    touch.holdAt(held.grip())
+    finishing = "keep"
+    holdTo(aim)
+  }
+
+  const toStage = (e: PointerEvent) => {
+    const point = new Point()
+    app.renderer.events.mapPositionToPoint(point, e.clientX, e.clientY)
+    return point
+  }
+
+  slot.on("pointerdown", (e: FederatedPointerEvent) => {
+    if (held && how === "tapped") {
+      pressedToPutAway = true
+    } else if (!held && options.canTake()) {
+      pressedSlot = {at: e.global.clone(), pointerId: e.pointerId}
+    }
+  })
+  // Heard after the slot's own, as Pixi hears presses on the canvas
+  const onPointerDown = (e: PointerEvent) => {
+    if (held && how === "tapped" && !pressedToPutAway && e.button === 0) {
+      pressedScene = {at: toStage(e), pointerId: e.pointerId}
+    }
+  }
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      putAway()
+    }
+  }
+  window.addEventListener("pointerdown", onPointerDown)
+  window.addEventListener("keydown", onKeyDown)
+
+  return {
+    isHeld: () => held !== undefined,
+    putAway,
+    // The pointer's moved, to a point on the stage
+    move(finger: PointData, e: PointerEvent) {
+      if (pressedSlot && e.pointerId === pressedSlot.pointerId && draggedFrom(pressedSlot.at, finger)) {
+        pressedSlot = undefined
+        take(finger, e.pointerType, "dragged")
+        return
+      }
+      if (pressedScene && e.pointerId === pressedScene.pointerId && draggedFrom(pressedScene.at, finger, tapSlop)) {
+        pressedScene = undefined
+      }
+      // Carried by a mouse, or while it's dragged; a finger only puts it to things by tapping
+      if (held && (how === "dragged" || e.pointerType === "mouse")) {
+        pointer.copyFrom(touch.follow(finger, e.pointerType))
+        follow()
+      }
+    },
+    // The pointer's let go, at a point on the stage, or lost
+    up(finger: PointData, e: PointerEvent) {
+      const cancelled = e.type === "pointercancel"
+      if (pressedSlot && e.pointerId === pressedSlot.pointerId) {
+        pressedSlot = undefined
+        if (cancelled) {
+          return
+        }
+        if (lightables.some(lightable => lightable.anyReady())) {
+          take(finger, e.pointerType, "tapped")
+        } else {
+          options.nothingToLight()
+        }
+        return
+      }
+      if (pressedToPutAway) {
+        putAway()
+        return
+      }
+      if (!held) {
+        return
+      }
+      if (how === "dragged") {
+        if (held.striking() && !cancelled) {
+          finishing = "putAway"
+        } else if (!finishing) {
+          putAway()
+        }
+        return
+      }
+      const tapped = pressedScene && e.pointerId === pressedScene.pointerId
+      pressedScene = undefined
+      if (tapped && !cancelled && !finishing) {
+        tapAt(finger, e.pointerType)
+      }
+    },
+    destroy() {
+      putAway()
+      window.removeEventListener("pointerdown", onPointerDown)
+      window.removeEventListener("keydown", onKeyDown)
+    },
+  }
+}
 
 // Whether a press has been dragged far enough to take something, by default the
 // match out of its slot
 const draggedFrom = (from: PointData, to: PointData, slop = dragSlop) => Math.hypot(to.x - from.x, to.y - from.y) >= slop
 
-export {aimAt, clearAims, createMatchstick, draggedFrom, matchFrameUrls}
+export {aimAt, clearAims, createMatchHand, createMatchstick, draggedFrom, matchFrameUrls}
 export type {Aim, HeldMatch, Lightable}

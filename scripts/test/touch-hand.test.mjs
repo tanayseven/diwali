@@ -304,6 +304,60 @@ test("a finger held on a placed diya shows what it is", async () => {
   assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
 })
 
+// A diya put down and given a wick and oil by mouse, ready to light
+const readyDiya = async at => {
+  await page.mouse.click(52, rail.diyas)
+  await page.waitForTimeout(800)
+  await mouseDrag(slot(0), at)
+  await mouseDrag(slot(1), at)
+  await mouseDrag(slot(2), {x: at.x, y: at.y - 22})
+  await says(at, "Ready to light with the matchstick")
+}
+
+test("a tap on the matchstick, then on a diya, lights it, and a tap on nothing puts the match away", async () => {
+  const at = {x: porch.x - 40, y: porch.y - 10}
+  await readyDiya(at)
+  await page.touchscreen.tap(slot(3).x, slot(3).y)
+  await page.waitForTimeout(300)
+  // Held up from the slot by the hand, ready
+  assert.ok(await handPixels({x: slot(3).x, y: slot(3).y}) > shown, "the match is in hand")
+  await page.touchscreen.tap(at.x, at.y - 6)
+  // Struck and caught, which takes a second, or longer on a slow machine
+  await page.waitForTimeout(2500)
+  // Still in hand, held to the diya by the stick, the hand reaching up from below right
+  const hand = {x: at.x + 90, y: at.y + 55}
+  assert.ok(await handPixels(hand) > shown, "the match is still in hand by the diya")
+  // Up on the house, with nothing to light
+  await page.touchscreen.tap(porch.x, 60)
+  await page.waitForTimeout(300)
+  assert.ok(await handPixels(hand) < notShown, "the match is put away")
+  await says(at, "Lit")
+})
+
+test("the match let go a moment after it's put to a diya still lights it", async () => {
+  const at = {x: porch.x - 110, y: porch.y - 10}
+  await readyDiya(at)
+  await page.mouse.move(slot(3).x, slot(3).y)
+  await page.mouse.down()
+  await page.mouse.move(at.x + 14, at.y - 18, {steps: 12})
+  // Let go as it's struck, long before it's caught
+  await page.waitForTimeout(200)
+  await page.mouse.up()
+  await page.waitForTimeout(2500)
+  await says(at, "Lit")
+})
+
+test("a click on the matchstick takes it in hand, to light a diya by moving the mouse over it", async () => {
+  const at = {x: porch.x + 20, y: porch.y - 35}
+  await readyDiya(at)
+  await page.mouse.click(slot(3).x, slot(3).y)
+  // No button held, as it's carried
+  await page.mouse.move(at.x + 14, at.y - 18, {steps: 12})
+  await page.waitForTimeout(2500)
+  await page.keyboard.press("Escape")
+  await says(at, "Lit")
+})
+
 test("a diya let go off the porch goes back, buzzes, and its slot says where it goes", async () => {
   await page.touchscreen.tap(52, rail.diyas)
   await page.waitForTimeout(800)

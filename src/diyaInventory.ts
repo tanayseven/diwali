@@ -5,7 +5,7 @@ import {Item, createHud, cropped} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {addHint} from "./hints"
-import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
+import {createMatchHand, createMatchstick, draggedFrom, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
 import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
@@ -311,7 +311,7 @@ const createDiyaInventory = (
     diyaSlot.show()
     wickSlot.show()
     bottleSlot.show(drag?.kind === "oil")
-    matchSlot.show(held !== undefined)
+    matchSlot.show(hand.isHeld())
   }
 
   const setOverBar = (value: boolean) => {
@@ -433,6 +433,8 @@ const createDiyaInventory = (
   // Started by a pointer at a point, of a type, which on touch screens shows it beside
   // the finger instead of under it
   const startDrag = (at: PointData, pointerType: string, next: Drag, scale: number) => {
+    // Taking anything else puts the match away
+    hand.putAway()
     const {sprite} = next
     // From the bar, where it was pressed, so a tap that puts it straight back is quiet
     if (next.kind !== "diya" || !next.fromScene) {
@@ -452,12 +454,6 @@ const createDiyaInventory = (
     startDrag(at, pointerType, {kind: "diya", sprite: diya.sprite, diya, fromScene}, background.scale() * diyaScale)
     showDiya(diya)
   }
-
-  // The match in hand while it's dragged, where the pointer last was, and where a
-  // press on its slot began, until it's dragged far enough to take it out
-  let held: HeldMatch | undefined
-  const pointer = new Point()
-  let pressedSlotAt: Point | undefined
 
   // The diyas ready to light under the held match
   const lightable = (diya: PlacedDiya) => diya.wick && diya.oil && !diya.lit
@@ -485,36 +481,31 @@ const createDiyaInventory = (
     pick(target) {
       setTarget(placed.find(diya => diya === target))
     },
+    anyReady: () => placed.some(diya => !diya.busy && lightable(diya)),
+    markReady(on) {
+      placed.forEach(diya => setOutline(diya.sprite, "ready", on && !diya.busy && lightable(diya)))
+    },
   }
   lightables.push(diyaLightable)
 
-  // Points the held match at whatever it's touching that it could light, a diya or
-  // anything else, to light it once it's been held there long enough
-  const aimMatch = () => {
-    if (!held) {
-      return
-    }
-    held.moveTo(pointer, background.scale())
-    touch.holdAt(held.grip())
-    const aim = aimAt(lightables, held.box())
-    held.setAim(aim && {...aim, light: () => {
-      aim.light()
-      // Whatever else it's touching now could be lit next
-      aimMatch()
-    }})
-  }
-
-  const putAwayMatch = () => {
-    if (!held) {
-      return
-    }
-    held.destroy()
-    held = undefined
-    touch.hide()
-    clearAims(lightables)
-    placed.forEach(makePickable)
-    render()
-  }
+  // The match, taken from its slot by dragging it out or tapping it, to light diyas,
+  // or anything else ready to light, with
+  const hand = createMatchHand({
+    app,
+    matchstick,
+    slot: matchSlot.container,
+    layer: dragLayer,
+    touch,
+    sceneScale: () => background.scale(),
+    lightables,
+    canTake: () => !drag,
+    changed: () => {
+      placed.forEach(makePickable)
+      render()
+    },
+    // Its slot says what it lights
+    nothingToLight: () => refuse(matchSlot),
+  })
 
   diyaSlot.container.on("pointerdown", e => {
     if (emptyDiyas.count === 0 || drag) {
@@ -546,19 +537,6 @@ const createDiyaInventory = (
     startDrag(e.global, e.pointerType, {kind: "oil", sprite}, background.scale() * bottleScale)
   })
 
-  // A press on the match's slot only takes the match out once it's dragged
-  matchSlot.container.on("pointerdown", e => {
-    if (!drag && !held) {
-      pressedSlotAt = e.global.clone()
-    }
-  })
-  const takeMatch = () => {
-    held = matchstick.hold(pointer, () => held && touch.holdAt(held.grip()))
-    dragLayer.addChild(held.container)
-    placed.forEach(makePickable)
-    aimMatch()
-    render()
-  }
 
   // Whether placed diyas can be picked up, and whether the bar is showing to put them back on
   let interactive = false
@@ -587,7 +565,7 @@ const createDiyaInventory = (
   const pressListeners = new WeakMap<Sprite, (e: FederatedPointerEvent) => void>()
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
-    sprite.eventMode = interactive && !diya.busy && !held ? "static" : "none"
+    sprite.eventMode = interactive && !diya.busy && !hand.isHeld() ? "static" : "none"
     sprite.cursor = diya.lit ? "pointer" : "grab"
     // Only its own press listener's replaced, as its tooltip listens for a held finger too
     const press = (e: FederatedPointerEvent) => {
@@ -689,7 +667,7 @@ const createDiyaInventory = (
     const finger = toStage(e)
     // Picked up only by the finger that pressed it, and not while another's dragging
     // something already, as from the bar
-    if (pressedDiya && (drag || held)) {
+    if (pressedDiya && (drag || hand.isHeld())) {
       pressedDiya = undefined
     }
     if (pressedDiya && e.pointerId === pressedDiya.pointerId && draggedFrom(pressedDiya.at, finger, pickUpSlop)) {
@@ -698,14 +676,7 @@ const createDiyaInventory = (
       pickUp(diya, finger, e.pointerType)
     }
     if (!drag) {
-      if (held) {
-        pointer.copyFrom(touch.follow(finger, e.pointerType))
-        aimMatch()
-      } else if (pressedSlotAt && draggedFrom(pressedSlotAt, finger)) {
-        pointer.copyFrom(touch.follow(finger, e.pointerType))
-        pressedSlotAt = undefined
-        takeMatch()
-      }
+      hand.move(finger, e)
       return
     }
     const at = touch.follow(finger, e.pointerType)
@@ -720,16 +691,15 @@ const createDiyaInventory = (
       setTarget(diyaAt(screenBox(drag.sprite), diya => !diya.oil))
     }
   }
-  // Letting go puts the match back, and a diya pressed and let go without dragging it
-  // is turned
+  // Letting go puts a dragged match back, unless it's lighting something, and a diya
+  // pressed and let go without dragging it is turned
   const onPointerUp = (e: PointerEvent) => {
     // A tap turns it, but not a finger held on it to read what it is
     if (pressedDiya && !wasLongPressed(pressedDiya.diya.sprite)) {
       turn(pressedDiya.diya)
     }
     pressedDiya = undefined
-    pressedSlotAt = undefined
-    putAwayMatch()
+    hand.up(toStage(e), e)
     endDrag(toStage(e), e.pointerType)
   }
   window.addEventListener("pointermove", onPointerMove)
@@ -785,7 +755,7 @@ const createDiyaInventory = (
       bar.setShown(shown)
       bar.setInteractive(shown)
       if (!shown) {
-        putAwayMatch()
+        hand.putAway()
       }
     },
     setInteractive(value: boolean) {
@@ -794,7 +764,7 @@ const createDiyaInventory = (
       // Leaving the scene puts the match away, and whatever was dragged back where it
       // came from
       if (!interactive) {
-        putAwayMatch()
+        hand.putAway()
       }
       if (!interactive && drag) {
         const current = drag
@@ -807,7 +777,7 @@ const createDiyaInventory = (
       }
     },
     destroy() {
-      putAwayMatch()
+      hand.destroy()
       lightables.splice(lightables.indexOf(diyaLightable), 1)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)

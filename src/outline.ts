@@ -145,8 +145,9 @@ class OutlineFilter extends Filter {
 
 // Why something is outlined: hovered over, or selected (dragged, about to be used on,
 // or the colour picked in a bar), or still to be finished, a hint at what to do next.
-// It's outlined while any reason holds, faintly if it's only a hint
-type Reason = "hover" | "selected" | "hint"
+// It's outlined while any reason holds, faintly if it's only a hint. Something ready to
+// light while the match is in hand is outlined in full
+type Reason = "hover" | "selected" | "hint" | "ready"
 
 // Filters are shared, as everything outlined looks the same: one for things outlined
 // as they're drawn, and one that draws only the outline, and fainter ones of each for
@@ -233,7 +234,7 @@ const setOutline = (target: Container, reason: Reason, on: boolean) => {
   hide(target)
   if (held.size > 0 && !target.destroyed) {
     reasons.set(target, held)
-    show(target, !held.has("hover") && !held.has("selected"))
+    show(target, held.size === 1 && held.has("hint"))
   } else {
     reasons.delete(target)
   }
