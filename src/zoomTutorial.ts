@@ -8,6 +8,8 @@ type Camera = {zoomBy: (factor: number) => void, scale: () => number}
 const zoomSteps = 6
 const zoomPerStep = 1.08
 const stepEvery = 140
+// The keys that zoom the camera
+const zoomKeys = ["+", "=", "-", "_"]
 // Long enough for a zoom step that's under way to finish, in ms
 const zoomEases = 250
 // How long the fingers take to spread or pinch, and how long each way's held
@@ -21,8 +23,8 @@ const fingerSize = 34
 // Shows, the first time the scene's shown, how to zoom: two fingertips over the middle
 // of the screen spread apart as the camera zooms in, with the zoom in button saying
 // what it does, then pinch together as it zooms back out, with the zoom out button.
-// Any press, or scrolling or pinching a trackpad, ends it early, the camera put back as
-// it was. Resolves when it's done
+// Any press or key, or scrolling or pinching a trackpad, ends it early, the camera put
+// back as it was unless it was ended by zooming. Resolves when it's done
 const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container) => new Promise<void>(resolve => {
   const layer = document.createElement("div")
   Object.assign(layer.style, {
@@ -80,6 +82,7 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
     timers.forEach(timer => clearTimeout(timer))
     window.removeEventListener("pointerdown", end, true)
     window.removeEventListener("wheel", endByWheel, true)
+    window.removeEventListener("keydown", endByKey, true)
     // Once any step under way has finished, back to as far in as it was, unless a
     // trackpad's taken the camera over, as a scroll or pinch does.
     // Any press or scroll before then takes the camera over, so it's left as it is
@@ -92,12 +95,19 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
         clearTimeout(reset)
         stopWaiting()
       }
+      const takenOverByKey = (e: KeyboardEvent) => {
+        if (zoomKeys.includes(e.key)) {
+          takenOver()
+        }
+      }
       const stopWaiting = () => {
         window.removeEventListener("pointerdown", takenOver, true)
         window.removeEventListener("wheel", takenOver, true)
+        window.removeEventListener("keydown", takenOverByKey, true)
       }
       window.addEventListener("pointerdown", takenOver, true)
       window.addEventListener("wheel", takenOver, true)
+      window.addEventListener("keydown", takenOverByKey, true)
     }
     hideTooltipFor(zoomIn)
     hideTooltipFor(zoomOut)
@@ -111,8 +121,17 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
     byWheel = true
     end()
   }
+  // A key that zooms takes the camera over, as a scroll does; any other just ends it
+  const endByKey = (e: KeyboardEvent) => {
+    if (zoomKeys.includes(e.key)) {
+      endByWheel()
+    } else {
+      end()
+    }
+  }
   window.addEventListener("pointerdown", end, true)
   window.addEventListener("wheel", endByWheel, true)
+  window.addEventListener("keydown", endByKey, true)
 
   // Shown together, then spread apart as it zooms in
   spread(together)

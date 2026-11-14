@@ -226,9 +226,19 @@ const main = async () => {
       // Shown again next time, then
     }
   }
-  if (!introduced.has("zoom")) {
+  // Not while the scene's covered by the notice to turn the phone sideways, nor counted
+  // as seen until it's shown
+  const showZoomTutorialOnceSeen = () => {
+    const portrait = window.matchMedia("(orientation: portrait)")
+    if (portrait.matches) {
+      portrait.addEventListener("change", showZoomTutorialOnceSeen, {once: true})
+      return
+    }
     rememberIntroduced("zoom")
     showZoomTutorial(background, zoomControls.zoomIn, zoomControls.zoomOut).then(() => introduce(selected, false))
+  }
+  if (!introduced.has("zoom")) {
+    showZoomTutorialOnceSeen()
   } else {
     introduce(selected, false)
   }
