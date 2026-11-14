@@ -24,7 +24,7 @@ import {handAssets} from "./touchMarker"
 import {createWind} from "./wind"
 import {createWindBlown} from "./windBlown"
 import {showSoundSplash, showSplashWarning} from "./splashWarning"
-import {addTooltip} from "./tooltip"
+import {addTooltip, showTooltipOf} from "./tooltip"
 import {buttonRadius, createZoomControls} from "./zoomControls"
 
 type Tool = "diyas" | "fireworks" | "kandil" | "decorate" | "rangoli"
@@ -46,7 +46,26 @@ type ToolControls = Layout & {
   container: Container
   setHudShown: (shown: boolean) => void
   pressHandler?: (at: PointData, e: FederatedPointerEvent) => boolean
+  // What to take first from its bar, to show someone new to it
+  firstSlot?: () => Container | undefined
 }
+
+// The tools whose first step has been shown, kept on the device so each is only shown
+// once
+const introducedKey = "diwali-introduced-tools"
+const introduced = (() => {
+  try {
+    return new Set<string>(JSON.parse(localStorage.getItem(introducedKey) ?? "[]"))
+  } catch {
+    return new Set<string>()
+  }
+})()
+// How often, and for how long, to try showing a tool's first step, until its bar's slid
+// in and can be used
+const introduceEvery = 250
+const introduceFor = 5000
+// How long the name of a tool picked from the rail shows beside it
+const toolNameShown = 1500
 
 const main = async () => {
   const app = await createApp()
@@ -138,11 +157,48 @@ const main = async () => {
   // Only the picked tool's bar shows, unless the bars have been hidden with the eye
   const showBars = () => Object.entries(controls).forEach(([name, control]) =>
     control.setHudShown(name === selected && hudToggle.isShown()))
-  const select = (tool: Tool) => {
+  const select = (tool: Tool, picked = true) => {
     selected = tool
     showBars()
     // The tool still draws or hangs things with whatever was last picked from its bar
     background.setPressHandler(controls[tool]?.pressHandler)
+    introduce(tool, picked)
+  }
+  // The first time a tool's used, what to take first from its bar, and what to do with
+  // it, is shown beside it until the next press, as there's no hovering to find out on
+  // a touch screen. After that, picking it from the rail shows its name for a moment
+  let introducing = 0
+  const introduce = (tool: Tool, picked: boolean) => {
+    const slot = controls[tool]?.firstSlot?.()
+    if (slot && !introduced.has(tool)) {
+      const startedAt = performance.now()
+      // Only the latest try goes on, so picking the tool again doesn't leave two
+      const attempt = ++introducing
+      const tryShowing = () => {
+        if (attempt !== introducing || introduced.has(tool) || selected !== tool || !hudToggle.isShown()
+          || performance.now() - startedAt > introduceFor) {
+          return
+        }
+        if (!showTooltipOf(slot, undefined, {pin: true})) {
+          setTimeout(tryShowing, introduceEvery)
+          return
+        }
+        // Only once it's been shown, so one missed, as with the bar hidden, is shown
+        // the next time the tool's picked
+        introduced.add(tool)
+        try {
+          localStorage.setItem(introducedKey, JSON.stringify([...introduced]))
+        } catch {
+          // Shown again next time, then
+        }
+      }
+      setTimeout(tryShowing, introduceEvery)
+    } else if (picked) {
+      const button = rail.buttonFor(tool)
+      if (button) {
+        showTooltipOf(button, undefined, {hideAfter: toolNameShown})
+      }
+    }
   }
   // A photo of the scene to share, taken with the camera button under the zoom buttons
   const camera = createScreenshotButton(app, background.container, buttonRadius)
@@ -157,7 +213,7 @@ const main = async () => {
     app.stage.addChild(control.container)
     screens.push(control)
   })
-  select(selected)
+  select(selected, false)
 
   window.addEventListener("keydown", e => {
     // Don't let the keyboard drive anything while it's hidden behind the warning

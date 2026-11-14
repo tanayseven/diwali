@@ -1,7 +1,8 @@
 // Plays the game in headless Chromium as a phone held sideways, with touch, and checks
 // that a finger dragging something from any bar has a hand drawn holding it, and that a
 // mouse doesn't. And that what's dragged only has to touch what it goes onto, and that
-// either bar's matchstick lights diyas and fireworks alike.
+// either bar's matchstick lights diyas and fireworks alike. And that a finger held on a
+// rail button shows its tool's name, as there's no hovering on a touch screen.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -219,4 +220,23 @@ test("the Fireworks bar's matchstick lights a diya", async () => {
   // or longer on a slow machine, whose frames are only counted up to a tenth of a second
   await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 4000)
   await diyaSays(diya, "Lit")
+})
+
+test("a finger held on a rail button shows the tool's name", async () => {
+  const name = page.getByText("Craft Kandil", {exact: true})
+  const button = {x: 52, y: rail.kandil}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [button]})
+  // Shown after a moment, which on a slow machine can be a while
+  const shownWhileHeld = await name.waitFor({timeout: 5000}).then(() => true, () => false)
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the tool's name shows while the finger's held on its button")
+})
+
+test("a finger held on a placed diya shows what it is", async () => {
+  const lit = page.getByText("Lit", {exact: true})
+  const at = {x: diya.x, y: diya.y - 4}
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [at]})
+  const shownWhileHeld = await lit.waitFor({timeout: 5000}).then(() => true, () => false)
+  await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
+  assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
 })
