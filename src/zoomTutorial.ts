@@ -1,13 +1,15 @@
 import {Container} from "pixi.js"
 import {hideTooltipFor, showTooltipOf} from "./tooltip"
 
-// The camera it moves, as the background has it
-type Camera = {zoomBy: (factor: number) => void}
+// The camera it moves, as the background has it, and how far in it is
+type Camera = {zoomBy: (factor: number) => void, scale: () => number}
 
 // How far it zooms in, and back out, a little at a time so it's smooth
 const zoomSteps = 6
 const zoomPerStep = 1.08
 const stepEvery = 140
+// Long enough for a zoom step that's under way to finish, in ms
+const zoomEases = 250
 // How long the fingers take to spread or pinch, and how long each way's held
 const fingerMove = zoomSteps * stepEvery
 const hold = 900
@@ -19,7 +21,8 @@ const fingerSize = 34
 // Shows, the first time the scene's shown, how to zoom: two fingertips over the middle
 // of the screen spread apart as the camera zooms in, with the zoom in button saying
 // what it does, then pinch together as it zooms back out, with the zoom out button.
-// Any press ends it early, the camera put back as it was. Resolves when it's done
+// Any press, or scrolling or pinching a trackpad, ends it early, the camera put back as
+// it was. Resolves when it's done
 const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container) => new Promise<void>(resolve => {
   const layer = document.createElement("div")
   Object.assign(layer.style, {
@@ -56,13 +59,14 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
 
   const timers: number[] = []
   const after = (ms: number, then: () => void) => timers.push(window.setTimeout(then, ms))
-  // How many steps it's zoomed in by, so ending early can zoom back out by as many
-  let zoomedIn = 0
+  // How far in the camera was, to put it back to if it's ended early
+  const startScale = camera.scale()
+  let zoomed = false
   const zoom = (steps: number) => {
     for (let i = 0; i < Math.abs(steps); i++) {
       after(i * stepEvery, () => {
         camera.zoomBy(steps > 0 ? zoomPerStep : 1 / zoomPerStep)
-        zoomedIn += Math.sign(steps)
+        zoomed = true
       })
     }
   }
@@ -75,8 +79,11 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
     ended = true
     timers.forEach(timer => clearTimeout(timer))
     window.removeEventListener("pointerdown", end, true)
-    if (zoomedIn !== 0) {
-      camera.zoomBy(zoomPerStep ** -zoomedIn)
+    window.removeEventListener("wheel", endByWheel, true)
+    // Once any step under way has finished, back to as far in as it was, unless a
+    // trackpad's taken the camera over, as a scroll or pinch does
+    if (zoomed && !byWheel) {
+      window.setTimeout(() => camera.zoomBy(startScale / camera.scale()), zoomEases)
     }
     hideTooltipFor(zoomIn)
     hideTooltipFor(zoomOut)
@@ -85,11 +92,21 @@ const showZoomTutorial = (camera: Camera, zoomIn: Container, zoomOut: Container)
     window.setTimeout(() => layer.remove(), 300)
     resolve()
   }
+  let byWheel = false
+  const endByWheel = () => {
+    byWheel = true
+    end()
+  }
   window.addEventListener("pointerdown", end, true)
+  window.addEventListener("wheel", endByWheel, true)
 
   // Shown together, then spread apart as it zooms in
   spread(together)
   requestAnimationFrame(() => requestAnimationFrame(() => {
+    // Not if it's been ended already, in the moment before
+    if (ended) {
+      return
+    }
     fingers.forEach(({finger}) => finger.style.opacity = "1")
     after(300, () => {
       showTooltipOf(zoomIn)
