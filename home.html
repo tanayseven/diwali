@@ -134,14 +134,10 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
     gap: 1rem;
   }
-  /* Each card's button at its bottom, so they line up whatever the text above them */
   .platform {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-  }
-  .platform .button {
-    margin-top: auto;
   }
   .platform h3 {
     margin: 0 0 0.25rem;
@@ -150,6 +146,89 @@
   .platform p {
     margin: 0 0 0.75rem;
     color: var(--muted);
+  }
+  /* The visitor's own system, marked as theirs */
+  .platform.yours {
+    border-color: var(--highlight);
+    box-shadow: 0 0 1.25rem rgba(255, 215, 0, 0.15);
+  }
+  .platform.yours h3::after {
+    content: "Your system";
+    margin-left: 0.6rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background: var(--highlight);
+    color: #000000;
+    font-size: 0.75rem;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  /* Each file a button of its own: what it is, and its format and size under it */
+  .files {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+  .file {
+    display: flex;
+    flex-direction: column;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--rule);
+    border-radius: 0.6rem;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+    text-decoration: none;
+    line-height: 1.3;
+  }
+  .file:hover, .file:focus-visible {
+    border-color: var(--highlight);
+    background: rgba(255, 215, 0, 0.08);
+  }
+  .file .kind {
+    font-weight: 600;
+    color: var(--highlight);
+  }
+  .file .detail {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .platform .hint {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  code {
+    font-size: 0.85em;
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.3rem;
+    background: rgba(255, 255, 255, 0.08);
+    overflow-wrap: anywhere;
+  }
+  /* The download suggested for the visitor's system, above every platform's */
+  .recommended {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--rule);
+    background: radial-gradient(ellipse 70% 80% at 50% 100%, rgba(255, 200, 97, 0.14), transparent 70%), var(--panel);
+  }
+  .recommended p {
+    margin: 0 0 0.75rem;
+    color: var(--muted);
+  }
+  .recommended .note {
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+  }
+  .button.big {
+    font-size: 1.15rem;
+    padding: 0.9rem 2rem;
+  }
+  .more {
+    color: var(--muted);
+    margin-top: 1rem;
   }
   footer {
     margin-top: 4rem;
@@ -175,7 +254,7 @@
   <p class="tagline">A house's porch on Diwali night, lit only by what you light on it. Light diyas, set off fireworks, hang fairy lights and kandils, and draw a rangoli.</p>
   <div class="actions">
     <a class="button primary" href="/play">Play in your browser</a>
-    <a class="button" href="#download">Download the app</a>
+    <a class="button" id="download-button" href="#download">Download the app</a>
   </div>
 </header>
 
@@ -212,25 +291,64 @@
     <li><strong>Free and open source.</strong> MIT-licensed, with the code on GitHub.</li>
   </ul>
 
-  <h2 id="download">Get the app</h2>
-  <p>The apps carry everything with them, so they work offline.</p>
-  <div class="platforms">
-    <div class="platform">
-      <h3>Android</h3>
-      <p>Android 7.0 or newer. Download the APK and open it to install.</p>
-      <a class="button" href="https://github.com/tanayseven/diwali/releases/latest">Download APK</a>
-    </div>
-    <div class="platform">
-      <h3>Windows, macOS and Linux</h3>
-      <p>Installers for Windows (x64 and Arm), macOS, and Linux (.deb, .rpm, Arch and .tar.gz).</p>
-      <a class="button" href="https://github.com/tanayseven/diwali/releases/latest">Download</a>
-    </div>
-    <div class="platform">
-      <h3>Browser</h3>
-      <p>Nothing to install. Best on a computer, or a phone held sideways.</p>
-      <a class="button primary" href="/play">Play now</a>
-    </div>
+  <h2 id="download">Download</h2>
+  <p>Free, with no ads, and the apps work offline, as they carry everything with them. <span data-release></span></p>
+  <!-- Filled in for the visitor's system, if it's one there's something for -->
+  <div class="recommended" id="recommended" hidden>
+    <p>For your <strong id="your-system"></strong></p>
+    <a class="button primary big" id="recommended-link" href="#download">Download</a>
+    <p class="note" id="recommended-note"></p>
   </div>
+  <div class="platforms">
+    <section class="platform" id="windows" aria-labelledby="windows-heading">
+      <h3 id="windows-heading">Windows</h3>
+      <p>Windows 10 or later.</p>
+      <div class="files">
+        <a class="file" data-asset="windows-x64-setup" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Installer</span><span class="detail">x64 · .exe · <span data-size="windows-x64-setup"></span></span></a>
+        <a class="file" data-asset="windows-arm64-setup" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Installer</span><span class="detail">Arm · .exe · <span data-size="windows-arm64-setup"></span></span></a>
+        <a class="file" data-asset="windows-x64-zip" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Portable</span><span class="detail">x64 · .zip · <span data-size="windows-x64-zip"></span></span></a>
+        <a class="file" data-asset="windows-arm64-zip" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Portable</span><span class="detail">Arm · .zip · <span data-size="windows-arm64-zip"></span></span></a>
+      </div>
+      <p class="hint">Most PCs are x64; Arm is for Windows on Arm, such as laptops with Snapdragon chips. The portable one runs from its folder, without installing.</p>
+    </section>
+    <section class="platform" id="macos" aria-labelledby="macos-heading">
+      <h3 id="macos-heading">macOS</h3>
+      <p>One app for Macs with Apple silicon and with Intel.</p>
+      <div class="files">
+        <a class="file" data-asset="macos-dmg" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Disk image</span><span class="detail">.dmg · <span data-size="macos-dmg"></span></span></a>
+        <a class="file" data-asset="macos-zip" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">App</span><span class="detail">.zip · <span data-size="macos-zip"></span></span></a>
+      </div>
+      <p class="hint">Open the disk image and drag Diwali Celebration into Applications.</p>
+    </section>
+    <section class="platform" id="linux" aria-labelledby="linux-heading">
+      <h3 id="linux-heading">Linux</h3>
+      <p>For 64-bit PCs (x86-64).</p>
+      <div class="files">
+        <a class="file" data-asset="linux-deb" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Debian, Ubuntu</span><span class="detail">.deb · <span data-size="linux-deb"></span></span></a>
+        <a class="file" data-asset="linux-rpm" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Fedora, openSUSE</span><span class="detail">.rpm · <span data-size="linux-rpm"></span></span></a>
+        <a class="file" data-asset="linux-arch" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Arch Linux</span><span class="detail">.pkg.tar.zst · <span data-size="linux-arch"></span></span></a>
+        <a class="file" data-asset="linux-tar" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">Any other</span><span class="detail">.tar.gz · <span data-size="linux-tar"></span></span></a>
+      </div>
+      <p class="hint">Install the .deb with <code>sudo apt install ./</code> and its name, the .rpm with <code>sudo dnf install ./</code>, or the Arch package with <code>sudo pacman -U</code>.</p>
+    </section>
+    <section class="platform" id="android" aria-labelledby="android-heading">
+      <h3 id="android-heading">Android</h3>
+      <p>Android 7.0 or newer.</p>
+      <div class="files">
+        <a class="file" data-asset="android-apk" href="https://github.com/tanayseven/diwali/releases/latest"><span class="kind">App</span><span class="detail">.apk · <span data-size="android-apk"></span></span></a>
+      </div>
+      <p class="hint">Open it once it's downloaded to install it, letting your browser install apps if it asks.</p>
+    </section>
+    <section class="platform" id="browser" aria-labelledby="browser-heading">
+      <h3 id="browser-heading">Browser</h3>
+      <p>Nothing to install, on any computer, or a phone or tablet held sideways, iPhones and iPads too.</p>
+      <div class="files">
+        <a class="file" href="/play"><span class="kind">Play now</span><span class="detail">Here, on this site</span></a>
+        <a class="file" href="https://tanayseven.itch.io/diwali-celebration"><span class="kind">itch.io</span><span class="detail">Also there, with every app</span></a>
+      </div>
+    </section>
+  </div>
+  <p class="more">Older versions, and the source code, are on <a href="https://github.com/tanayseven/diwali/releases">GitHub</a>.</p>
 </main>
 
 <footer>

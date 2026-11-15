@@ -117,3 +117,16 @@ jobs:
       tag: ${{ needs.tag.outputs.tag }}
     # The itch.io API key butler logs in with, when it's set
     secrets: inherit
+
+  # Once they're built, the website's deployed again, so its home page's downloads link
+  # to the new release's files. It runs even if one of them failed, so the rest are
+  # linked; a file the release hasn't got links to the releases page
+  website:
+    needs: [tag, android, desktop]
+    if: always() && needs.tag.outputs.tag != ''
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      id-token: write
+      contents: read
+    # The AWS account the site's deployed to
+    secrets: inherit
