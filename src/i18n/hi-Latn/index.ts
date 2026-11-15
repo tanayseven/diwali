@@ -51,8 +51,8 @@ const hiLatn = {
 			addWickAndOil: "Aage: Diye bar se baati aur tel ispe drag karo, kisi bhi order mein",
 			addWick: "Aage: Diye bar se baati ispe drag karo",
 			addOil: "Aage: Diye bar se tel ispe drag karo",
-			lightDiya: "Aage: Diye bar se maachis ki teeli ispe drag karo, aur jalane ke liye wahin pakad ke rakho",
-			lightFirework: "Aage: Patakhe bar se maachis ki teeli ispe drag karo, aur jalane ke liye wahin pakad ke rakho",
+			lightDiya: "Aage: jalane ke liye Diye bar se maachis ki teeli ispe drag karke wahin pakad ke rakho, ya maachis ki teeli pe tap karo, phir ispe",
+			lightFirework: "Aage: jalane ke liye Patakhe bar se maachis ki teeli ispe drag karke wahin pakad ke rakho, ya maachis ki teeli pe tap karo, phir ispe",
 			addPaper: "Aage: lapetne ke liye Kandil banao bar se kaagaz ispe drag karo",
 			addTails: "Aage: Kandil banao bar se latkanein ispe drag karo",
 			addBulb: "Aage: jalaane ke liye Kandil banao bar se bulb ispe drag karo",
@@ -77,8 +77,8 @@ const hiLatn = {
 		},
 		matchstick: {
 			name: "Maachis ki teeli",
-			diyaHint: "Baati aur tel wale diye pe drag karo, aur jalane ke liye wahin pakad ke rakho",
-			fireworkHint: "Kisi patakhe pe drag karo, aur jalane ke liye wahin pakad ke rakho",
+			diyaHint: "Jalane ke liye baati aur tel wale diye pe drag karke wahin pakad ke rakho, ya ispe tap karo, phir diye pe",
+			fireworkHint: "Jalane ke liye kisi patakhe pe drag karke wahin pakad ke rakho, ya ispe tap karo, phir patakhe pe",
 		},
 		anar: {
 			name: "Anar",

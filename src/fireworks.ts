@@ -5,7 +5,7 @@ import {createBackground, sceneHeight, sceneWidth} from "./background"
 import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
-import {aimAt, clearAims, createMatchstick, draggedFrom, HeldMatch, Lightable, matchFrameUrls} from "./matchstick"
+import {createMatchHand, createMatchstick, draggedFrom, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy} from "./overlap"
 import {haptics, refusalShown} from "./feedback"
 import {createShownParticles} from "./shownParticles"
@@ -798,7 +798,7 @@ const createFireworks = (
   const render = () => {
     bar.drawBoxes(overBar && drag ? slots[drag.firework.kind].box : undefined)
     kinds.forEach(kind => slots[kind].show())
-    matchSlot.show(held !== undefined)
+    matchSlot.show(hand.isHeld())
   }
 
   const setOverBar = (value: boolean) => {
@@ -846,7 +846,7 @@ const createFireworks = (
   // the match is in hand, or another scene is open
   const makePickable = (firework: Placed) => {
     const burning = firework.state === "fuse" || firework.state === "burning"
-    firework.sprite.eventMode = interactive && !held && !burning ? "static" : "none"
+    firework.sprite.eventMode = interactive && !hand.isHeld() && !burning ? "static" : "none"
   }
 
   const createFirework = (kind: Kind): Placed => {
@@ -929,6 +929,8 @@ const createFireworks = (
 
   // Fireworks are shown while dragged at the size they'll be placed at, so they land as seen
   const startFireworkDrag = (finger: PointData, pointerType: string, firework: Placed, fromScene?: PointData) => {
+    // Taking anything else puts the match away
+    hand.putAway()
     const {sprite} = firework
     scaleSprite(firework, background.scale())
     sprite.position.copyFrom(touch.follow(finger, pointerType))
@@ -939,11 +941,6 @@ const createFireworks = (
     render()
   }
 
-  // The match in hand while it's dragged, where the pointer last was, and where a
-  // press on its slot began, until it's dragged far enough to take it out
-  let held: HeldMatch | undefined
-  const pointer = new Point()
-  let pressedSlotAt: Point | undefined
 
   // Where a firework's fuse is drawn, on the stage, through its sprite as it's shown,
   // grown while it's targeted, for the match to be put to
@@ -969,36 +966,34 @@ const createFireworks = (
     pick(target) {
       setTarget(placed.find(firework => firework === target))
     },
+    anyReady: () => placed.some(firework => firework.state === "unlit"),
+    markReady(on) {
+      placed.forEach(firework => setOutline(firework.sprite, "ready", on && firework.state === "unlit"))
+    },
   }
   lightables.push(fireworkLightable)
 
-  // Points the held match at whatever it's touching that it could light, a firework or
-  // anything else, to light it once it's been held there long enough
-  const aimMatch = () => {
-    if (!held) {
-      return
-    }
-    held.moveTo(pointer, background.scale())
-    touch.holdAt(held.grip())
-    const aim = aimAt(lightables, held.box())
-    held.setAim(aim && {...aim, light: () => {
-      aim.light()
-      // Whatever else it's touching now could be lit next
-      aimMatch()
-    }})
-  }
-
-  const putAwayMatch = () => {
-    if (!held) {
-      return
-    }
-    held.destroy()
-    held = undefined
-    touch.hide()
-    clearAims(lightables)
-    placed.forEach(makePickable)
-    render()
-  }
+  // The match, taken from its slot by dragging it out or tapping it, to light fireworks,
+  // or anything else ready to light, with
+  const hand = createMatchHand({
+    app,
+    matchstick,
+    slot: matchSlot.container,
+    layer: dragLayer,
+    touch,
+    sceneScale: () => background.scale(),
+    lightables,
+    canTake: () => !drag,
+    changed: () => {
+      placed.forEach(makePickable)
+      render()
+    },
+    // Its slot says what it lights
+    nothingToLight: () => {
+      haptics.refused()
+      showTooltipOf(matchSlot.container, undefined, {hideAfter: refusalShown})
+    },
+  })
 
   kinds.forEach(kind => slots[kind].container.on("pointerdown", e => {
     if (stacks[kind].count === 0 || drag) {
@@ -1007,20 +1002,6 @@ const createFireworks = (
     stacks[kind].count! -= 1
     startFireworkDrag(e.global, e.pointerType, createFirework(kind))
   }))
-
-  // A press on the match's slot only takes the match out once it's dragged
-  matchSlot.container.on("pointerdown", e => {
-    if (!drag && !held) {
-      pressedSlotAt = e.global.clone()
-    }
-  })
-  const takeMatch = () => {
-    held = matchstick.hold(pointer, () => held && touch.holdAt(held.grip()))
-    dragLayer.addChild(held.container)
-    placed.forEach(makePickable)
-    aimMatch()
-    render()
-  }
 
   // Sends the dragged firework back where it came from
   const returnDrag = (current: Drag) => {
@@ -1074,7 +1055,7 @@ const createFireworks = (
     const finger = toStage(e)
     // Picked up only by the finger that pressed it, and not while another's dragging
     // something already, as from the bar
-    if (pressedFirework && (drag || held)) {
+    if (pressedFirework && (drag || hand.isHeld())) {
       pressedFirework = undefined
     }
     if (pressedFirework && e.pointerId === pressedFirework.pointerId && draggedFrom(pressedFirework.at, finger, pickUpSlop)) {
@@ -1091,20 +1072,14 @@ const createFireworks = (
       setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
       drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
-    } else if (held) {
-      pointer.copyFrom(touch.follow(finger, e.pointerType))
-      aimMatch()
-    } else if (pressedSlotAt && draggedFrom(pressedSlotAt, finger)) {
-      pointer.copyFrom(touch.follow(finger, e.pointerType))
-      pressedSlotAt = undefined
-      takeMatch()
+    } else {
+      hand.move(finger, e)
     }
   }
-  // Letting go puts the match back
+  // Letting go puts a dragged match back, unless it's lighting something
   const onPointerUp = (e: PointerEvent) => {
     pressedFirework = undefined
-    pressedSlotAt = undefined
-    putAwayMatch()
+    hand.up(toStage(e), e)
     endDrag(toStage(e), e.pointerType)
   }
   window.addEventListener("pointermove", onPointerMove)
@@ -1895,7 +1870,7 @@ const createFireworks = (
       bar.setShown(shown)
       bar.setInteractive(shown)
       if (!shown) {
-        putAwayMatch()
+        hand.putAway()
       }
     },
     setInteractive(value: boolean) {
@@ -1904,7 +1879,7 @@ const createFireworks = (
       // Leaving the scene puts the match away, and whatever was dragged back where it
       // came from
       if (!interactive) {
-        putAwayMatch()
+        hand.putAway()
       }
       if (!interactive && drag) {
         const current = drag
@@ -1916,7 +1891,7 @@ const createFireworks = (
       }
     },
     destroy() {
-      putAwayMatch()
+      hand.destroy()
       lightables.splice(lightables.indexOf(fireworkLightable), 1)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)

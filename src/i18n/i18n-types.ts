@@ -174,11 +174,11 @@ type RootTranslation = {
 			 */
 			addOil: string
 			/**
-			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​D​i​y​a​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​D​i​y​a​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​,​ ​o​r​ ​t​a​p​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​,​ ​t​h​e​n​ ​t​h​i​s​,​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			lightDiya: string
 			/**
-			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​F​i​r​e​w​o​r​k​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​ ​f​r​o​m​ ​t​h​e​ ​F​i​r​e​w​o​r​k​s​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​,​ ​o​r​ ​t​a​p​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k​,​ ​t​h​e​n​ ​t​h​i​s​,​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			lightFirework: string
 			/**
@@ -254,11 +254,11 @@ type RootTranslation = {
 			 */
 			name: string
 			/**
-			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​w​i​t​h​ ​a​ ​w​i​c​k​ ​a​n​d​ ​o​i​l​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​d​i​y​a​ ​w​i​t​h​ ​a​ ​w​i​c​k​ ​a​n​d​ ​o​i​l​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​,​ ​o​r​ ​t​a​p​ ​i​t​,​ ​t​h​e​n​ ​t​h​e​ ​d​i​y​a​,​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			diyaHint: string
 			/**
-			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​f​i​r​e​w​o​r​k​,​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * D​r​a​g​ ​o​n​t​o​ ​a​ ​f​i​r​e​w​o​r​k​ ​a​n​d​ ​h​o​l​d​ ​i​t​ ​t​h​e​r​e​,​ ​o​r​ ​t​a​p​ ​i​t​,​ ​t​h​e​n​ ​t​h​e​ ​f​i​r​e​w​o​r​k​,​ ​t​o​ ​l​i​g​h​t​ ​i​t
 			 */
 			fireworkHint: string
 		}
@@ -655,11 +655,11 @@ export type TranslationFunctions = {
 			 */
 			addOil: () => LocalizedString
 			/**
-			 * Next: drag the matchstick from the Diyas bar onto it, and hold it there to light it
+			 * Next: drag the matchstick from the Diyas bar onto it and hold it there, or tap the matchstick, then this, to light it
 			 */
 			lightDiya: () => LocalizedString
 			/**
-			 * Next: drag the matchstick from the Fireworks bar onto it, and hold it there to light it
+			 * Next: drag the matchstick from the Fireworks bar onto it and hold it there, or tap the matchstick, then this, to light it
 			 */
 			lightFirework: () => LocalizedString
 			/**
@@ -735,11 +735,11 @@ export type TranslationFunctions = {
 			 */
 			name: () => LocalizedString
 			/**
-			 * Drag onto a diya with a wick and oil, and hold it there to light it
+			 * Drag onto a diya with a wick and oil and hold it there, or tap it, then the diya, to light it
 			 */
 			diyaHint: () => LocalizedString
 			/**
-			 * Drag onto a firework, and hold it there to light it
+			 * Drag onto a firework and hold it there, or tap it, then the firework, to light it
 			 */
 			fireworkHint: () => LocalizedString
 		}
