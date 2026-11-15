@@ -1,0 +1,5 @@
+• Give the mouse's match longer to catch in its test, as CI's machines are slow
+• Light taps on one thing after another in turn, and keep the match hand's state tidy
+• Type-check the website's build code, use mise's gh to find the release, and deploy in order
+• Add a downloads section to the home page, suggesting the visitor's download
+• Make lighting easier: tap the matchstick, then what to light, and let go early
