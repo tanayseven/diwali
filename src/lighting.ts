@@ -1,5 +1,5 @@
 import {Application, Assets, ColorMatrix, ColorMatrixFilter, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
-import {createBackground, groundBelow, houseUrl, sceneHeight, sceneWidth, scenery} from "./background"
+import {createBackground, groundBelow, sceneHeight, scenery} from "./background"
 import {outlineAboveNight} from "./outline"
 
 type Background = ReturnType<typeof createBackground>
@@ -29,7 +29,7 @@ const radialTexture = (size: number, stops: [number, number][]) => {
 // else. What's too bright to brighten that far, like its lit windows, is made up for by
 // a copy of just the shortfall, added on above the night. Both are drawn once, on the
 // graphics card, from the house as drawn
-const undoNight = (app: Application, house: Sprite) => {
+const undoNight = (app: Application, house: Sprite, url: string) => {
   const night = [nightColour >> 16, (nightColour >> 8) & 0xff, nightColour & 0xff].map(level => level / 255)
   const drawn = house.texture
   const redraw = (matrix: ColorMatrix) => {
@@ -48,7 +48,7 @@ const undoNight = (app: Application, house: Sprite) => {
   // And whatever's left over above the night's colour
   const shortfall = new Sprite(redraw([1, 0, 0, 0, -r, 0, 1, 0, 0, -g, 0, 0, 1, 0, -b, 0, 0, 0, 1, 0]))
   // The house as drawn isn't shown any more, so it's let go from the loaded assets
-  Assets.unload(houseUrl).catch(() => {})
+  Assets.unload(url).catch(() => {})
   shortfall.anchor.copyFrom(house.anchor)
   shortfall.scale.copyFrom(house.scale)
   shortfall.position.copyFrom(house.position)
@@ -57,26 +57,25 @@ const undoNight = (app: Application, house: Sprite) => {
   return shortfall
 }
 
-// The night over the scene, with lights that can be added to it. setNight sets how
+// The night over the street, with lights that can be added to it. setNight sets how
 // dark it is, from 0 (as by day) to 1. It's drawn above everything placed in the scene
-// up to zIndex sceneHeight, so things drawn above that, like sparks, aren't darkened
+// up to zIndex sceneHeight, so things drawn above that, like sparks, aren't darkened.
+// Its map of light covers the scenery's whole width, from its left edge
 const createLighting = (app: Application, background: Background) => {
   // Shared with whatever wants a glow of the same shape
   const glowTexture = radialTexture(128, [[0, 1], [0.2, 0.6], [0.45, 0.25], [0.7, 0.08], [1, 0]])
-  const lightMap = RenderTexture.create({width: sceneWidth / lightMapScale, height: sceneHeight / lightMapScale})
+  const lightMap = RenderTexture.create({width: (scenery.right - scenery.left) / lightMapScale, height: sceneHeight / lightMapScale})
   const lightScene = new Container()
   lightScene.addChild(new Graphics().rect(0, 0, lightMap.width, lightMap.height).fill(nightColour))
   const shade = new Sprite(lightMap)
   shade.scale.set(lightMapScale)
+  shade.x = scenery.left
   shade.blendMode = "multiply"
   shade.eventMode = "none"
   shade.visible = false
   shade.zIndex = sceneHeight + 1
-  // The sky and the ground carrying on past the scene's sides and below it are just as
-  // dark, and nothing there is lit
+  // The ground carrying on below the scene is just as dark, and nothing there is lit
   const shadeAround = new Graphics()
-    .rect(scenery.left, 0, -scenery.left, sceneHeight)
-    .rect(sceneWidth, 0, scenery.right - sceneWidth, sceneHeight)
     .rect(scenery.left, sceneHeight, scenery.right - scenery.left, groundBelow)
     .fill(nightColour)
   shadeAround.blendMode = "multiply"
@@ -85,11 +84,13 @@ const createLighting = (app: Application, background: Background) => {
   shadeAround.zIndex = sceneHeight + 1
   background.decorations.sortableChildren = true
   background.decorations.addChild(shade, shadeAround)
-  const houseShortfall = undoNight(app, background.house)
+  // Each house along the street, with what's too bright to brighten added back over it
+  const houseShortfall = new Container()
+  background.houses.forEach(({sprite, url}) => houseShortfall.addChild(undoNight(app, sprite, url)))
   houseShortfall.visible = false
   houseShortfall.zIndex = sceneHeight + 1
-  // Whoever stands in front of the house, cut out of what's added back over it, so its
-  // lit windows don't shine through them
+  // Whoever stands in front of the houses, cut out of what's added back over them, so
+  // their lit windows don't shine through them
   const inFrontOfHouse = new Container()
   inFrontOfHouse.eventMode = "none"
   houseShortfall.setMask({mask: inFrontOfHouse, inverse: true})
@@ -113,8 +114,8 @@ const createLighting = (app: Application, background: Background) => {
     glowTexture,
     // The zIndex above the night, for things that shine through it
     aboveNight: sceneHeight + 2,
-    // Shapes of whatever stands in front of the house, in the scene's units, for its lit
-    // windows not to shine through them
+    // Shapes of whatever stands in front of the houses, in the scene's units, for their
+    // lit windows not to shine through them
     inFrontOfHouse,
     // A light of a colour, off until it's shone somewhere
     addLight(colour: number) {
@@ -128,7 +129,7 @@ const createLighting = (app: Application, background: Background) => {
         // Lights up to a radius around a point in the scene, at a strength from 0 to 1
         shine(at: PointData, radius: number, strength: number) {
           light.visible = strength > 0
-          light.position.set(at.x / lightMapScale, at.y / lightMapScale)
+          light.position.set((at.x - scenery.left) / lightMapScale, at.y / lightMapScale)
           light.width = light.height = radius * 2 / lightMapScale
           light.alpha = Math.min(1, strength)
         },

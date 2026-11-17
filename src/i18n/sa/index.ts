@@ -11,6 +11,14 @@ const sa = {
 		decorate: "गृहम् अलङ्करोतु",
 		rangoli: "रङ्गवल्लीं लिखतु",
 	},
+	houses: {
+		deepaNiwas: "दीपा निवास",
+		lakshmiSadan: "लक्ष्मी सदन",
+		thulasiMana: "तुलसी मना",
+		saiKrupa: "साई कृपा",
+		ganeshKunj: "गणेश कुञ्ज",
+		anandVilla: "आनन्द विला",
+	},
 	zoom: {
 		in: "विस्तारयतु",
 		out: "सङ्कोचयतु",

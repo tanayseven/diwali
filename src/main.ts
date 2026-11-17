@@ -6,12 +6,13 @@ import {createDiyaInventory, diyaAssets, diyaImages} from "./diyaInventory"
 import {createHouseLights, fairyLightAssets} from "./fairyLights"
 import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
-import {createGuests} from "./guests"
+import {createGuests, familyFor} from "./guests"
 import {startHints} from "./hints"
 import {createHudToggle} from "./hudToggle"
 import {createKandils, kandilAssets} from "./kandil"
 import {createLighting} from "./lighting"
 import {createLoader, loadAssets} from "./loader"
+import {createNameplates} from "./nameplates"
 import type {Lightable} from "./matchstick"
 import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
 import {createLanguageButton} from "./languageButton"
@@ -157,10 +158,16 @@ const main = async () => {
     controls.decorate = createHouseLights(app, background, lighting, wind)
   }
   controls.rangoli = createRangoli(app, background)
-  // The family, out on the porch to celebrate, unless asked not to be, as the tests
-  // that look at what's on screen do
+  // Each house's name, over its door
+  createNameplates(background, lighting)
+  // A family out on each house's porch to celebrate, unless asked not to be, as the
+  // tests that look at what's on screen do. The main house's family is drawn to suit
+  // it, and each other house's made up for it, the same every time
   if (new URLSearchParams(window.location.search).get("guests") !== "off") {
-    createGuests(app, background, lighting, {diyas, fireworks, kandils})
+    background.houses.forEach(({name, porch, door, pots}, idx) => {
+      const home = {floor: porch, door, pots}
+      createGuests(app, background, lighting, {diyas, fireworks, kandils}, home, name === "deepaNiwas" ? undefined : familyFor(idx + 1))
+    })
   }
   // A "?" badge, and a faint outline, on whatever's placed and still to be finished,
   // such as an unlit diya, which shows what to do next with it

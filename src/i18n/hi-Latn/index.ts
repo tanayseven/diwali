@@ -11,6 +11,14 @@ const hiLatn = {
 		decorate: "Ghar sajao",
 		rangoli: "Rangoli banao",
 	},
+	houses: {
+		deepaNiwas: "Deepa Niwas",
+		lakshmiSadan: "Lakshmi Sadan",
+		thulasiMana: "Thulasi Mana",
+		saiKrupa: "Sai Krupa",
+		ganeshKunj: "Ganesh Kunj",
+		anandVilla: "Anand Villa",
+	},
 	zoom: {
 		in: "Zoom in",
 		out: "Zoom out",

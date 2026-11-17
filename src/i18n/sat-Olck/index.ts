@@ -11,6 +11,14 @@ const sat = {
 		decorate: "ᱚᱲᱟᱜ ᱥᱟᱡᱟᱣ ᱢᱮ",
 		rangoli: "ᱨᱟᱝᱜᱚᱞᱤ ᱚᱞ ᱢᱮ",
 	},
+	houses: {
+		deepaNiwas: "ᱫᱤᱯᱟ ᱱᱤᱣᱟᱥ",
+		lakshmiSadan: "ᱞᱚᱠᱥᱢᱤ ᱥᱚᱫᱚᱱ",
+		thulasiMana: "ᱛᱩᱞᱚᱥᱤ ᱢᱚᱱᱟ",
+		saiKrupa: "ᱥᱟᱤ ᱠᱨᱤᱯᱟ",
+		ganeshKunj: "ᱜᱚᱱᱮᱥ ᱠᱩᱧᱡ",
+		anandVilla: "ᱟᱱᱚᱱᱫ ᱣᱤᱞᱟ",
+	},
 	zoom: {
 		in: "ᱡᱩᱢ ᱤᱱ",
 		out: "ᱡᱩᱢ ᱟᱣᱩᱴ",

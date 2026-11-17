@@ -555,9 +555,11 @@ const createGuests = (
       const walked = advance(guest, dt)
       const {figure, mask} = guest
       const {root} = figure
-      root.visible = !guest.isInside
+      // Only drawn, and posed, while they're out and on screen, as there are many along
+      // the street
+      root.visible = !guest.isInside && background.inView(guest.x, guest.y - tallFront / 2, tallFront)
       guest.silhouette.root.visible = false
-      if (guest.isInside) {
+      if (!root.visible) {
         guest.glow.visible = false
         guest.light?.off()
         return

@@ -1,6 +1,6 @@
 import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
 import {fontFamily} from "./app"
-import {Background, porchFloor} from "./background"
+import {Background} from "./background"
 import {createHud, hudFrame, slotSize} from "./hud"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
@@ -83,26 +83,42 @@ const createRangoli = (app: Application, background: Background) => {
   const bar = createHud(app)
   container.addChild(bar.container)
 
-  // The drawing covers the floor's bounds, clipped to the floor's shape
-  const left = Math.min(...porchFloor.map(p => p.x))
-  const top = Math.min(...porchFloor.map(p => p.y))
-  const right = Math.max(...porchFloor.map(p => p.x))
-  const bottom = Math.max(...porchFloor.map(p => p.y))
-  const drawing = RenderTexture.create({width: (right - left) * resolution, height: (bottom - top) * resolution})
-  const sprite = new Sprite(drawing)
-  sprite.position.set(left, top)
-  sprite.scale.set(1 / resolution)
-  sprite.eventMode = "none"
-  // On the floor, under every diya and firework placed on it
-  sprite.zIndex = 1
-  const mask = new Graphics().poly(porchFloor.flatMap(p => [p.x, p.y])).fill(0xffffff)
-  sprite.mask = mask
-  background.decorations.addChild(sprite, mask)
+  // A drawing on each house's porch floor, covering the floor's bounds, clipped to its
+  // shape
+  const floors = background.houses.map(({porch}) => {
+    const left = Math.min(...porch.map(p => p.x))
+    const top = Math.min(...porch.map(p => p.y))
+    const right = Math.max(...porch.map(p => p.x))
+    const bottom = Math.max(...porch.map(p => p.y))
+    const drawing = RenderTexture.create({width: (right - left) * resolution, height: (bottom - top) * resolution})
+    const sprite = new Sprite(drawing)
+    sprite.position.set(left, top)
+    sprite.scale.set(1 / resolution)
+    sprite.eventMode = "none"
+    // On the floor, under every diya and firework placed on it
+    sprite.zIndex = 1
+    const mask = new Graphics().poly(porch.flatMap(p => [p.x, p.y])).fill(0xffffff)
+    sprite.mask = mask
+    background.decorations.addChild(sprite, mask)
+    return {left, top, right, bottom, drawing, sprite, mask}
+  })
 
   const powderStamp = powderTexture(48)
   const eraserStamp = solidTexture(32)
-  // Stamps are gathered here and drawn into the drawing in one go
+  // Stamps are gathered here, where they are in the scene at the drawings' resolution,
+  // and drawn into the drawing of each floor they're on in one go
   const stamps = new Container()
+  const drawStamps = () => {
+    const bounds = stamps.getLocalBounds()
+    floors.forEach(({left, top, right, bottom, drawing}) => {
+      if (bounds.maxX >= left * resolution && bounds.minX <= right * resolution
+        && bounds.maxY >= top * resolution && bounds.minY <= bottom * resolution) {
+        stamps.position.set(-left * resolution, -top * resolution)
+        app.renderer.render({container: stamps, target: drawing, clear: false})
+      }
+    })
+    stamps.removeChildren().forEach(stamp => stamp.destroy())
+  }
   let tool: Tool = "red"
   let last: PointData | undefined
   let drawingNow = false
@@ -162,7 +178,7 @@ const createRangoli = (app: Application, background: Background) => {
     if (clearAsked !== undefined) {
       stopAsking()
       hideTooltipFor(clearSlot.container)
-      app.renderer.render({container: new Container(), target: drawing, clear: true})
+      floors.forEach(({drawing}) => app.renderer.render({container: new Container(), target: drawing, clear: true}))
       return
     }
     const questionMark = document.documentElement.dir === "rtl" ? "؟" : "?"
@@ -239,7 +255,7 @@ const createRangoli = (app: Application, background: Background) => {
       const stamp = new Sprite(tool === "eraser" ? eraserStamp : powderStamp)
       stamp.anchor.set(0.5)
       stamp.width = stamp.height = radius * 2 * resolution
-      stamp.position.set((from.x + (at.x - from.x) * t - left) * resolution, (from.y + (at.y - from.y) * t - top) * resolution)
+      stamp.position.set((from.x + (at.x - from.x) * t) * resolution, (from.y + (at.y - from.y) * t) * resolution)
       stamp.rotation = Math.random() * Math.PI * 2
       if (tool === "eraser") {
         stamp.blendMode = "erase"
@@ -248,8 +264,7 @@ const createRangoli = (app: Application, background: Background) => {
       }
       stamps.addChild(stamp)
     }
-    app.renderer.render({container: stamps, target: drawing, clear: false})
-    stamps.removeChildren().forEach(stamp => stamp.destroy())
+    drawStamps()
     last = at
   }
 
@@ -259,7 +274,7 @@ const createRangoli = (app: Application, background: Background) => {
       const stamp = new Sprite(powderStamp)
       stamp.anchor.set(0.5)
       stamp.width = stamp.height = radius * 2 * resolution
-      stamp.position.set((at.x - left) * resolution, (at.y - top) * resolution)
+      stamp.position.set(at.x * resolution, at.y * resolution)
       stamp.rotation = Math.random() * Math.PI * 2
       stamp.tint = colour
       stamps.addChild(stamp)
@@ -275,8 +290,7 @@ const createRangoli = (app: Application, background: Background) => {
         dab({x: from.x + (to.x - from.x) * k / count, y: from.y + (to.y - from.y) * k / count})
       }
     }
-    app.renderer.render({container: stamps, target: drawing, clear: false})
-    stamps.removeChildren().forEach(stamp => stamp.destroy())
+    drawStamps()
   }
 
   // Puts the picked design down on the floor, centred on a point, lying flat
@@ -377,9 +391,11 @@ const createRangoli = (app: Application, background: Background) => {
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
-      sprite.destroy()
-      mask.destroy()
-      drawing.destroy(true)
+      floors.forEach(({sprite, mask, drawing}) => {
+        sprite.destroy()
+        mask.destroy()
+        drawing.destroy(true)
+      })
       powderStamp.destroy(true)
       eraserStamp.destroy(true)
       container.destroy({children: true})

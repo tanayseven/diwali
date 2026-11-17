@@ -11,6 +11,14 @@ const ur = {
 		decorate: "گھر سجائیں",
 		rangoli: "رنگولی بنائیں",
 	},
+	houses: {
+		deepaNiwas: "دیپا نواس",
+		lakshmiSadan: "لکشمی سدن",
+		thulasiMana: "تلسی منا",
+		saiKrupa: "سائی کرپا",
+		ganeshKunj: "گنیش کنج",
+		anandVilla: "آنند ولا",
+	},
 	zoom: {
 		in: "زوم اِن",
 		out: "زوم آؤٹ",

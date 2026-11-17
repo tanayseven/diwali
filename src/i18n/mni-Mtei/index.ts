@@ -11,6 +11,14 @@ const mni = {
 		decorate: "ꯌꯨꯝ ꯁꯦꯃꯖꯤꯟꯕꯤꯌꯨ",
 		rangoli: "ꯔꯪꯒꯣꯂꯤ ꯌꯦꯛꯄꯤꯌꯨ",
 	},
+	houses: {
+		deepaNiwas: "ꯗꯤꯄꯥ ꯅꯤꯕꯥꯁ",
+		lakshmiSadan: "ꯂꯛꯁꯃꯤ ꯁꯗꯟ",
+		thulasiMana: "ꯊꯨꯂꯁꯤ ꯃꯅꯥ",
+		saiKrupa: "ꯁꯥꯏ ꯀ꯭ꯔꯤꯄꯥ",
+		ganeshKunj: "ꯒꯅꯦꯁ ꯀꯨꯟꯖ",
+		anandVilla: "ꯑꯥꯅꯟꯗ ꯚꯤꯂꯥ",
+	},
 	zoom: {
 		in: "ꯖꯨꯝ ꯏꯟ",
 		out: "ꯖꯨꯝ ꯑꯥꯎꯠ",

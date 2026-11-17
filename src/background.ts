@@ -2,18 +2,23 @@ import {Application, Assets, Container, FederatedPointerEvent, Point, PointData,
 import {pixelDensity, quality} from "./app"
 import {stereoPan} from "./audioControl"
 import {hudFrame} from "./hud"
+import {neighbours, neighboursLeft} from "./street"
+import type {HouseName} from "./street"
 
 // The night sky, with its moon and stars, and the hills and ground in front of it. A
 // city's skyline stands between them, its foot hidden behind the hills
 const skyUrl = "sprites/backgrounds/night-sky.svg"
 const hillsUrl = "sprites/backgrounds/night-hills.svg"
 const houseUrl = "sprites/house.svg"
-// The scene is 1280 x 720, and the house is placed in those same units. The sky and
-// the hills carry on 400 past either side of it, from x -400 to 1680, so the camera
-// can pan further across than the scene. It still zooms out only to the scene
+// The scene is 1280 x 720, around the main house, and everything's placed in those
+// same units. The street carries on either side of it, with a house after another
+// along it, and the sky and the hills carry on 400 past the last of them, so the
+// camera can pan along the whole street. It still zooms out only as far as the scene
 const sceneWidth = 1280
 const sceneHeight = 720
-const scenery = {left: -400, right: sceneWidth + 400}
+// Where the sky and the hills' drawings start: they're drawn 2080 across, from 400
+// left of the scene to 400 right of it, and the hills are repeated along the street,
+// mirrored every other time so they join up
 // The skyline in two layers, far behind near, each drawn 2560 x 420. It's shown a
 // little smaller, centred, standing on y 530
 const skylineUrls = {far: "sprites/backgrounds/skyline-far.svg", near: "sprites/backgrounds/skyline-near.svg"}
@@ -25,8 +30,9 @@ const skylineTop = skylineFoot - skylineSize.height * skylineScale
 // The skyline's layers are further away than the house, so as the camera pans across,
 // they slide past more slowly: on screen the far one moves this share as much as the
 // house does, and the near one this much. Only across, as moving up and down would
-// lift them off the horizon behind the hills
-const skylineDepth = {far: 0.3, near: 0.55}
+// lift them off the horizon behind the hills. Little enough that, panned all the way
+// along the street, the city still fills the sky
+const skylineDepth = {far: 0.1, near: 0.18}
 // The moon and stars are furthest of all, so they barely slide as the camera pans.
 // The sky is as wide as the scenery and slides by less than the view does, so it
 // still covers the screen wherever the camera goes
@@ -37,6 +43,9 @@ const skyDepth = 0.08
 // a little
 const groundBelow = 400
 const barClearance = 8
+const drawnLeft = -400
+const drawnWidth = 2080
+
 // The house stands with its bottom edge on the ground band, which starts at y 600
 const houseHeight = 470
 const houseBottom = 680
@@ -73,7 +82,7 @@ const porchPots = [
 
 // The bottom edges of the roofs' eaves, which things can hang from: the upper storey's,
 // the porch roof's and the two wings', each from its left end to its right
-const eaves = [
+const eaves: [PointData, PointData][] = [
   [fromHouseSvg(629, 220), fromHouseSvg(1194, 220)],
   [fromHouseSvg(610, 442), fromHouseSvg(1210, 442)],
   [fromHouseSvg(205, 487), fromHouseSvg(655, 487)],
@@ -81,6 +90,73 @@ const eaves = [
 ]
 
 type View = {x: number, y: number, width: number, height: number}
+
+// The other houses along the street, either side of the main one with a gap between
+// each, standing on the ground as it does, in the order they stand in
+const houseGap = 50
+const mainLeft = houseLeft
+const mainRight = houseLeft + houseSvg.width * houseScale
+const neighbourLefts = (() => {
+  const lefts: number[] = []
+  let x = mainLeft
+  for (let idx = neighboursLeft - 1; idx >= 0; idx--) {
+    x -= houseGap + neighbours[idx].size.width
+    lefts[idx] = x
+  }
+  x = mainRight
+  for (let idx = neighboursLeft; idx < neighbours.length; idx++) {
+    lefts[idx] = x + houseGap
+    x = lefts[idx] + neighbours[idx].size.width
+  }
+  return lefts
+})()
+
+// Every house on the street, in scene units: its name, where its drawing is and how
+// big, its porch floor, front door, eaves and pots
+type House = {
+  name: HouseName
+  url: string
+  left: number
+  top: number
+  width: number
+  height: number
+  scale: number
+  porch: PointData[]
+  door: {left: number, right: number, top: number, bottom: number}
+  eaves: [PointData, PointData][]
+  pots: PointData[]
+}
+
+const houses: House[] = (() => {
+  const others = neighbours.map((drawing, idx): House => {
+    const left = neighbourLefts[idx]
+    const top = houseBottom - drawing.size.height
+    const at = (point: PointData) => ({x: left + point.x, y: top + point.y})
+    return {
+      name: drawing.name, url: drawing.url, left, top, width: drawing.size.width, height: drawing.size.height, scale: 1,
+      porch: drawing.porch.map(at),
+      door: {
+        left: left + drawing.door.left, right: left + drawing.door.right,
+        top: top + drawing.door.top, bottom: top + drawing.door.bottom,
+      },
+      eaves: drawing.eaves.map(([from, to]) => [at(from), at(to)]),
+      pots: drawing.pots.map(at),
+    }
+  })
+  const main: House = {
+    name: "deepaNiwas", url: houseUrl, left: houseLeft, top: houseTop, width: mainRight - mainLeft, height: houseHeight,
+    scale: houseScale, porch: porchFloor,
+    door: {left: doorway.topLeft.x, right: doorway.bottomRight.x, top: doorway.topLeft.y, bottom: doorway.bottomRight.y},
+    eaves, pots: porchPots,
+  }
+  return [...others.slice(0, neighboursLeft), main, ...others.slice(neighboursLeft)]
+})()
+
+// The scenery, from 400 left of the first house to 400 right of the last
+const scenery = {
+  left: Math.min(drawnLeft, houses[0].left - 400),
+  right: Math.max(drawnLeft + drawnWidth, houses[houses.length - 1].left + houses[houses.length - 1].width + 400),
+}
 
 // What the camera frames to begin with: the house from its porch floor, kept clear of
 // the bar along the bottom, up to the eaves
@@ -97,7 +173,7 @@ const fitScale = (view: {width: number, height: number}, width: number, height: 
   Math.max(coverScale(width, height), Math.min(width / view.width, height / view.height))
 
 // Every asset the background needs, to be loaded before it's created
-const backgroundAssets = [skyUrl, hillsUrl, ...Object.values(skylineUrls), houseUrl]
+const backgroundAssets = [skyUrl, hillsUrl, ...Object.values(skylineUrls), ...houses.map(({url}) => url)]
 
 // The SVGs are rasterised once at load, so draw them at the size they'll be shown
 // on this screen to keep them sharp. The house is drawn for the closest zoom; the
@@ -110,12 +186,16 @@ const addBackgroundAssets = () => {
   const houseZoom = fitScale(closestView, width, height) * houseScale
   const widest = quality.maxTextureWidth
   const houseResolution = Math.min(4, Math.ceil(density * houseZoom), widest / houseSvg.width)
-  const sceneryResolution = Math.min(skyResolution, widest / (scenery.right - scenery.left))
+  const sceneryResolution = Math.min(skyResolution, widest / drawnWidth)
   Assets.add({alias: skyUrl, src: skyUrl, data: {resolution: sceneryResolution}})
   Assets.add({alias: hillsUrl, src: hillsUrl, data: {resolution: sceneryResolution}})
   const skylineResolution = Math.min(skyResolution * skylineScale, widest / skylineSize.width)
   Object.values(skylineUrls).forEach(url => Assets.add({alias: url, src: url, data: {resolution: skylineResolution}}))
   Assets.add({alias: houseUrl, src: houseUrl, data: {resolution: houseResolution}})
+  neighbours.forEach(({url, size}) => {
+    const resolution = Math.min(4, Math.ceil(density * fitScale(closestView, width, height)), widest / size.width)
+    Assets.add({alias: url, src: url, data: {resolution}})
+  })
 }
 
 const easeOut = (t: number) => 1 - (1 - t) ** 3
@@ -146,7 +226,7 @@ const createBackground = (app: Application) => {
   const container = new Container()
   const scene = new Container()
   const sky = new Sprite(Assets.get<Texture>(skyUrl))
-  sky.x = scenery.left
+  sky.x = drawnLeft
   scene.addChild(sky)
   // The skyline's two layers. The near one has whatever changes in it drawn over it too,
   // like its windows going dark
@@ -157,21 +237,35 @@ const createBackground = (app: Application) => {
     skylineLayers[layer].addChild(new Sprite(Assets.get<Texture>(skylineUrls[layer])))
     scene.addChild(skylineLayers[layer])
   })
-  const hills = new Sprite(Assets.get<Texture>(hillsUrl))
-  hills.x = scenery.left
-  scene.addChild(hills)
-  // The ground below the scene, behind the bar: the hills' bottom row, drawn on down
-  const ground = new Sprite(new Texture({
-    source: hills.texture.source, frame: new Rectangle(0, sceneHeight - 1, hills.texture.width, 1),
-  }))
-  ground.position.set(scenery.left, sceneHeight)
-  ground.scale.set(1, groundBelow)
-  scene.addChild(ground)
-  const house = new Sprite(Assets.get<Texture>(houseUrl))
-  house.anchor.set(0.5, 1)
-  house.scale.set(houseScale)
-  house.position.set(sceneWidth / 2, houseBottom)
-  scene.addChild(house)
+  // The hills, along the whole street: repeated, every other one mirrored, so each
+  // joins the next. And the ground below the scene, behind the bar: the hills' bottom
+  // row, drawn on down
+  const hillsTexture = Assets.get<Texture>(hillsUrl)
+  const groundTexture = new Texture({
+    source: hillsTexture.source, frame: new Rectangle(0, sceneHeight - 1, hillsTexture.width, 1),
+  })
+  const firstTile = Math.floor((scenery.left - drawnLeft) / drawnWidth)
+  const lastTile = Math.ceil((scenery.right - drawnLeft) / drawnWidth) - 1
+  for (let tile = firstTile; tile <= lastTile; tile++) {
+    const mirrored = tile % 2 !== 0
+    const x = drawnLeft + tile * drawnWidth + (mirrored ? drawnWidth : 0)
+    const hills = new Sprite(hillsTexture)
+    hills.x = x
+    hills.scale.x = mirrored ? -1 : 1
+    const ground = new Sprite(groundTexture)
+    ground.position.set(x, sceneHeight)
+    ground.scale.set(mirrored ? -1 : 1, groundBelow)
+    scene.addChild(hills, ground)
+  }
+  // Each house along the street, standing on the ground
+  const houseSprites = houses.map(({url, left, top, scale}) => {
+    const sprite = new Sprite(Assets.get<Texture>(url))
+    sprite.position.set(left, top)
+    sprite.scale.set(scale)
+    scene.addChild(sprite)
+    return sprite
+  })
+  const house = houseSprites[houses.findIndex(({url}) => url === houseUrl)]
   // Things placed in the scene, like diyas, so they move with the camera
   const decorations = new Container()
   scene.addChild(decorations)
@@ -196,10 +290,25 @@ const createBackground = (app: Application) => {
     holder.destroy({children: true})
     return {pixels, width, height}
   }
-  const houseMask = maskOf(house.texture, houseScale)
-  const hillsMask = maskOf(hills.texture, 1)
-  const isOpaque = (mask: typeof houseMask, x: number, y: number) =>
+  const houseMasks = houseSprites.map((sprite, idx) => maskOf(sprite.texture, houses[idx].scale))
+  const hillsMask = maskOf(hillsTexture, 1)
+  const isOpaque = (mask: typeof hillsMask, x: number, y: number) =>
     x >= 0 && y >= 0 && x < mask.width && y < mask.height && mask.pixels[(y * mask.width + x) * 4 + 3] > 128
+  // Whether a point of the scene is on a house's drawing, within a couple of units, as
+  // the SVGs have hairline gaps between some of their shapes
+  const onHouse = (idx: number, point: PointData, near = 2) => {
+    const {left, top} = houses[idx]
+    const x = Math.floor(point.x - left)
+    const y = Math.floor(point.y - top)
+    return [-near, 0, near].some(dy => [-near, 0, near].some(dx => isOpaque(houseMasks[idx], x + dx, y + dy)))
+  }
+  // And on the hills, repeated and mirrored along the street
+  const onHills = (point: PointData) => {
+    const along = point.x - drawnLeft
+    const tile = Math.floor(along / drawnWidth)
+    const within = along - tile * drawnWidth
+    return isOpaque(hillsMask, Math.floor(tile % 2 !== 0 ? drawnWidth - within : within), Math.floor(point.y))
+  }
 
   // The point in the scene at the middle of the screen, and how far in it's zoomed: 1
   // just covers the screen with the whole scene
@@ -243,7 +352,7 @@ const createBackground = (app: Application) => {
     scene.position.set(width / 2 - centre.x * scale, height / 2 - centre.y * scale)
     // The sky and each skyline layer follow the camera across part of the way, so they
     // seem further off
-    sky.x = scenery.left + (centre.x - sceneWidth / 2) * (1 - skyDepth)
+    sky.x = drawnLeft + (centre.x - sceneWidth / 2) * (1 - skyDepth)
     ;(["far", "near"] as const).forEach(layer => {
       skylineLayers[layer].x = skylineLeft + (centre.x - sceneWidth / 2) * (1 - skylineDepth[layer])
     })
@@ -388,6 +497,8 @@ const createBackground = (app: Application) => {
     container,
     decorations,
     house,
+    // Every house on the street, in the order they stand in, with its sprite
+    houses: houses.map((house, idx) => ({...house, sprite: houseSprites[idx]})),
     layout,
     // Where a point on screen falls in the scene, in scene units
     toScene(point: PointData) {
@@ -421,13 +532,14 @@ const createBackground = (app: Application) => {
     setPressHandler(handler: PressHandler | undefined) {
       onPress = handler
     },
-    // Whether a point in the scene is on the house, rather than the sky or ground. The
-    // SVG has hairline gaps between some of its shapes, so a point counts if anything
-    // of the house is within a couple of units of it
+    // Which house a point in the scene is on, by its place along the street, or -1 if
+    // it's on none, but the sky or the ground
+    houseAt(point: PointData) {
+      return houses.findIndex(({left, width}, idx) => point.x >= left - 2 && point.x <= left + width + 2 && onHouse(idx, point))
+    },
+    // Whether a point in the scene is on a house, rather than the sky or ground
     isOnHouse(point: PointData) {
-      const x = Math.floor(point.x - houseLeft)
-      const y = Math.floor(point.y - houseTop)
-      return [-2, 0, 2].some(dy => [-2, 0, 2].some(dx => isOpaque(houseMask, x + dx, y + dy)))
+      return houses.some(({left, width}, idx) => point.x >= left - 2 && point.x <= left + width + 2 && onHouse(idx, point))
     },
     // The skyline's near layer, in the skyline drawing's own units, for things drawn on
     // it. It slides as the camera pans
@@ -451,18 +563,16 @@ const createBackground = (app: Application) => {
     // Whether a point in the scene is hidden from the skyline behind it by the hills,
     // the ground or the house
     hidesSkyline(point: PointData) {
-      const x = Math.floor(point.x)
-      const y = Math.floor(point.y)
-      return isOpaque(hillsMask, x - scenery.left, y) || isOpaque(houseMask, x - Math.floor(houseLeft), y - Math.floor(houseTop))
+      return onHills(point) || houses.some(({left, width}, idx) => point.x >= left && point.x <= left + width && onHouse(idx, point, 0))
     },
     // How far left (-1) or right (1) something at a point in the scene is heard from,
     // by where it is on screen
     panOf: (point: PointData) => stereoPan(scene.x + point.x * scene.scale.x, app.screen.width),
-    // Whether a point in the scene is on the porch's floor
-    isOnPorchFloor: (point: PointData) => isInside(point, porchFloor),
+    // Whether a point in the scene is on a porch's floor, of any house
+    isOnPorchFloor: (point: PointData) => houses.some(({porch}) => isInside(point, porch)),
     // How high the nearest eave straight above a point in the scene is, if there's one
     eaveAbove(point: PointData) {
-      const above = eaves
+      const above = houses.flatMap(house => house.eaves)
         .filter(([left, right]) => point.x >= left.x && point.x <= right.x && left.y < point.y)
         .map(([left]) => left.y)
       return above.length ? Math.max(...above) : undefined
@@ -480,5 +590,5 @@ const createBackground = (app: Application) => {
 
 type Background = ReturnType<typeof createBackground>
 
-export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houseUrl, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
-export type {Background}
+export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
+export type {Background, House}

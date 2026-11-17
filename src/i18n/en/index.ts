@@ -13,6 +13,16 @@ const en = {
 		decorate: "Decorate House",
 		rangoli: "Draw Rangoli",
 	},
+	// The houses along the street, by name, shown on a plaque over each one's door.
+	// Names, so written out in each language's script rather than translated
+	houses: {
+		deepaNiwas: "Deepa Niwas",
+		lakshmiSadan: "Lakshmi Sadan",
+		thulasiMana: "Thulasi Mana",
+		saiKrupa: "Sai Krupa",
+		ganeshKunj: "Ganesh Kunj",
+		anandVilla: "Anand Villa",
+	},
 	zoom: {
 		in: "Zoom in",
 		out: "Zoom out",

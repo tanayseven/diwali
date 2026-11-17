@@ -11,6 +11,14 @@ const ml = {
 		decorate: "വീട് അലങ്കരിക്കൂ",
 		rangoli: "രംഗോലി വരയ്ക്കൂ",
 	},
+	houses: {
+		deepaNiwas: "ദീപ നിവാസ്",
+		lakshmiSadan: "ലക്ഷ്മി സദൻ",
+		thulasiMana: "തുളസി മന",
+		saiKrupa: "സായി കൃപ",
+		ganeshKunj: "ഗണേഷ് കുഞ്ജ്",
+		anandVilla: "ആനന്ദ് വില്ല",
+	},
 	zoom: {
 		in: "സൂം ഇൻ",
 		out: "സൂം ഔട്ട്",

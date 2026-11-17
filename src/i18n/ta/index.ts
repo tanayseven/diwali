@@ -11,6 +11,14 @@ const ta = {
 		decorate: "வீட்டை அலங்கரியுங்கள்",
 		rangoli: "கோலம் போடுங்கள்",
 	},
+	houses: {
+		deepaNiwas: "தீபா நிவாஸ்",
+		lakshmiSadan: "லட்சுமி சதன்",
+		thulasiMana: "துளசி மனா",
+		saiKrupa: "சாய் கிருபா",
+		ganeshKunj: "கணேஷ் குஞ்ச்",
+		anandVilla: "ஆனந்த் வில்லா",
+	},
 	zoom: {
 		in: "பெரிதாக்கு",
 		out: "சிறிதாக்கு",

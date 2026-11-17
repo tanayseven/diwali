@@ -11,6 +11,14 @@ const kn = {
 		decorate: "ಮನೆ ಅಲಂಕರಿಸಿ",
 		rangoli: "ರಂಗೋಲಿ ಬಿಡಿಸಿ",
 	},
+	houses: {
+		deepaNiwas: "ದೀಪಾ ನಿವಾಸ",
+		lakshmiSadan: "ಲಕ್ಷ್ಮೀ ಸದನ",
+		thulasiMana: "ತುಳಸಿ ಮನ",
+		saiKrupa: "ಸಾಯಿ ಕೃಪಾ",
+		ganeshKunj: "ಗಣೇಶ ಕುಂಜ",
+		anandVilla: "ಆನಂದ ವಿಲ್ಲಾ",
+	},
 	zoom: {
 		in: "ಜೂಮ್ ಇನ್",
 		out: "ಜೂಮ್ ಔಟ್",

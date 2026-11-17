@@ -312,9 +312,11 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     string.container.destroy({children: true})
   }
 
-  // Both ends have to be on the house, and far enough apart
-  const canHang = (from: PointData, to: PointData) =>
-    background.isOnHouse(from) && background.isOnHouse(to) && Math.hypot(to.x - from.x, to.y - from.y) >= minLength
+  // Both ends have to be on the same house, and far enough apart
+  const canHang = (from: PointData, to: PointData) => {
+    const house = background.houseAt(from)
+    return house >= 0 && background.houseAt(to) === house && Math.hypot(to.x - from.x, to.y - from.y) >= minLength
+  }
 
   // A string that can't be hung where it is shows faded
   const showValidity = (string: LightString) => {
