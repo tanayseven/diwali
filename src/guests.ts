@@ -3,6 +3,7 @@ import {doorway, porchFloor, porchPots} from "./background"
 import type {Background} from "./background"
 import {createFigure, looks, makeLook} from "./guestFigures"
 import type {Action, Figure, Look, Role} from "./guestFigures"
+import type {FireworkKind} from "./fireworks"
 import {onHappening} from "./happenings"
 import type {Happening} from "./happenings"
 import type {Light, Lighting} from "./lighting"
@@ -22,7 +23,13 @@ type Porch = {
     placedAt: () => (PointData & {lit: boolean})[]
     placeLitDiya: (at: PointData, facing: "left" | "right") => void
   }
-  fireworks?: {placedAt: () => (PointData & {alight: boolean})[]}
+  fireworks?: {
+    placedAt: () => (PointData & {alight: boolean})[]
+    placeForGuest: (kind: FireworkKind, at: PointData) => object
+    lightForGuest: (firework: object, at: PointData) => boolean
+    spent: () => (PointData & {firework: object, since: number})[]
+    clearSpent: (firework: object) => boolean
+  }
   kandils?: {standingAt: () => PointData[], litAt: () => PointData[]}
 }
 
@@ -126,10 +133,20 @@ const keepFromKandil = 28
 // they put down in all
 const mostDiyas = 18
 const mostGuestDiyas = 12
-// How long the diya they bring out lights up round it, and how brightly
+// The fireworks they bring out to set off, the commoner ones more often, how many can
+// be on their porch, lit or not, for them to bring out another, how far from anyone
+// they put one down, and how long a burnt-out one's left before it's cleared away
+const guestFireworks: FireworkKind[] = ["anar", "anar", "anar", "chakri", "chakri", "chakri", "rocket", "rocket", "laddi", "sutli"]
+const mostFireworks = 5
+const fireworkClearance = 60
+const clearAfter = 6
+// How far the diya they bring out lights up round it, and how brightly, and the match
+// they light a firework with
 const carriedLightRadius = 70
 const carriedLightStrength = 0.75
 const carriedGlowRadius = 9
+const matchLightRadius = 34
+const matchGlowRadius = 5
 
 type Step =
   // Walking to a point at a share of their speed, doing something with their arms as
@@ -139,6 +156,11 @@ type Step =
   | {do: "act", action: Action, for: number, face?: PointData}
   // Putting down the diya they're carrying where they planned to
   | {do: "place"}
+  // Putting down the firework they've brought, taking out a match, and lighting it
+  | {do: "putFirework"}
+  | {do: "lightFirework"}
+  // Picking up a burnt-out firework, to take away
+  | {do: "pickUp"}
   // Out of sight inside the house, for a while or until the one they follow comes out
   | {do: "inside", for: number}
 
@@ -158,6 +180,13 @@ type Guest = {
   stayFor: number
   // Where they mean to put the diya they're carrying, if they are
   carrying?: PointData
+  // The firework they've brought out, where they mean to put it, and once it's down,
+  // what to light it by
+  firework?: {kind: FireworkKind, spot: PointData, placed?: object}
+  // A burnt-out firework they're going over to clear away
+  clearing?: PointData & {firework: object}
+  // When they'll next think of setting off a firework
+  nextFireworkAt: number
   // When they'll next think of bringing out a diya
   nextDiyaAt: number
   leader?: Guest
@@ -221,7 +250,8 @@ const createGuests = (
     glowLayer.addChild(glow)
     return {
       figure, child, speed, x: inside.x, y: inside.y, facing: 1, plan: [{do: "inside", for: firstOut}], elapsed: 0,
-      isInside: true, outSince: 0, stayFor: 0, nextDiyaAt: random(25, 60), leaving: false, startledUntil: 0, mask, glow,
+      isInside: true, outSince: 0, stayFor: 0, nextDiyaAt: random(25, 60), nextFireworkAt: random(40, 90), leaving: false,
+      startledUntil: 0, mask, glow,
       silhouette,
     }
   })
@@ -229,6 +259,17 @@ const createGuests = (
     guests[idx].leader = follows === undefined ? undefined : guests[follows]
   })
   const others = (guest: Guest) => guests.filter(other => other !== guest && !other.isInside)
+  // The fireworks on their own porch, any of them alight, and the burnt-out ones there
+  // long enough to clear away that nobody's already going to
+  const fireworksHere = () => (porch.fireworks?.placedAt() ?? []).filter(isOnFloor)
+  const claimed = new Set<object>()
+  const spentHere = () => (porch.fireworks?.spent() ?? [])
+    .filter(spent => isOnFloor(spent) && spent.since > clearAfter && !claimed.has(spent.firework))
+  // Whether a grown-up could go and fetch a firework to set off now
+  const couldSetOff = (guest: Guest) => !guest.child && porch.fireworks !== undefined && now >= guest.nextFireworkAt
+    && fireworksHere().length < mostFireworks && !fireworksHere().some(firework => firework.alight)
+    && !guests.some(other => other.firework)
+
   // Whether there's room for another diya from a guest, with so many on the porch now,
   // counting those other guests are already carrying out
   const room = (diyasNow: number, carrier?: Guest) => {
@@ -286,20 +327,19 @@ const createGuests = (
     return {x: spot.x - side * 22 * guest.figure.size, y: spot.y - 3}
   }
 
-  // Going back into the house, and staying in a while, taking back any diya they
-  // couldn't find room for
+  // Going back into the house, and staying in a while, taking back whatever they're
+  // holding, like a diya they couldn't find room for or a burnt-out firework
   const goIn = (guest: Guest): Step[] => {
     guest.leaving = true
-    const action: Action | undefined = guest.carrying ? "carry" : undefined
     return [
-      {do: "walk", to: {x: outside.x + random(-6, 6), y: outside.y}, action},
-      {do: "walk", to: sill, pace: 0.8, action},
-      {do: "walk", to: inside, pace: 0.7, action},
+      {do: "walk", to: {x: outside.x + random(-6, 6), y: outside.y}},
+      {do: "walk", to: sill, pace: 0.8},
+      {do: "walk", to: inside, pace: 0.7},
       {do: "inside", for: guest.leader ? Infinity : random(6, 22)},
     ]
   }
 
-  // Coming out, sometimes bringing a lit diya to put down
+  // Coming out, sometimes bringing a lit diya to put down, or a firework to set off
   const comeOut = (guest: Guest): Step[] => {
     guest.isInside = false
     guest.x = inside.x + random(-4, 4)
@@ -307,7 +347,8 @@ const createGuests = (
     guest.outSince = now
     guest.stayFor = random(35, 80)
     const diyasNow = porch.diyas?.placedAt().length ?? Infinity
-    const bringing = porch.diyas && room(diyasNow) && now >= guest.nextDiyaAt && chance(0.6)
+    const firework = couldSetOff(guest) && chance(0.6)
+    const bringing = !firework && porch.diyas && room(diyasNow) && now >= guest.nextDiyaAt && chance(0.6)
     const steps: Step[] = [
       {do: "walk", to: sill, pace: 0.7},
       {do: "walk", to: {x: outside.x + random(-10, 10), y: outside.y + random(4, 14)}, pace: 0.8},
@@ -316,16 +357,41 @@ const createGuests = (
       const spot = freeSpot(keepFromDiya, {avoid: guests.flatMap(other => other.carrying ? [other.carrying] : [])})
       if (spot) {
         guest.carrying = spot
-        guest.figure.carrying(true)
-        steps.forEach(step => {
-          if (step.do === "walk") {
-            step.action = "carry"
-          }
-        })
+        guest.figure.carrying("diya")
+      }
+    }
+    if (firework) {
+      // Well clear of everyone, and of the way to the door
+      const others = guests.filter(other => other !== guest && !other.isInside)
+      const spot = freeSpot(fireworkClearance, {avoid: [...others, outside]})
+      if (spot) {
+        guest.firework = {kind: pick(guestFireworks), spot}
+        guest.figure.carrying("firework")
       }
     }
     return steps
   }
+
+  // Putting down the firework they've brought, crouching to light it with a match, and
+  // then, as everyone does when a fuse is lit near them, hurrying back from it
+  const setOff = (guest: Guest): Step[] => {
+    const {spot} = guest.firework!
+    return [
+      {do: "walk", to: besideSpot(guest, spot)},
+      {do: "act", action: "bend", for: 0.6, face: spot},
+      {do: "putFirework"},
+      {do: "act", action: "bend", for: random(0.8, 1.3), face: spot},
+      {do: "lightFirework"},
+    ]
+  }
+
+  // Going over to a burnt-out firework to pick it up and take it away
+  const clearUp = (guest: Guest): Step[] => [
+    {do: "walk", to: besideSpot(guest, guest.clearing!)},
+    {do: "act", action: "bend", for: 0.7, face: guest.clearing},
+    {do: "pickUp"},
+    {do: "act", action: "bend", for: 0.3, face: guest.clearing},
+  ]
 
   // Putting down the diya they're carrying
   const putDown = (guest: Guest): Step[] => {
@@ -344,6 +410,29 @@ const createGuests = (
     const {leader} = guest
     if (guest.carrying) {
       return putDown(guest)
+    }
+    if (guest.firework) {
+      return setOff(guest)
+    }
+    if (guest.clearing) {
+      return clearUp(guest)
+    }
+    // Something burnt out picked up goes inside
+    if (guest.figure.holding() === "spent") {
+      return goIn(guest)
+    }
+    // A grown-up clears away what's burnt out on the porch, once it's been there a while
+    const spent = !guest.child ? spentHere() : []
+    if (spent.length && chance(0.6)) {
+      const nearest = spent.reduce((best, item) => distance(item, guest) < distance(best, guest) ? item : best)
+      claimed.add(nearest.firework)
+      guest.clearing = nearest
+      return clearUp(guest)
+    }
+    // And now and then goes in to fetch a firework to set off
+    if (!leader && couldSetOff(guest) && chance(0.3)) {
+      guest.stayFor = 0
+      return goIn(guest)
     }
     if (leader && (leader.isInside || leader.leaving)) {
       return goIn(guest)
@@ -405,8 +494,9 @@ const createGuests = (
   const react = (guest: Guest, {kind, at}: Happening) => {
     const away = distance(guest, at)
     const {child} = guest
-    // Whatever they were carrying they still mean to put down after
-    const after = () => guest.carrying ? putDown(guest) : []
+    // Whatever they were carrying they still mean to put down after, and whatever they
+    // were going to set off or clear away, to do
+    const after = () => guest.carrying ? putDown(guest) : guest.firework ? setOff(guest) : guest.clearing ? clearUp(guest) : []
     if (kind === "bang") {
       // Heard from across the porch, even from a rocket bursting high above it
       if (Math.abs(guest.x - at.x) > bangHeard || now < guest.startledUntil) {
@@ -491,7 +581,8 @@ const createGuests = (
     let walked = {distance: 0, speed: 0}
     let done = false
     if (step.do === "walk") {
-      guest.figure.setAction(step.action ?? "idle")
+      // Carrying whatever they're holding out in front of them
+      guest.figure.setAction(step.action ?? (guest.figure.holding() ? "carry" : "idle"))
       const speed = guest.speed * (step.pace ?? 1)
       const dx = step.to.x - guest.x
       const dy = step.to.y - guest.y
@@ -519,7 +610,7 @@ const createGuests = (
         porch.diyas.placeLitDiya(guest.carrying, guest.facing > 0 ? "right" : "left")
         guestDiyas++
         guest.carrying = undefined
-        guest.figure.carrying(false)
+        guest.figure.carrying()
       } else {
         // The porch has filled up since they set out, so they take it back in, still
         // holding it, rather than folding their hands to nothing
@@ -527,12 +618,44 @@ const createGuests = (
         guest.plan = [step, ...goIn(guest)]
       }
       done = true
+    } else if (step.do === "putFirework") {
+      const {firework} = guest
+      if (firework && !firework.placed && porch.fireworks) {
+        firework.placed = porch.fireworks.placeForGuest(firework.kind, firework.spot)
+      }
+      guest.figure.carrying(firework ? "match" : undefined)
+      done = true
+    } else if (step.do === "lightFirework") {
+      const {firework} = guest
+      // Unless it's been picked up or lit since, by the player
+      if (firework?.placed) {
+        porch.fireworks?.lightForGuest(firework.placed, firework.spot)
+      }
+      guest.firework = undefined
+      guest.figure.carrying()
+      guest.nextFireworkAt = now + random(60, 120)
+      done = true
+    } else if (step.do === "pickUp") {
+      const {clearing} = guest
+      if (clearing && porch.fireworks?.clearSpent(clearing.firework)) {
+        guest.figure.carrying("spent")
+      }
+      if (clearing) {
+        claimed.delete(clearing.firework)
+      }
+      guest.clearing = undefined
+      done = true
     } else {
       guest.isInside = true
       guest.leaving = false
       // Whatever they took back in, they've put away
       guest.carrying = undefined
-      guest.figure.carrying(false)
+      guest.firework = undefined
+      if (guest.clearing) {
+        claimed.delete(guest.clearing.firework)
+        guest.clearing = undefined
+      }
+      guest.figure.carrying()
       const {leader} = guest
       // One following comes out a moment after the one they follow does
       done = guest.elapsed >= step.for
@@ -579,14 +702,16 @@ const createGuests = (
       figure.update(dt, walked.distance / scale, walked.speed)
       guest.silhouette.copyPose(figure)
       guest.silhouette.root.visible = root.alpha > 0.3
-      // The diya they're carrying lights them and round them
-      const carrying = guest.carrying !== undefined
-      guest.glow.visible = carrying && root.alpha > 0.5
-      if (carrying) {
-        figure.flameAt(flame)
+      // The diya they're carrying, or the match they're lighting a firework with, lights
+      // them and round them
+      const lit = figure.flameAt(flame)
+      guest.glow.visible = lit !== undefined && root.alpha > 0.5
+      if (lit) {
+        const match = figure.holding() === "match"
         guest.glow.position.set(flame.x, flame.y)
+        guest.glow.width = guest.glow.height = (match ? matchGlowRadius : carriedGlowRadius) * 2
         guest.light ??= lighting.addLight(0xffb35c)
-        guest.light.shine(flame, carriedLightRadius, carriedLightStrength * root.alpha)
+        guest.light.shine(flame, match ? matchLightRadius : carriedLightRadius, carriedLightStrength * root.alpha)
       } else {
         guest.light?.off()
       }
