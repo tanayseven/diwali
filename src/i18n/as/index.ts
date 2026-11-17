@@ -11,6 +11,14 @@ const asm = {
 		decorate: "ঘৰ সজাওক",
 		rangoli: "আলপনা আঁকক",
 	},
+	houses: {
+		deepaNiwas: "দীপা নিৱাস",
+		lakshmiSadan: "লক্ষ্মী সদন",
+		thulasiMana: "তুলসী মনা",
+		saiKrupa: "সাই কৃপা",
+		ganeshKunj: "গণেশ কুঞ্জ",
+		anandVilla: "আনন্দ ভিলা",
+	},
 	zoom: {
 		in: "জুম ইন",
 		out: "জুম আউট",

@@ -1,5 +1,5 @@
 import {Application} from "pixi.js"
-import {sceneWidth} from "./background"
+import {scenery} from "./background"
 
 // A light breeze over the porch, never a storm: a gentle wind that wanders a little,
 // and every so often a gust that sweeps across the scene from the side it blows from
@@ -18,10 +18,11 @@ const turnChance = 0.2
 const turnTime = 2
 // The strongest it ever blows, for things to measure how hard it's blowing against
 const strongest = breeze + breezeWander + gustPeak.max
-// It's worked out once a frame at points this far apart across the scene, and
+// It's worked out once a frame at points this far apart along the whole street, and
 // anywhere between them is found from the nearest two, as thousands of sparks ask
 const sampleSpacing = 40
-const sampleCount = Math.ceil(sceneWidth / sampleSpacing) + 1
+const streetWidth = scenery.right - scenery.left
+const sampleCount = Math.ceil(streetWidth / sampleSpacing) + 1
 
 type Gust = {start: number, length: number, peak: number}
 
@@ -51,19 +52,19 @@ const createWind = (app: Application) => {
       gusts.push({start: time, length, peak: random(gustPeak.min, gustPeak.max)})
       nextGust = time + length + random(gustGap.min, gustGap.max)
     }
-    // A gust is done once its tail has crossed the whole scene
-    const crossing = sceneWidth / frontSpeed
+    // A gust is done once its tail has crossed the whole street
+    const crossing = streetWidth / frontSpeed
     while (gusts.length && time > gusts[0].start + gusts[0].length + crossing) {
       gusts.shift()
     }
     for (let idx = 0; idx < sampleCount; idx++) {
-      samples[idx] = blowing(idx * sampleSpacing)
+      samples[idx] = blowing(scenery.left + idx * sampleSpacing)
     }
   }
   app.ticker.add(tick)
 
-  // How far behind a gust's front a point across the scene is, in seconds
-  const delayAt = (x: number) => (direction > 0 ? x : sceneWidth - x) / frontSpeed
+  // How far behind a gust's front a point along the street is, in seconds
+  const delayAt = (x: number) => (direction > 0 ? x - scenery.left : scenery.right - x) / frontSpeed
 
   // The wind at a point across the scene, in scene units a second, rightwards
   function blowing(x: number) {
@@ -81,10 +82,10 @@ const createWind = (app: Application) => {
 
   return {
     strongest,
-    // The wind at a point across the scene, in scene units a second, rightwards. Past
-    // the scene's sides it's as it is at them
+    // The wind at a point along the street, in scene units a second, rightwards. Past
+    // the scenery's ends it's as it is at them
     at(x: number) {
-      const at = Math.min(sampleCount - 1, Math.max(0, x / sampleSpacing))
+      const at = Math.min(sampleCount - 1, Math.max(0, (x - scenery.left) / sampleSpacing))
       const idx = Math.min(sampleCount - 2, Math.floor(at))
       return samples[idx] + (samples[idx + 1] - samples[idx]) * (at - idx)
     },

@@ -11,6 +11,14 @@ const pa = {
 		decorate: "ਘਰ ਸਜਾਓ",
 		rangoli: "ਰੰਗੋਲੀ ਬਣਾਓ",
 	},
+	houses: {
+		deepaNiwas: "ਦੀਪਾ ਨਿਵਾਸ",
+		lakshmiSadan: "ਲਕਸ਼ਮੀ ਸਦਨ",
+		thulasiMana: "ਤੁਲਸੀ ਮਨਾ",
+		saiKrupa: "ਸਾਈ ਕ੍ਰਿਪਾ",
+		ganeshKunj: "ਗਣੇਸ਼ ਕੁੰਜ",
+		anandVilla: "ਆਨੰਦ ਵਿਲਾ",
+	},
 	zoom: {
 		in: "ਜ਼ੂਮ ਇਨ",
 		out: "ਜ਼ੂਮ ਆਊਟ",

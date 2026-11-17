@@ -11,6 +11,14 @@ const te = {
 		decorate: "ఇల్లు అలంకరించండి",
 		rangoli: "ముగ్గు వేయండి",
 	},
+	houses: {
+		deepaNiwas: "దీపా నివాస్",
+		lakshmiSadan: "లక్ష్మీ సదన్",
+		thulasiMana: "తులసి మన",
+		saiKrupa: "సాయి కృప",
+		ganeshKunj: "గణేష్ కుంజ్",
+		anandVilla: "ఆనంద్ విల్లా",
+	},
 	zoom: {
 		in: "జూమ్ ఇన్",
 		out: "జూమ్ అవుట్",

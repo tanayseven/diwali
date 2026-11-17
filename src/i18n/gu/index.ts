@@ -11,6 +11,14 @@ const gu = {
 		decorate: "ઘર શણગારો",
 		rangoli: "રંગોળી પૂરો",
 	},
+	houses: {
+		deepaNiwas: "દીપા નિવાસ",
+		lakshmiSadan: "લક્ષ્મી સદન",
+		thulasiMana: "તુલસી મના",
+		saiKrupa: "સાઈ કૃપા",
+		ganeshKunj: "ગણેશ કુંજ",
+		anandVilla: "આનંદ વિલા",
+	},
 	zoom: {
 		in: "ઝૂમ ઇન",
 		out: "ઝૂમ આઉટ",

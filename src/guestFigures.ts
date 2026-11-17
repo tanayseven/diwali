@@ -196,9 +196,9 @@ type Outfit = {
   arms: [Arm, Arm]
 }
 
-// A darker shade of a colour, for what's on the far side
+// A darker shade of a colour, for what's on the far side, or a lighter one, up to white
 const shade = (colour: number, by = 0.82) =>
-  [16, 8, 0].reduce((sum, shift) => sum + (Math.round(((colour >> shift) & 0xff) * by) << shift), 0)
+  [16, 8, 0].reduce((sum, shift) => sum + (Math.min(255, Math.round(((colour >> shift) & 0xff) * by)) << shift), 0)
 
 const outfits = {
   // A kurta, a stole over the shoulder, and a dhoti with a coloured border

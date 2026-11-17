@@ -11,6 +11,14 @@ const bn = {
 		decorate: "বাড়ি সাজান",
 		rangoli: "আলপনা আঁকুন",
 	},
+	houses: {
+		deepaNiwas: "দীপা নিবাস",
+		lakshmiSadan: "লক্ষ্মী সদন",
+		thulasiMana: "তুলসী মনা",
+		saiKrupa: "সাই কৃপা",
+		ganeshKunj: "গণেশ কুঞ্জ",
+		anandVilla: "আনন্দ ভিলা",
+	},
 	zoom: {
 		in: "জুম ইন",
 		out: "জুম আউট",

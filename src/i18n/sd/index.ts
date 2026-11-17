@@ -11,6 +11,14 @@ const sd = {
 		decorate: "گهر سينگاريو",
 		rangoli: "رنگولي ٺاهيو",
 	},
+	houses: {
+		deepaNiwas: "ديپا نواس",
+		lakshmiSadan: "لڪشمي سدن",
+		thulasiMana: "تلسي منا",
+		saiKrupa: "سائي ڪرپا",
+		ganeshKunj: "گڻيش ڪنج",
+		anandVilla: "آنند ولا",
+	},
 	zoom: {
 		in: "زوم اِن",
 		out: "زوم آئوٽ",

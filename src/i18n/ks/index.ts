@@ -11,6 +11,14 @@ const ks = {
 		decorate: "گرٕ سجٲوِو",
 		rangoli: "رنگولی بنٲوِو",
 	},
+	houses: {
+		deepaNiwas: "دیپا نِواس",
+		lakshmiSadan: "لَکشمی سَدَن",
+		thulasiMana: "تُلسی مَنا",
+		saiKrupa: "سائی کرِپا",
+		ganeshKunj: "گنیش کُنج",
+		anandVilla: "آنَند وِلا",
+	},
 	zoom: {
 		in: "زوم اِن",
 		out: "زوم آؤٹ",

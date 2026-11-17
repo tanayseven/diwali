@@ -1,7 +1,7 @@
 import {Application, Assets, Container, Graphics, Particle, ParticleContainer, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
-import {createBackground, sceneHeight, sceneWidth} from "./background"
+import {createBackground, sceneHeight, scenery} from "./background"
 import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
@@ -635,7 +635,7 @@ const createFireworks = (
   const smokeLayer = new ParticleContainer({dynamicProperties: {position: true, vertex: true, color: true}})
   const sparkLayer = new ParticleContainer({dynamicProperties: {position: true, vertex: true, rotation: true, color: true}})
   sparkLayer.blendMode = "add"
-  const sceneArea = new Rectangle(0, 0, sceneWidth, sceneHeight)
+  const sceneArea = new Rectangle(scenery.left, 0, scenery.right - scenery.left, sceneHeight)
   ;[shredLayer, smokeLayer, sparkLayer].forEach(layer => {
     layer.boundsArea = sceneArea
   })

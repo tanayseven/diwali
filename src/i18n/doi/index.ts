@@ -11,6 +11,14 @@ const doi = {
 		decorate: "घर सजाओ",
 		rangoli: "रंगोली बनाओ",
 	},
+	houses: {
+		deepaNiwas: "दीपा निवास",
+		lakshmiSadan: "लक्ष्मी सदन",
+		thulasiMana: "तुलसी मना",
+		saiKrupa: "साई कृपा",
+		ganeshKunj: "गणेश कुंज",
+		anandVilla: "आनंद विला",
+	},
 	zoom: {
 		in: "ज़ूम इन",
 		out: "ज़ूम आउट",

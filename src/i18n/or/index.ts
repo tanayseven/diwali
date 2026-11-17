@@ -11,6 +11,14 @@ const or = {
 		decorate: "ଘର ସଜାନ୍ତୁ",
 		rangoli: "ଝୋଟି ପକାନ୍ତୁ",
 	},
+	houses: {
+		deepaNiwas: "ଦୀପା ନିବାସ",
+		lakshmiSadan: "ଲକ୍ଷ୍ମୀ ସଦନ",
+		thulasiMana: "ତୁଳସୀ ମନା",
+		saiKrupa: "ସାଇ କୃପା",
+		ganeshKunj: "ଗଣେଶ କୁଞ୍ଜ",
+		anandVilla: "ଆନନ୍ଦ ଭିଲା",
+	},
 	zoom: {
 		in: "ଜୁମ୍ ଇନ୍",
 		out: "ଜୁମ୍ ଆଉଟ୍",

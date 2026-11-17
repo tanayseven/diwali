@@ -11,6 +11,14 @@ const kok = {
 		decorate: "घर सजयात",
 		rangoli: "रांगोळी काडात",
 	},
+	houses: {
+		deepaNiwas: "दीपा निवास",
+		lakshmiSadan: "लक्ष्मी सदन",
+		thulasiMana: "तुळशी मना",
+		saiKrupa: "साई कृपा",
+		ganeshKunj: "गणेश कुंज",
+		anandVilla: "आनंद व्हिला",
+	},
 	zoom: {
 		in: "झूम इन",
 		out: "झूम आउट",

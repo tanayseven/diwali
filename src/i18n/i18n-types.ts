@@ -64,6 +64,32 @@ type RootTranslation = {
 		 */
 		rangoli: string
 	}
+	houses: {
+		/**
+		 * D​e​e​p​a​ ​N​i​w​a​s
+		 */
+		deepaNiwas: string
+		/**
+		 * L​a​k​s​h​m​i​ ​S​a​d​a​n
+		 */
+		lakshmiSadan: string
+		/**
+		 * T​h​u​l​a​s​i​ ​M​a​n​a
+		 */
+		thulasiMana: string
+		/**
+		 * S​a​i​ ​K​r​u​p​a
+		 */
+		saiKrupa: string
+		/**
+		 * G​a​n​e​s​h​ ​K​u​n​j
+		 */
+		ganeshKunj: string
+		/**
+		 * A​n​a​n​d​ ​V​i​l​l​a
+		 */
+		anandVilla: string
+	}
 	zoom: {
 		/**
 		 * Z​o​o​m​ ​i​n
@@ -547,6 +573,32 @@ export type TranslationFunctions = {
 		 * Draw Rangoli
 		 */
 		rangoli: () => LocalizedString
+	}
+	houses: {
+		/**
+		 * Deepa Niwas
+		 */
+		deepaNiwas: () => LocalizedString
+		/**
+		 * Lakshmi Sadan
+		 */
+		lakshmiSadan: () => LocalizedString
+		/**
+		 * Thulasi Mana
+		 */
+		thulasiMana: () => LocalizedString
+		/**
+		 * Sai Krupa
+		 */
+		saiKrupa: () => LocalizedString
+		/**
+		 * Ganesh Kunj
+		 */
+		ganeshKunj: () => LocalizedString
+		/**
+		 * Anand Villa
+		 */
+		anandVilla: () => LocalizedString
 	}
 	zoom: {
 		/**
