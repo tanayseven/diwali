@@ -88,7 +88,12 @@ const createLighting = (app: Application, background: Background) => {
   const houseShortfall = undoNight(app, background.house)
   houseShortfall.visible = false
   houseShortfall.zIndex = sceneHeight + 1
-  background.decorations.addChild(houseShortfall)
+  // Whoever stands in front of the house, cut out of what's added back over it, so its
+  // lit windows don't shine through them
+  const inFrontOfHouse = new Container()
+  inFrontOfHouse.eventMode = "none"
+  houseShortfall.setMask({mask: inFrontOfHouse, inverse: true})
+  background.decorations.addChild(houseShortfall, inFrontOfHouse)
   // Outlines of things in the scene, over everything there so the night never dims them
   const outlines = new Container()
   outlines.zIndex = sceneHeight + 20
@@ -108,6 +113,9 @@ const createLighting = (app: Application, background: Background) => {
     glowTexture,
     // The zIndex above the night, for things that shine through it
     aboveNight: sceneHeight + 2,
+    // Shapes of whatever stands in front of the house, in the scene's units, for its lit
+    // windows not to shine through them
+    inFrontOfHouse,
     // A light of a colour, off until it's shone somewhere
     addLight(colour: number) {
       const light = new Sprite(glowTexture)

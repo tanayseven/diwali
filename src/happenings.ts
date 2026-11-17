@@ -1,0 +1,29 @@
+import type {PointData} from "pixi.js"
+
+// What goes on in the scene that the guests on the porch notice, where in the scene it
+// is: a firework's fuse lit, one going off in a show of sparks, a bang, a kandil or a
+// diya lit by the player
+type Happening = {
+  kind: "fuse" | "show" | "bang" | "kandil" | "diya"
+  at: PointData
+}
+
+type Listener = (happening: Happening) => void
+
+const listeners = new Set<Listener>()
+
+const happen = (kind: Happening["kind"], at: PointData) => {
+  const happening = {kind, at: {x: at.x, y: at.y}}
+  listeners.forEach(listener => listener(happening))
+}
+
+// Hears whatever happens from now on, until the returned function's called
+const onHappening = (listener: Listener) => {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+export {happen, onHappening}
+export type {Happening}
