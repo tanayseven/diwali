@@ -387,18 +387,40 @@ type Action =
 
 const easeRate = 9
 
-// A small diya held in the hand, lit, kept upright however the arm's turned. It's
-// put on the forearm, which turns about the elbow
-const heldDiya = () => {
+// What a guest can have in their hand: a lit diya, a firework they've brought, a
+// match to light it with, or what's left of a burnt-out one, to take away
+type Held = "diya" | "firework" | "match" | "spent"
+
+// Whatever's in the hand, kept upright however the arm's turned. It's put on the
+// forearm, which turns about the elbow. Only one of them shows at a time
+const heldThings = () => {
+  const holder = new Container()
+  const flamePath = "M0 -2 Q-2.6 -6 0 -10.5 Q2.6 -6 0 -2 Z"
   const diya = new Container()
-  const bowl = new Graphics()
+  const diyaFlame = new Graphics().path(new GraphicsPath(flamePath)).fill(0xffc04a)
+  diya.addChild(new Graphics()
     .path(new GraphicsPath("M-6 -1 Q0 6 6 -1 Z")).fill(0xb5532a)
-    .path(new GraphicsPath("M-6 -1 L6 -1 L5 -2.2 L-5 -2.2 Z")).fill(0x8a3d1f)
-  const flame = new Graphics().path(new GraphicsPath("M0 -2 Q-2.6 -6 0 -10.5 Q2.6 -6 0 -2 Z")).fill(0xffc04a)
-  diya.addChild(bowl, flame)
-  diya.position.set(hand.x - elbow.x + 2, hand.y - elbow.y - 2)
-  diya.visible = false
-  return {diya, flame}
+    .path(new GraphicsPath("M-6 -1 L6 -1 L5 -2.2 L-5 -2.2 Z")).fill(0x8a3d1f), diyaFlame)
+  // A little anar, as a firework in hand looks much like any other
+  const firework = new Graphics()
+    .path(new GraphicsPath("M-5 3 L5 3 L1.6 -8 L-1.6 -8 Z")).fill(0x9a5a32)
+    .rect(-3.6, -2.5, 7.2, 2).fill(0xc92a2a)
+    .path(new GraphicsPath("M0 -8 Q1.5 -10 0.5 -12")).stroke({color: 0xd8c8a0, width: 0.8})
+  const spent = new Graphics()
+    .path(new GraphicsPath("M-5 3 L5 3 L1.6 -6 Q0 -9 -1.6 -6 Z")).fill(0x3a3034)
+    .path(new GraphicsPath("M-2 -4 Q0 -7 2 -4 Z")).fill(0x1d181a)
+  const match = new Container()
+  const matchFlame = new Graphics().path(new GraphicsPath(flamePath)).fill(0xffb23a)
+  matchFlame.position.set(0, -8)
+  matchFlame.scale.set(0.6)
+  match.addChild(new Graphics().rect(-0.6, -9, 1.2, 10).fill(0xd9b26a).circle(0, -9, 1).fill(0x8a2a1a), matchFlame)
+  const things: Record<Held, Container> = {diya, firework, match, spent}
+  Object.values(things).forEach(thing => {
+    thing.visible = false
+    holder.addChild(thing)
+  })
+  holder.position.set(hand.x - elbow.x + 2, hand.y - elbow.y - 2)
+  return {holder, things, flames: {diya: diyaFlame, match: matchFlame} as Partial<Record<Held, Container>>}
 }
 
 // How far a leg reaches down from the hip, with its thigh and its shin at these angles
@@ -444,8 +466,9 @@ const createFigure = (look: Look) => {
   const lower = part(outfit.lower, hip)
   const body = part(outfit.body, hip)
   const head = part(headShapes(tone, look.hair), neck)
-  const held = heldDiya()
-  arms[1].lower.addChild(held.diya)
+  const held = heldThings()
+  arms[1].lower.addChild(held.holder)
+  let holding: Held | undefined
   bobbing.addChild(
     arms[0].upper, ...(legs ?? []).map(({thigh}) => thigh), ...(feet ?? []), lower, body, head, arms[1].upper,
   )
@@ -454,7 +477,8 @@ const createFigure = (look: Look) => {
   const moving = [
     bobbing, ...arms.flatMap(({upper, lower: forearm}) => [upper, forearm]),
     ...(legs ?? []).flatMap(({thigh, shin, foot}) => [thigh, shin, foot]),
-    ...(feet ?? []), lower, body, head, held.diya, held.flame,
+    ...(feet ?? []), lower, body, head, held.holder, ...Object.values(held.things),
+    ...Object.values(held.flames) as Container[],
   ]
 
   // How each joint's turned now, eased towards where the pose wants it
@@ -583,13 +607,19 @@ const createFigure = (look: Look) => {
         container.visible = source.visible
       })
     },
-    // Shows the diya in their hand, or not
-    carrying(shown: boolean) {
-      held.diya.visible = shown
+    // Shows what's in their hand, or nothing
+    carrying(thing?: Held) {
+      holding = thing
+      ;(Object.keys(held.things) as Held[]).forEach(key => held.things[key].visible = key === thing)
     },
-    // Where the flame of the diya in their hand is, in the root's parent
+    holding: () => holding,
+    // Where the flame of what's in their hand is, in the root's parent, if it has one
     flameAt(into: PointData) {
-      const point = held.flame.toGlobal({x: 0, y: -6})
+      const flame = holding && held.flames[holding]
+      if (!flame) {
+        return undefined
+      }
+      const point = flame.toGlobal({x: 0, y: -6})
       const local = root.parent?.toLocal(point) ?? point
       into.x = local.x
       into.y = local.y
@@ -643,9 +673,11 @@ const createFigure = (look: Look) => {
         leant(upper, shoulder, now.arms[idx])
         forearm.rotation = now.elbows[idx]
       })
-      // The held diya stays upright
-      held.diya.rotation = -(arms[1].upper.rotation + arms[1].lower.rotation)
-      held.flame.scale.set(1 + Math.sin(time * 23) * 0.08, 1 + Math.sin(time * 17) * 0.12)
+      // What's held stays upright, and its flame flickers
+      held.holder.rotation = -(arms[1].upper.rotation + arms[1].lower.rotation)
+      const flicker = {x: 1 + Math.sin(time * 23) * 0.08, y: 1 + Math.sin(time * 17) * 0.12}
+      held.flames.diya?.scale.set(flicker.x, flicker.y)
+      held.flames.match?.scale.set(flicker.x * 0.6, flicker.y * 0.6)
     },
     destroy() {
       root.destroy({children: true})
@@ -656,4 +688,4 @@ const createFigure = (look: Look) => {
 type Figure = ReturnType<typeof createFigure>
 
 export {createFigure, looks, makeLook}
-export type {Action, Figure, Look, Role, Who}
+export type {Action, Figure, Held, Look, Role, Who}

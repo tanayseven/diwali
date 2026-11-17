@@ -917,9 +917,11 @@ const createFireworks = (
     render()
   }
 
-  // The held match catches a firework's fuse
-  const light = (firework: Placed) => {
-    haptics.lit()
+  // The held match catches a firework's fuse, or a guest's does, which isn't felt
+  const light = (firework: Placed, byGuest = false) => {
+    if (!byGuest) {
+      haptics.lit()
+    }
     happen("fuse", firework.sprite.position)
     firework.state = "fuse"
     if (firework.kind === "anar") {
@@ -1872,6 +1874,39 @@ const createFireworks = (
     // Where each placed firework stands in the scene, and whether it's alight, for the
     // guests on the porch to keep clear of
     placedAt: () => placed.map(({sprite, state}) => ({x: sprite.x, y: sprite.y, alight: state === "fuse" || state === "burning"})),
+    // A guest puts down a firework they've brought, unlit, at a point in the scene. It's
+    // the player's like any other from then on, to move, light, or put on the bar,
+    // which it adds to. What's returned is for the guest to light it by
+    placeForGuest(kind: Kind, at: PointData): object {
+      const firework = createFirework(kind)
+      placeFirework(firework, at)
+      return firework
+    },
+    // A guest lights the one they put down, if it's still where they put it and unlit,
+    // and says whether they did
+    lightForGuest(firework: object, at: PointData) {
+      const mine = placed.find(other => other === firework)
+      if (!mine || mine.state !== "unlit" || Math.hypot(mine.sprite.x - at.x, mine.sprite.y - at.y) > 1) {
+        return false
+      }
+      light(mine, true)
+      return true
+    },
+    // The burnt-out ones, where they are and how many seconds since they went out, for
+    // the guests to clear away
+    spent: () => placed.flatMap(firework => firework.state === "spent"
+      ? [{firework: firework as object, x: firework.sprite.x, y: firework.sprite.y, since: time - firework.spentAt}]
+      : []),
+    // A guest picks up a burnt-out one, if it's still there, and says whether they did
+    clearSpent(firework: object) {
+      const mine = placed.find(other => other === firework)
+      if (!mine || mine.state !== "spent") {
+        return false
+      }
+      removeFirework(mine)
+      render()
+      return true
+    },
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Fireworks tool is the one in use. The match is put away
@@ -1923,3 +1958,4 @@ const createFireworks = (
 }
 
 export {blastSoundUrls, createFireworks, fireworksAssets, mixColour, paint, toBgr}
+export type {Kind as FireworkKind}

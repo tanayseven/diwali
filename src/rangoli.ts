@@ -1,5 +1,5 @@
 import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
-import {fontFamily} from "./app"
+import {fontFamily, quality} from "./app"
 import {Background} from "./background"
 import {createHud, hudFrame, slotSize} from "./hud"
 import {LL} from "./locale"
@@ -30,8 +30,9 @@ const brushRadius = 2.2
 const eraserRadius = 4
 // Stamps are laid this far apart along a stroke, as a share of the brush's radius
 const stampSpacing = 0.35
-// How many texture pixels the drawing has per scene unit, so it stays crisp up close
-const resolution = 5
+// How many texture pixels the drawing has per scene unit, so it stays crisp up close,
+// on a phone a little fewer
+const resolution = quality.rangoliResolution
 // A ready-made design's size, from its middle to its edge, in scene units, and how
 // much it's squashed top to bottom, as it lies flat on the floor
 const designRadius = 58
@@ -84,24 +85,32 @@ const createRangoli = (app: Application, background: Background) => {
   container.addChild(bar.container)
 
   // A drawing on each house's porch floor, covering the floor's bounds, clipped to its
-  // shape
-  const floors = background.houses.map(({porch}) => {
-    const left = Math.min(...porch.map(p => p.x))
-    const top = Math.min(...porch.map(p => p.y))
-    const right = Math.max(...porch.map(p => p.x))
-    const bottom = Math.max(...porch.map(p => p.y))
-    const drawing = RenderTexture.create({width: (right - left) * resolution, height: (bottom - top) * resolution})
-    const sprite = new Sprite(drawing)
-    sprite.position.set(left, top)
-    sprite.scale.set(1 / resolution)
-    sprite.eventMode = "none"
-    // On the floor, under every diya and firework placed on it
-    sprite.zIndex = 1
-    const mask = new Graphics().poly(porch.flatMap(p => [p.x, p.y])).fill(0xffffff)
-    sprite.mask = mask
-    background.decorations.addChild(sprite, mask)
-    return {left, top, right, bottom, drawing, sprite, mask}
-  })
+  // shape. Each is only made once something's drawn on that floor, as on a phone they'd
+  // take a good deal of memory
+  type Floor = {left: number, top: number, right: number, bottom: number, porch: PointData[], drawing?: RenderTexture, sprite?: Sprite, mask?: Graphics}
+  const floors: Floor[] = background.houses.map(({porch}) => ({
+    left: Math.min(...porch.map(p => p.x)),
+    top: Math.min(...porch.map(p => p.y)),
+    right: Math.max(...porch.map(p => p.x)),
+    bottom: Math.max(...porch.map(p => p.y)),
+    porch,
+  }))
+  const drawingOf = (floor: Floor) => {
+    if (!floor.drawing) {
+      const {left, top, right, bottom, porch} = floor
+      floor.drawing = RenderTexture.create({width: (right - left) * resolution, height: (bottom - top) * resolution})
+      floor.sprite = new Sprite(floor.drawing)
+      floor.sprite.position.set(left, top)
+      floor.sprite.scale.set(1 / resolution)
+      floor.sprite.eventMode = "none"
+      // On the floor, under every diya and firework placed on it
+      floor.sprite.zIndex = 1
+      floor.mask = new Graphics().poly(porch.flatMap(p => [p.x, p.y])).fill(0xffffff)
+      floor.sprite.mask = floor.mask
+      background.decorations.addChild(floor.sprite, floor.mask)
+    }
+    return floor.drawing
+  }
 
   const powderStamp = powderTexture(48)
   const eraserStamp = solidTexture(32)
@@ -110,11 +119,12 @@ const createRangoli = (app: Application, background: Background) => {
   const stamps = new Container()
   const drawStamps = () => {
     const bounds = stamps.getLocalBounds()
-    floors.forEach(({left, top, right, bottom, drawing}) => {
+    floors.forEach(floor => {
+      const {left, top, right, bottom} = floor
       if (bounds.maxX >= left * resolution && bounds.minX <= right * resolution
         && bounds.maxY >= top * resolution && bounds.minY <= bottom * resolution) {
         stamps.position.set(-left * resolution, -top * resolution)
-        app.renderer.render({container: stamps, target: drawing, clear: false})
+        app.renderer.render({container: stamps, target: drawingOf(floor), clear: false})
       }
     })
     stamps.removeChildren().forEach(stamp => stamp.destroy())
@@ -178,7 +188,7 @@ const createRangoli = (app: Application, background: Background) => {
     if (clearAsked !== undefined) {
       stopAsking()
       hideTooltipFor(clearSlot.container)
-      floors.forEach(({drawing}) => app.renderer.render({container: new Container(), target: drawing, clear: true}))
+      floors.forEach(({drawing}) => drawing && app.renderer.render({container: new Container(), target: drawing, clear: true}))
       return
     }
     const questionMark = document.documentElement.dir === "rtl" ? "؟" : "?"
@@ -392,9 +402,9 @@ const createRangoli = (app: Application, background: Background) => {
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)
       floors.forEach(({sprite, mask, drawing}) => {
-        sprite.destroy()
-        mask.destroy()
-        drawing.destroy(true)
+        sprite?.destroy()
+        mask?.destroy()
+        drawing?.destroy(true)
       })
       powderStamp.destroy(true)
       eraserStamp.destroy(true)

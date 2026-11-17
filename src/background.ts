@@ -158,9 +158,14 @@ const scenery = {
   right: Math.max(drawnLeft + drawnWidth, houses[houses.length - 1].left + houses[houses.length - 1].width + 400),
 }
 
-// What the camera frames to begin with: the house from its porch floor, kept clear of
-// the bar along the bottom, up to the eaves
-const startView: View = {x: 395, y: 470, width: 490, height: 220}
+// What the camera frames to begin with: zoomed all the way out on the main house, as
+// low as it goes, so its porch and the road in front of it are just clear of the bar
+// along the bottom, with the sky above
+const wholeView: View = {x: 0, y: sceneHeight / 2, width: sceneWidth, height: sceneHeight}
+// Or opened with ?start=porch, as the tests are, the house close up from its porch
+// floor, kept clear of the bar along the bottom, up to the eaves, as it used to start
+const porchView: View = {x: 395, y: 470, width: 490, height: 220}
+const startView = new URLSearchParams(window.location.search).get("start") === "porch" ? porchView : wholeView
 // The closest the camera gets: about a diya's width and a half across the screen's
 // shorter side on a phone, or a few diyas on a desktop
 const closestView = {width: 180, height: 80}
@@ -192,8 +197,12 @@ const addBackgroundAssets = () => {
   const skylineResolution = Math.min(skyResolution * skylineScale, widest / skylineSize.width)
   Object.values(skylineUrls).forEach(url => Assets.add({alias: url, src: url, data: {resolution: skylineResolution}}))
   Assets.add({alias: houseUrl, src: houseUrl, data: {resolution: houseResolution}})
+  // The other houses are drawn in scene units, so to be as sharp as the main house is,
+  // which is drawn smaller, they're drawn at as many pixels a scene unit as it is,
+  // and no more, as each takes a good deal of memory on a phone
+  const mainPerUnit = houseResolution * houseScale
   neighbours.forEach(({url, size}) => {
-    const resolution = Math.min(4, Math.ceil(density * fitScale(closestView, width, height)), widest / size.width)
+    const resolution = Math.min(4, mainPerUnit, widest / size.width)
     Assets.add({alias: url, src: url, data: {resolution}})
   })
 }

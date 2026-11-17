@@ -180,7 +180,8 @@ const lookAt = async (x, y, settle = 600 * slow) => {
   await page.waitForTimeout(settle)
 }
 
-await page.goto(`http://localhost:${port}/?camera`)
+// Starting close up on the porch, where it puts things
+await page.goto(`http://localhost:${port}/?camera&start=porch`)
 await wait(1500)
 step("Language picker")
 await page.getByRole("button", {name: "English"}).tap()

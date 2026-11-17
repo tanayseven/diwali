@@ -68,6 +68,9 @@ const quality = {
   // The widest the scenery's drawings are rasterised, in pixels. Phones and tablets
   // have less memory for them, and a page that takes too much is reloaded
   maxTextureWidth: coarsePointer ? 2048 : 4096,
+  // How many texture pixels a rangoli's drawing has per scene unit, made only once
+  // something's drawn on that porch
+  rangoliResolution: light ? 3 : 5,
   // Particles thrown by the fireworks on the porch, as a share of the full count
   particleScale: light ? 0.6 : 1,
   // Shells sent up over the city, as a share of the full count
