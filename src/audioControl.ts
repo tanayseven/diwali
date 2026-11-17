@@ -22,6 +22,12 @@ const duckRelease = 400
 const readyTimeout = 8000
 // Muffled effects, like bangs from far off, lose everything above this pitch, in Hz
 const muffledCutoff = 600
+// An effect off screen is muffled as if heard from round a corner, more the further off
+// it is: its highest frequencies go from all of them (on screen) down to this, and it's
+// this much quieter too
+const openCutoff = 20000
+const offScreenCutoff = 700
+const offScreenQuieter = 0.45
 // An effect is heard from the side of the screen it's on, but never wholly from one
 // speaker, as a sound off to one side still reaches both ears
 const maxPan = 0.8
@@ -367,7 +373,9 @@ const createAudioControl = () => {
   // A sound effect, loaded now and played at the music's volume, following the mute and
   // volume setting while it plays. Each play is a fresh copy of it, so quick repeats
   // overlap instead of cutting off, and can be made quieter, moved left or right (from
-  // stereoPan) or stopped early. A muffled one sounds far off. Plays asked for before it's loaded, or while effects can't be
+  // stereoPan) or stopped early. A muffled one sounds far off. Each play can also be
+  // muffled, from 0 (not at all) to 1, as when what makes it is off screen, and changed
+  // as it moves. Plays asked for before it's loaded, or while effects can't be
   // heard yet (before the first tap, or with the tab hidden), are skipped, so they don't
   // all go off at once later
   const createEffect = (src: string, {muffled = false} = {}) => {
@@ -378,24 +386,38 @@ const createAudioControl = () => {
       .then(data => context.decodeAudioData(data))
       .then(decoded => sound = decoded)
       .catch(error => console.error(`Couldn't load ${src}`, error))
-    return (pan = 0) => {
+    return (pan = 0, muffle = 0) => {
       const handle = {}
       if (!sound || context.state !== "running") {
-        return {setLevel() {}, setPan() {}, stop() {}}
+        return {setLevel() {}, setPan() {}, setMuffle() {}, stop() {}}
       }
       const source = context.createBufferSource()
       source.buffer = sound
       const level = context.createGain()
       const panner = context.createStereoPanner()
       panner.pan.value = pan
+      const distance = context.createBiquadFilter()
+      distance.type = "lowpass"
+      const quieter = context.createGain()
+      const setMuffle = (value: number) => {
+        const amount = Math.max(0, Math.min(1, value))
+        // Evenly to the ear, which hears pitch by its ratio
+        distance.frequency.value = openCutoff * (offScreenCutoff / openCutoff) ** amount
+        quieter.gain.value = 1 - offScreenQuieter * amount
+      }
+      setMuffle(muffle)
       source.connect(level)
       level.connect(panner)
-      panner.connect(muffled ? muffler : master)
+      panner.connect(distance)
+      distance.connect(quieter)
+      quieter.connect(muffled ? muffler : master)
       const forget = () => {
         if (effects.delete(handle)) {
           source.disconnect()
           level.disconnect()
           panner.disconnect()
+          distance.disconnect()
+          quieter.disconnect()
           updateDuck()
         }
       }
@@ -416,6 +438,8 @@ const createAudioControl = () => {
         setPan(value: number) {
           panner.pan.value = value
         },
+        // Muffles it more or less, as what makes it moves on or off screen
+        setMuffle,
         stop() {
           if (effects.has(handle)) {
             source.stop()

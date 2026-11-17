@@ -577,6 +577,12 @@ const createBackground = (app: Application) => {
     // How far left (-1) or right (1) something at a point in the scene is heard from,
     // by where it is on screen
     panOf: (point: PointData) => stereoPan(scene.x + point.x * scene.scale.x, app.screen.width),
+    // How muffled something at a point in the scene is heard, from 0 on screen to 1 half
+    // a screen's width or more off it, as if from round a corner
+    muffleOf(point: PointData) {
+      const off = Math.max(view.left - point.x, point.x - view.right, view.top - point.y, point.y - view.bottom, 0)
+      return Math.min(1, off / ((view.right - view.left) / 2))
+    },
     // Whether a point in the scene is on a porch's floor, of any house
     isOnPorchFloor: (point: PointData) => houses.some(({porch}) => isInside(point, porch)),
     // How high the nearest eave straight above a point in the scene is, if there's one
