@@ -65,8 +65,9 @@ before(async () => {
   page.on("pageerror", error => console.error("Page error:", error.message))
   touchscreen = await context.newCDPSession(page)
 
-  // Without the family on the porch, who'd wander into the parts of the screen looked at
-  await page.goto(`http://localhost:${port}/?guests=off`)
+  // Without the families on the porches, who'd wander into the parts of the screen
+  // looked at, and starting close up on the porch, where the tests put things
+  await page.goto(`http://localhost:${port}/?guests=off&start=porch`)
   await page.getByRole("button", {name: "English"}).tap()
   // Past the warning and the advice on sound, each as soon as it's shown
   for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
@@ -438,6 +439,6 @@ test("the language picked is used again next time, and the globe button picks an
   // Another, and the game starts again in it, with only what was in the URL before
   await page.getByRole("button", {name: /हिन्दी/}).tap()
   await page.waitForFunction(() => document.documentElement.lang === "hi", undefined, {timeout: 60000})
-  assert.equal(new URL(page.url()).search, "?guests=off")
+  assert.equal(new URL(page.url()).search, "?guests=off&start=porch")
   assert.equal(await page.getByRole("dialog", {name: "Choose a language"}).count(), 0)
 })

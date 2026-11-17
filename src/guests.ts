@@ -123,6 +123,10 @@ const tallFront = 96
 
 // How far a bang is heard from, across the scene, to flinch at it
 const bangHeard = 420
+// How often they look round for fireworks alight too near them or their way, in
+// seconds, and how much nearer than they'd keep from one that counts as too near
+const lookRoundEvery = 0.25
+const tooNear = 0.85
 // How close they come to things, and how far they keep from a lit firework
 const keepFromPot = 26
 const keepFromDiya = 24
@@ -151,7 +155,7 @@ const matchGlowRadius = 5
 type Step =
   // Walking to a point at a share of their speed, doing something with their arms as
   // they go, like carrying a diya
-  | {do: "walk", to: PointData, pace?: number, action?: Action}
+  | {do: "walk", to: PointData, pace?: number, action?: Action, fleeing?: boolean}
   // Doing something where they stand for a while, turned to face a point if given
   | {do: "act", action: Action, for: number, face?: PointData}
   // Putting down the diya they're carrying where they planned to
@@ -490,13 +494,66 @@ const createGuests = (
     return steps
   }
 
+  // Whatever they were carrying they still mean to put down after, and whatever they
+  // were going to set off or clear away, to do
+  const resume = (guest: Guest): Step[] =>
+    guest.carrying ? putDown(guest) : guest.firework ? setOff(guest) : guest.clearing ? clearUp(guest) : []
+
+  // Hurrying well away from a firework that's alight, out across the porch, or into the
+  // house if there's nowhere on it far enough, then turning to watch it
+  const awayFrom = (guest: Guest, at: PointData): Step[] => {
+    const dx = guest.x - at.x || (chance(0.5) ? 1 : -1)
+    const dy = guest.y - at.y
+    const along = Math.hypot(dx, dy) || 1
+    const back = {
+      x: at.x + dx / along * keepFromAlight * 1.3,
+      y: clamp(at.y + dy / along * keepFromAlight * 0.5 + random(-8, 8), porchBack + 6, porchFront - 4),
+    }
+    const spot = isOnFloor(back) && distance(back, at) > keepFromAlight ? back : freeSpot(10, {near: back, reach: 90})
+    if (!spot) {
+      return goIn(guest)
+    }
+    return [
+      {do: "walk", to: spot, pace: 1.8, fleeing: true},
+      {do: "act", action: guest.child ? "cheer" : "idle", for: random(2, 3.5), face: at},
+      ...resume(guest),
+    ]
+  }
+
+  // Every so often, each guest out on the porch looks round for a firework alight too
+  // near them, as a chakri skitters about, and hurries away from it, or one too near
+  // the way they're walking, and stops short of it to watch it instead
+  let lookedRoundAt = 0
+  const lookRound = () => {
+    const alight = fireworksHere().filter(firework => firework.alight)
+    if (!alight.length) {
+      return
+    }
+    const near = keepFromAlight * tooNear
+    guests.forEach(guest => {
+      const step = guest.plan[0]
+      if (guest.isInside || guest.y < porchBack || (step?.do === "walk" && step.fleeing)) {
+        return
+      }
+      const nearest = alight.reduce((best, firework) => distance(firework, guest) < distance(best, guest) ? firework : best)
+      if (distance(nearest, guest) < near) {
+        guest.plan = awayFrom(guest, nearest)
+        guest.elapsed = 0
+        return
+      }
+      const inTheWay = step?.do === "walk" && alight.find(firework => fromLine(firework, guest, step.to) < near)
+      if (inTheWay) {
+        guest.plan = [{do: "act", action: guest.child ? "cheer" : "idle", for: random(2, 3.5), face: inTheWay}, ...resume(guest)]
+        guest.elapsed = 0
+      }
+    })
+  }
+
   // Something going on that a guest's noticed, a moment after it happened
   const react = (guest: Guest, {kind, at}: Happening) => {
     const away = distance(guest, at)
     const {child} = guest
-    // Whatever they were carrying they still mean to put down after, and whatever they
-    // were going to set off or clear away, to do
-    const after = () => guest.carrying ? putDown(guest) : guest.firework ? setOff(guest) : guest.clearing ? clearUp(guest) : []
+    const after = () => resume(guest)
     if (kind === "bang") {
       // Heard from across the porch, even from a rocket bursting high above it
       if (Math.abs(guest.x - at.x) > bangHeard || now < guest.startledUntil) {
@@ -514,10 +571,7 @@ const createGuests = (
       const watch: Step = {do: "act", action: child ? "cheer" : "idle", for: random(2, 3.5), face: at}
       if (away < keepFromAlight) {
         // Too close: back off from it, quickly, then watch
-        const dx = guest.x - at.x || (chance(0.5) ? 1 : -1)
-        const back = {x: at.x + Math.sign(dx) * keepFromAlight * 1.2, y: clamp(guest.y + random(-10, 10), porchBack + 6, porchFront - 4)}
-        const spot = isOnFloor(back) ? back : freeSpot(10, {near: back, reach: 60})
-        guest.plan = [...(spot ? [{do: "walk", to: spot, pace: 1.7} as Step] : []), watch, ...after()]
+        guest.plan = awayFrom(guest, at)
       } else if (chance(0.7)) {
         guest.plan = [watch, ...after()]
       } else {
@@ -674,6 +728,10 @@ const createGuests = (
   const tick = () => {
     const dt = Math.min(0.1, app.ticker.deltaMS / 1000)
     now += dt
+    if (now - lookedRoundAt >= lookRoundEvery) {
+      lookedRoundAt = now
+      lookRound()
+    }
     guests.forEach(guest => {
       const walked = advance(guest, dt)
       const {figure, mask} = guest

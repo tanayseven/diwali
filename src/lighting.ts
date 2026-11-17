@@ -9,6 +9,9 @@ type Background = ReturnType<typeof createBackground>
 // warmer and brighter around each light
 const nightColour = 0x4a5280
 const lightMapScale = 4
+// How far down the map of light goes: past the scene's bottom, over the road in front
+// of the houses, so the street lamps and what's lit beside it light it too
+const litDepth = sceneHeight + 80
 
 // A soft round spot of light, fading out from the middle as the given stops say
 const radialTexture = (size: number, stops: [number, number][]) => {
@@ -32,12 +35,12 @@ const radialTexture = (size: number, stops: [number, number][]) => {
 const undoNight = (app: Application, house: Sprite, url: string) => {
   const night = [nightColour >> 16, (nightColour >> 8) & 0xff, nightColour & 0xff].map(level => level / 255)
   const drawn = house.texture
-  const redraw = (matrix: ColorMatrix) => {
+  const redraw = (matrix: ColorMatrix, resolution = drawn.source.resolution) => {
     const copy = new Sprite(drawn)
     const filter = new ColorMatrixFilter()
     filter.matrix = matrix
     copy.filters = [filter]
-    const texture = app.renderer.generateTexture({target: copy, resolution: drawn.source.resolution, antialias: false})
+    const texture = app.renderer.generateTexture({target: copy, resolution, antialias: false})
     copy.destroy()
     filter.destroy()
     return texture
@@ -46,7 +49,9 @@ const undoNight = (app: Application, house: Sprite, url: string) => {
   // Brightened, which the screen keeps to full brightness at most
   house.texture = redraw([1 / r, 0, 0, 0, 0, 0, 1 / g, 0, 0, 0, 0, 0, 1 / b, 0, 0, 0, 0, 0, 1, 0])
   // And whatever's left over above the night's colour
-  const shortfall = new Sprite(redraw([1, 0, 0, 0, -r, 0, 1, 0, 0, -g, 0, 0, 1, 0, -b, 0, 0, 0, 1, 0]))
+  // At half the resolution, as it's only the flat colours of the lit windows, and it
+  // saves a good deal of memory on a phone
+  const shortfall = new Sprite(redraw([1, 0, 0, 0, -r, 0, 1, 0, 0, -g, 0, 0, 1, 0, -b, 0, 0, 0, 1, 0], drawn.source.resolution / 2))
   // The house as drawn isn't shown any more, so it's let go from the loaded assets
   Assets.unload(url).catch(() => {})
   shortfall.anchor.copyFrom(house.anchor)
@@ -64,7 +69,7 @@ const undoNight = (app: Application, house: Sprite, url: string) => {
 const createLighting = (app: Application, background: Background) => {
   // Shared with whatever wants a glow of the same shape
   const glowTexture = radialTexture(128, [[0, 1], [0.2, 0.6], [0.45, 0.25], [0.7, 0.08], [1, 0]])
-  const lightMap = RenderTexture.create({width: (scenery.right - scenery.left) / lightMapScale, height: sceneHeight / lightMapScale})
+  const lightMap = RenderTexture.create({width: (scenery.right - scenery.left) / lightMapScale, height: litDepth / lightMapScale})
   const lightScene = new Container()
   lightScene.addChild(new Graphics().rect(0, 0, lightMap.width, lightMap.height).fill(nightColour))
   const shade = new Sprite(lightMap)
@@ -74,9 +79,9 @@ const createLighting = (app: Application, background: Background) => {
   shade.eventMode = "none"
   shade.visible = false
   shade.zIndex = sceneHeight + 1
-  // The ground carrying on below the scene is just as dark, and nothing there is lit
+  // The ground carrying on below that is just as dark, and nothing there is lit
   const shadeAround = new Graphics()
-    .rect(scenery.left, sceneHeight, scenery.right - scenery.left, groundBelow)
+    .rect(scenery.left, litDepth, scenery.right - scenery.left, sceneHeight + groundBelow - litDepth)
     .fill(nightColour)
   shadeAround.blendMode = "multiply"
   shadeAround.eventMode = "none"

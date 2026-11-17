@@ -19,6 +19,7 @@ import {createLanguageButton} from "./languageButton"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
+import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
@@ -126,6 +127,8 @@ const main = async () => {
   // It's Diwali night: the porch is dark, lit only by what's lit on it
   const lighting = createLighting(app, background)
   lighting.setNight(1)
+  // The road along the front of the street, with its lamps
+  createRoad(background, lighting)
   // Lights in the city's windows, glowing through the night and now and then switched
   createSkyline(app, background, lighting).catch(error => console.error("Couldn't light the skyline", error))
   // Fireworks going up all over the city, bursting just above its buildings

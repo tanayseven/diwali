@@ -59,7 +59,8 @@ const shoot = async () => {
 }
 
 mkdirSync(out, {recursive: true})
-await page.goto(`http://localhost:${port}/`)
+// Starting close up on the porch, where it puts things
+await page.goto(`http://localhost:${port}/?start=porch`)
 await page.getByRole("button", {name: "English"}).click()
 // Past the warning and the advice on sound, each as soon as it's shown
 for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
