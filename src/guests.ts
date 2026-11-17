@@ -244,6 +244,11 @@ const createGuests = (
     return Math.hypot(point.x - from.x - dx * along, point.y - from.y - dy * along)
   }
 
+  // Whether the way from one point to another keeps clear of something by a distance,
+  // or at least leads away from it, when they're already that close to it
+  const clearOf = (thing: PointData, from: PointData, to: PointData, keep: number) =>
+    distance(thing, from) <= keep ? distance(thing, to) > distance(thing, from) : fromLine(thing, from, to) > keep
+
   // A point on the porch floor a guest could stand at, clear of the pots and of what's
   // been put down, and well away from any firework that's alight, or nothing if none's
   // found. Near a point, if given, within a reach of it. Walking there from a point, if
@@ -267,8 +272,8 @@ const createGuests = (
         && kandils.every(kandil => distance(kandil, spot) > keepFromKandil)
         && fireworks.every(firework => distance(firework, spot) > (firework.alight ? keepFromAlight : keepFromFirework))
         && avoid.every(point => distance(point, spot) > keep)
-        && (!from || (pots.every(pot => fromLine(pot, from, spot) > keepFromPot * 0.6)
-          && fireworks.every(firework => !firework.alight || fromLine(firework, from, spot) > keepFromAlight)))) {
+        && (!from || (pots.every(pot => clearOf(pot, from, spot, keepFromPot * 0.6))
+          && fireworks.every(firework => !firework.alight || clearOf(firework, from, spot, keepFromAlight))))) {
         return spot
       }
     }
@@ -281,13 +286,15 @@ const createGuests = (
     return {x: spot.x - side * 22 * guest.figure.size, y: spot.y - 3}
   }
 
-  // Going back into the house, and staying in a while
+  // Going back into the house, and staying in a while, taking back any diya they
+  // couldn't find room for
   const goIn = (guest: Guest): Step[] => {
     guest.leaving = true
+    const action: Action | undefined = guest.carrying ? "carry" : undefined
     return [
-      {do: "walk", to: {x: outside.x + random(-6, 6), y: outside.y}},
-      {do: "walk", to: sill, pace: 0.8},
-      {do: "walk", to: inside, pace: 0.7},
+      {do: "walk", to: {x: outside.x + random(-6, 6), y: outside.y}, action},
+      {do: "walk", to: sill, pace: 0.8, action},
+      {do: "walk", to: inside, pace: 0.7, action},
       {do: "inside", for: guest.leader ? Infinity : random(6, 22)},
     ]
   }
@@ -467,8 +474,8 @@ const createGuests = (
     }
   }
 
-  // Moves a guest on through their plan by a frame, and says how far they walked, as
-  // a share of a full stride
+  // Moves a guest on through their plan by a frame, and says how far they walked, in
+  // scene units, and how fast, as a share of their own full speed
   const advance = (guest: Guest, dt: number) => {
     if (guest.noticed && now >= guest.noticed.at) {
       const {happening} = guest.noticed
@@ -481,7 +488,7 @@ const createGuests = (
     }
     const step = guest.plan[0]
     guest.elapsed += dt
-    let walked = 0
+    let walked = {distance: 0, speed: 0}
     let done = false
     if (step.do === "walk") {
       guest.figure.setAction(step.action ?? "idle")
@@ -498,7 +505,7 @@ const createGuests = (
           guest.facing = dx > 0 ? 1 : -1
         }
       }
-      walked = Math.min(1.2, speed / guest.speed) * (move > 0 ? 1 : 0)
+      walked = {distance: move, speed: move > 0 ? Math.min(1.2, speed / guest.speed) : 0}
       done = left - move < 0.5
     } else if (step.do === "act") {
       guest.figure.setAction(step.action)
@@ -507,18 +514,25 @@ const createGuests = (
       }
       done = guest.elapsed >= step.for
     } else if (step.do === "place") {
-      // Unless the porch has filled up since they set out, in which case they keep it
+      guest.nextDiyaAt = now + random(30, 70)
       if (guest.carrying && porch.diyas && room(porch.diyas.placedAt().length, guest)) {
         porch.diyas.placeLitDiya(guest.carrying, guest.facing > 0 ? "right" : "left")
         guestDiyas++
+        guest.carrying = undefined
+        guest.figure.carrying(false)
+      } else {
+        // The porch has filled up since they set out, so they take it back in, still
+        // holding it, rather than folding their hands to nothing
+        guest.stayFor = 0
+        guest.plan = [step, ...goIn(guest)]
       }
-      guest.carrying = undefined
-      guest.figure.carrying(false)
-      guest.nextDiyaAt = now + random(30, 70)
       done = true
     } else {
       guest.isInside = true
       guest.leaving = false
+      // Whatever they took back in, they've put away
+      guest.carrying = undefined
+      guest.figure.carrying(false)
       const {leader} = guest
       // One following comes out a moment after the one they follow does
       done = guest.elapsed >= step.for
@@ -559,7 +573,8 @@ const createGuests = (
         mask.visible = inDoorway
       }
       root.alpha = clamp((guest.y - inside.y) / (sill.y - inside.y), 0, 1)
-      figure.update(dt, walked)
+      // How far they walked in their own units, so their steps keep pace with it
+      figure.update(dt, walked.distance / scale, walked.speed)
       guest.silhouette.copyPose(figure)
       guest.silhouette.root.visible = root.alpha > 0.3
       // The diya they're carrying lights them and round them

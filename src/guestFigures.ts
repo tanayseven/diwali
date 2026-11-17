@@ -2,9 +2,10 @@ import {Container, Graphics, GraphicsPath, PointData} from "pixi.js"
 
 // The guests on the porch, each drawn side-on facing right, in their own units with
 // their feet at (0, 0) and standing about 105 tall. Each is put together from parts
-// that turn about their joints: the legs at the hip, the arms at the shoulder, the head
-// at the neck, and the body leaning over at the hips, so they can walk, cheer, point
-// and bend down to put a diya on the floor
+// that turn about their joints: thighs at the hips, shins at the knees and feet at the
+// ankles, upper arms at the shoulders and forearms at the elbows, the head at the neck,
+// and the body leaning over at the hips, so they can walk with a real stride, and
+// cheer, clap, point, fold their hands and bend down to put a diya on the floor
 
 type Shape =
   | {path: string, fill: number, alpha?: number}
@@ -13,9 +14,16 @@ type Shape =
   | {rect: [number, number, number, number], fill: number, radius?: number}
 
 const hip = {x: 0, y: -50}
+const knee = {x: 0, y: -27}
+const ankle = {x: 0, y: -4}
 const shoulder = {x: 1, y: -82}
-const neck = {x: 1, y: -89}
+const elbow = {x: 1, y: -66}
 const hand = {x: 1, y: -49}
+const neck = {x: 1, y: -89}
+// How long the thigh and the shin are, and how far the sole is below the ankle
+const thighLength = Math.abs(knee.y - hip.y)
+const shinLength = Math.abs(ankle.y - knee.y)
+const soleBelow = -ankle.y
 
 // Skin tones, each with a darker shade for the neck and ear
 type Tone = {skin: number, dark: number}
@@ -33,10 +41,12 @@ const grey = 0xa3a3a3
 const white = 0xe8e8e8
 
 // The shapes drawn into a part that turns about a joint: the part sits at the joint,
-// and its drawing is moved back by as much, so the drawing's own units still hold
-const part = (shapes: Shape[], joint: PointData = {x: 0, y: 0}) => {
+// and its drawing is moved back by as much, so the drawing's own units still hold. A
+// part inside another, like a forearm in an upper arm, sits at its joint as seen from
+// the other's
+const part = (shapes: Shape[], joint: PointData = {x: 0, y: 0}, within: PointData = {x: 0, y: 0}) => {
   const container = new Container()
-  container.position.set(joint.x, joint.y)
+  container.position.set(joint.x - within.x, joint.y - within.y)
   const graphics = new Graphics()
   shapes.forEach(shape => {
     if ("path" in shape) {
@@ -62,20 +72,53 @@ type Arm = {sleeve: number, cuff: number, sleeveEnd?: number, bangles?: number}
 
 const sandal = (colour: number): Shape => ({path: "M-4 -2 L11 -2 Q12 0 10 0 L-4.5 0 Z", fill: colour})
 
-const legShapes = ({cloth, hem, sandal: sandalColour, width = 7, hemHeight = 4}: Leg, tone: Tone): Shape[] => [
-  {path: `M${-width} -52 L${width} -52 L${width + 1} -6 L${-width - 1} -6 Z`, fill: cloth},
-  {rect: [-width - 1, -6 - hemHeight, 2 * width + 2, hemHeight], fill: hem},
-  {rect: [-2.5, -6, 5, 4], fill: tone.skin},
-  sandal(sandalColour),
-]
+// A stretch of a trouser leg, a dhoti or a sleeve, from one height to another, as wide
+// as it is there: each widens a little towards its end
+const cloth = (top: number, bottom: number, widthAt: (y: number) => number, x: number, fill: number): Shape => ({
+  path: `M${x - widthAt(top)} ${top} L${x + widthAt(top)} ${top} L${x + widthAt(bottom)} ${bottom} L${x - widthAt(bottom)} ${bottom} Z`,
+  fill,
+})
 
-const armShapes = ({sleeve, cuff, sleeveEnd = -53, bangles}: Arm, tone: Tone): Shape[] => [
-  {rect: [-2.6, -82, 6.2, 31], fill: tone.skin, radius: 3},
-  {path: `M-3.4 -84 L5.4 -84 L4.4 ${sleeveEnd} L-2.4 ${sleeveEnd} Z`, fill: sleeve},
-  {rect: [-2.4, sleeveEnd - 2.5, 6.8, 2.5], fill: cuff},
-  ...(bangles ? [{rect: [-3.2, sleeveEnd - 1, 6.4, 2.2], fill: bangles} as Shape] : []),
-  {ellipse: [1, -49, 3.4, 3.4], fill: tone.skin},
-]
+// A leg in three parts: the thigh, the shin with the hem and ankle, and the foot. Each
+// overlaps the next a little, with a round of cloth at the knee, so no gap shows as it
+// bends
+const legShapes = ({cloth: colour, hem, sandal: sandalColour, width = 7, hemHeight = 4}: Leg, tone: Tone) => {
+  const widthAt = (y: number) => width + (y - hip.y) / (ankle.y - 2 - hip.y)
+  return {
+    thigh: [cloth(hip.y - 2, knee.y + 2, widthAt, 0, colour)],
+    shin: [
+      {ellipse: [0, knee.y, widthAt(knee.y) - 0.3, widthAt(knee.y) - 0.3], fill: colour} as Shape,
+      cloth(knee.y, -6, widthAt, 0, colour),
+      {rect: [-width - 1, -6 - hemHeight, 2 * width + 2, hemHeight], fill: hem} as Shape,
+      {rect: [-2.5, -6, 5, 4], fill: tone.skin} as Shape,
+    ],
+    foot: [{ellipse: [0, ankle.y, 2.6, 2.6], fill: tone.skin} as Shape, sandal(sandalColour)],
+  }
+}
+
+// An arm in two parts: the upper arm, and the forearm with the hand. The sleeve goes as
+// far down as it does, across the elbow or not
+const armShapes = ({sleeve, cuff, sleeveEnd = -53, bangles}: Arm, tone: Tone) => {
+  const widthAt = (y: number) => 3.4 + (y - shoulder.y) / (hand.y - shoulder.y) * -0.6
+  const long = sleeveEnd > elbow.y
+  const upper: Shape[] = [
+    {rect: [-2.1, shoulder.y, 6.2, elbow.y - shoulder.y + 3], fill: tone.skin, radius: 3},
+    cloth(shoulder.y - 2, long ? elbow.y + 2 : sleeveEnd, widthAt, 1, sleeve),
+  ]
+  const lower: Shape[] = [
+    {ellipse: [1, elbow.y, 3, 3], fill: long ? sleeve : tone.skin},
+    {rect: [-1.8, elbow.y, 5.6, hand.y - elbow.y], fill: tone.skin, radius: 2.6},
+  ]
+  ;(long ? lower : upper).push(
+    ...(long ? [cloth(elbow.y, sleeveEnd, widthAt, 1, sleeve)] : []),
+    {rect: [-2.4, sleeveEnd - 2.5, 6.8, 2.5], fill: cuff},
+  )
+  if (bangles) {
+    lower.push({rect: [-2.3, hand.y - 6, 6.6, 2.2], fill: bangles})
+  }
+  lower.push({ellipse: [hand.x, hand.y, 3.4, 3.4], fill: tone.skin})
+  return {upper, lower}
+}
 
 const headShapes = (tone: Tone, hair: Shape[]): Shape[] => [
   {rect: [-2, -92, 6, 7], fill: tone.dark},
@@ -266,22 +309,22 @@ const outfits = {
   }),
 }
 
-// How someone looks: their skin, hair and what's on their face, what they wear, how
-// big they are next to a grown-up, and how long a stride takes them
-type Look = {tone: Tone, hair: Shape[], outfit: Outfit, size: number, stride: number}
+// How someone looks: their skin, hair and what's on their face, what they wear, and how
+// big they are next to a grown-up
+type Look = {tone: Tone, hair: Shape[], outfit: Outfit, size: number}
 
 const look = (
-  tone: number, style: HairStyle, hairColour: number, outfit: Outfit, size: number, stride: number,
+  tone: number, style: HairStyle, hairColour: number, outfit: Outfit, size: number,
   extras: Shape[] = [],
-): Look => ({tone: tones[tone], hair: [...hairStyles[style](hairColour), ...extras], outfit, size, stride})
+): Look => ({tone: tones[tone], hair: [...hairStyles[style](hairColour), ...extras], outfit, size})
 
 // The first house's family, each drawn to suit them
 const looks = {
-  grandfather: look(2, "bald", grey, outfits.dhotiKurta(0xd9541e, 0xf29a1f, 0xf0dca8, 0xe8890c), 1, 0.95, [moustache(white)]),
-  grandson: look(2, "boy", black, outfits.dhotiKurta(0xd9541e, 0xf29a1f, 0xf0dca8, 0xe8890c), 0.66, 0.55),
-  sari: look(2, "bun", black, outfits.sari(0xc2255c, 0xf2c14e, 0x7b1640), 0.97, 0.75, [bindi]),
-  youngMan: look(2, "short", 0x1b1411, outfits.kurtaPyjama(0x2f6db5, 0xf2c14e, 0xf3efe6), 1.03, 0.7),
-  girl: look(2, "plait", black, outfits.lehenga(0x2b8a3e, 0xf2c14e, 0xf08c00, 0xffd43b), 0.8, 0.6),
+  grandfather: look(2, "bald", grey, outfits.dhotiKurta(0xd9541e, 0xf29a1f, 0xf0dca8, 0xe8890c), 1, [moustache(white)]),
+  grandson: look(2, "boy", black, outfits.dhotiKurta(0xd9541e, 0xf29a1f, 0xf0dca8, 0xe8890c), 0.66),
+  sari: look(2, "bun", black, outfits.sari(0xc2255c, 0xf2c14e, 0x7b1640), 0.97, [bindi]),
+  youngMan: look(2, "short", 0x1b1411, outfits.kurtaPyjama(0x2f6db5, 0xf2c14e, 0xf3efe6), 1.03),
+  girl: look(2, "plait", black, outfits.lehenga(0x2b8a3e, 0xf2c14e, 0xf08c00, 0xffd43b), 0.8),
 }
 
 type Who = keyof typeof looks
@@ -308,32 +351,32 @@ const makeLook = (role: Role, random: () => number): Look => {
   switch (role) {
   case "grandfather":
     return random() < 0.4
-      ? look(tone, "turban", pick([0xf08c00, 0xc92a2a, 0xfab005, 0xffffff, 0x1864ab]), outfits.kurtaPyjama(pick(creams), pick(golds), pick(creams), random() < 0.6 ? pick(darks) : undefined), 1, 0.95, beard(white))
-      : look(tone, "bald", grey, outfits.dhotiKurta(pick([bright(), pick(creams)]), pick(golds), pick(creams), bright()), 1, 0.95, random() < 0.5 ? [moustache(white), ...glasses] : [moustache(white)])
+      ? look(tone, "turban", pick([0xf08c00, 0xc92a2a, 0xfab005, 0xffffff, 0x1864ab]), outfits.kurtaPyjama(pick(creams), pick(golds), pick(creams), random() < 0.6 ? pick(darks) : undefined), 1, beard(white))
+      : look(tone, "bald", grey, outfits.dhotiKurta(pick([bright(), pick(creams)]), pick(golds), pick(creams), bright()), 1, random() < 0.5 ? [moustache(white), ...glasses] : [moustache(white)])
   case "grandmother":
-    return look(tone, "bun", grey, outfits.sari(pick([pick(creams), bright()]), bright(), bright()), 0.94, 0.95, random() < 0.6 ? [...glasses, bindi] : [bindi])
+    return look(tone, "bun", grey, outfits.sari(pick([pick(creams), bright()]), bright(), bright()), 0.94, random() < 0.6 ? [...glasses, bindi] : [bindi])
   case "man": {
     const kind = random()
     return kind < 0.4
-      ? look(tone, random() < 0.2 ? "turban" : "short", random() < 0.2 ? bright() : hair, outfits.kurtaPyjama(bright(), pick(golds), pick(creams), random() < 0.4 ? pick(darks) : undefined), 1.02, 0.72, random() < 0.4 ? [moustache(hair)] : random() < 0.3 ? beard(hair) : [])
+      ? look(tone, random() < 0.2 ? "turban" : "short", random() < 0.2 ? bright() : hair, outfits.kurtaPyjama(bright(), pick(golds), pick(creams), random() < 0.4 ? pick(darks) : undefined), 1.02, random() < 0.4 ? [moustache(hair)] : random() < 0.3 ? beard(hair) : [])
       : kind < 0.7
-        ? look(tone, "short", hair, outfits.shirtTrousers(pick([bright(), pick(creams)]), pick(darks)), 1.02, 0.7, random() < 0.4 ? [moustache(hair)] : [])
-        : look(tone, "short", hair, outfits.dhotiKurta(bright(), pick(golds), pick(creams), pick(golds)), 1, 0.75, random() < 0.5 ? [moustache(hair)] : [])
+        ? look(tone, "short", hair, outfits.shirtTrousers(pick([bright(), pick(creams)]), pick(darks)), 1.02, random() < 0.4 ? [moustache(hair)] : [])
+        : look(tone, "short", hair, outfits.dhotiKurta(bright(), pick(golds), pick(creams), pick(golds)), 1, random() < 0.5 ? [moustache(hair)] : [])
   }
   case "woman":
     return random() < 0.55
-      ? look(tone, pick<HairStyle>(["bun", "plait", "open"]), hair, outfits.sari(bright(), pick(golds), bright()), 0.97, 0.75, [bindi])
-      : look(tone, pick<HairStyle>(["plait", "open", "bun"]), hair, outfits.salwarKameez(bright(), pick([pick(creams), bright()]), bright()), 0.97, 0.72, random() < 0.6 ? [bindi] : [])
+      ? look(tone, pick<HairStyle>(["bun", "plait", "open"]), hair, outfits.sari(bright(), pick(golds), bright()), 0.97, [bindi])
+      : look(tone, pick<HairStyle>(["plait", "open", "bun"]), hair, outfits.salwarKameez(bright(), pick([pick(creams), bright()]), bright()), 0.97, random() < 0.6 ? [bindi] : [])
   case "teen":
     return random() < 0.5
-      ? look(tone, "spiky", hair, outfits.shirtTrousers(bright(), pick(darks)), 0.9, 0.62)
-      : look(tone, pick<HairStyle>(["plait", "open"]), hair, outfits.lehenga(bright(), pick(golds), bright(), pick(golds)), 0.88, 0.62)
+      ? look(tone, "spiky", hair, outfits.shirtTrousers(bright(), pick(darks)), 0.9)
+      : look(tone, pick<HairStyle>(["plait", "open"]), hair, outfits.lehenga(bright(), pick(golds), bright(), pick(golds)), 0.88)
   case "boy":
     return random() < 0.5
-      ? look(tone, "boy", hair, outfits.kurtaPyjama(bright(), pick(golds), pick(creams)), 0.66, 0.55)
-      : look(tone, "boy", hair, outfits.dhotiKurta(bright(), pick(golds), pick(creams), bright()), 0.66, 0.55)
+      ? look(tone, "boy", hair, outfits.kurtaPyjama(bright(), pick(golds), pick(creams)), 0.66)
+      : look(tone, "boy", hair, outfits.dhotiKurta(bright(), pick(golds), pick(creams), bright()), 0.66)
   case "girl":
-    return look(tone, "plait", hair, outfits.lehenga(bright(), pick(golds), bright(), pick(golds)), 0.68, 0.55)
+    return look(tone, "plait", hair, outfits.lehenga(bright(), pick(golds), bright(), pick(golds)), 0.68)
   }
 }
 
@@ -344,7 +387,8 @@ type Action =
 
 const easeRate = 9
 
-// A small diya held in the hand, lit, kept upright however the arm's turned
+// A small diya held in the hand, lit, kept upright however the arm's turned. It's
+// put on the forearm, which turns about the elbow
 const heldDiya = () => {
   const diya = new Container()
   const bowl = new Graphics()
@@ -352,36 +396,73 @@ const heldDiya = () => {
     .path(new GraphicsPath("M-6 -1 L6 -1 L5 -2.2 L-5 -2.2 Z")).fill(0x8a3d1f)
   const flame = new Graphics().path(new GraphicsPath("M0 -2 Q-2.6 -6 0 -10.5 Q2.6 -6 0 -2 Z")).fill(0xffc04a)
   diya.addChild(bowl, flame)
-  // In the hand, on the arm, which turns about the shoulder
-  diya.position.set(hand.x - shoulder.x + 3, hand.y - shoulder.y + 3)
+  diya.position.set(hand.x - elbow.x + 2, hand.y - elbow.y - 2)
   diya.visible = false
   return {diya, flame}
+}
+
+// How far a leg reaches down from the hip, with its thigh and its shin at these angles
+// from hanging straight down
+const legReach = (thigh: number, shin: number) =>
+  thighLength * Math.cos(thigh) + shinLength * Math.cos(thigh + shin) + soleBelow
+
+// Where each joint's turned to for a pose, from hanging or standing straight: the
+// thighs and the knees' bend, the upper arms and the elbows' bend, the head, the lean
+// at the hips and a hop. Angles are clockwise, so forward is negative for an arm or a
+// thigh, and an elbow or a knee bends the other way to each other
+type Pose = {
+  thighs: [number, number], knees: [number, number],
+  arms: [number, number], elbows: [number, number],
+  head: number, lean: number, hop: number,
 }
 
 const createFigure = (look: Look) => {
   const {tone, outfit} = look
   const root = new Container()
   const shadow = new Graphics().ellipse(0, 0, 15, 3.2).fill({color: 0x000000, alpha: 0.28})
-  // Everything that bobs as they walk or hop, over the shadow that stays on the floor
+  // Everything that rises and falls as they walk or hop, over the shadow that stays on
+  // the floor
   const bobbing = new Container()
   root.addChild(shadow, bobbing)
-  const backArm = part(armShapes(outfit.arms[0], tone), shoulder)
-  const frontArm = part(armShapes(outfit.arms[1], tone), shoulder)
-  const legs = outfit.legs?.map(leg => part(legShapes(leg, tone), hip))
+  const arm = (shapes: ReturnType<typeof armShapes>) => {
+    const upper = part(shapes.upper, shoulder)
+    const lower = part(shapes.lower, elbow, shoulder)
+    upper.addChild(lower)
+    return {upper, lower}
+  }
+  const leg = (shapes: ReturnType<typeof legShapes>) => {
+    const thigh = part(shapes.thigh, hip)
+    const shin = part(shapes.shin, knee, hip)
+    const foot = part(shapes.foot, ankle, knee)
+    thigh.addChild(shin)
+    shin.addChild(foot)
+    return {thigh, shin, foot}
+  }
+  const arms = [arm(armShapes(outfit.arms[0], tone)), arm(armShapes(outfit.arms[1], tone))]
+  const legs = outfit.legs?.map(shapes => leg(legShapes(shapes, tone)))
   const feet = outfit.feet?.map(colour => part([sandal(colour)]))
-  const lower = part(outfit.lower)
+  const lower = part(outfit.lower, hip)
   const body = part(outfit.body, hip)
   const head = part(headShapes(tone, look.hair), neck)
   const held = heldDiya()
-  frontArm.addChild(held.diya)
-  bobbing.addChild(backArm, ...(legs ?? []), ...(feet ?? []), lower, body, head, frontArm)
+  arms[1].lower.addChild(held.diya)
+  bobbing.addChild(
+    arms[0].upper, ...(legs ?? []).map(({thigh}) => thigh), ...(feet ?? []), lower, body, head, arms[1].upper,
+  )
   // Every part that moves, in the same order in every figure of the same look, for a
   // copy to take the same pose
-  const moving = [bobbing, backArm, frontArm, ...(legs ?? []), ...(feet ?? []), body, head, held.diya, held.flame]
+  const moving = [
+    bobbing, ...arms.flatMap(({upper, lower: forearm}) => [upper, forearm]),
+    ...(legs ?? []).flatMap(({thigh, shin, foot}) => [thigh, shin, foot]),
+    ...(feet ?? []), lower, body, head, held.diya, held.flame,
+  ]
 
-  // How each part's turned now, eased towards where the pose wants it
-  const now = {legs: 0, backArm: 0, frontArm: 0, head: 0, lean: 0, lift: 0}
+  // How each joint's turned now, eased towards where the pose wants it
+  const now: Pose = {thighs: [0, 0], knees: [0, 0], arms: [0, 0], elbows: [-0.15, -0.15], head: 0, lean: 0, hop: 0}
+  // How far through a stride they are, from 0 to 2π, the front leg's half a stride on
+  // from the back one's, and how much they're walking, eased in and out
   let phase = Math.random() * Math.PI * 2
+  let walking = 0
   let time = Math.random() * 10
   let action: Action = "idle"
 
@@ -394,6 +475,92 @@ const createFigure = (look: Look) => {
     const sin = Math.sin(now.lean)
     container.position.set(hip.x + dx * cos - dy * sin, hip.y + dx * sin + dy * cos)
     container.rotation = now.lean + turn
+  }
+
+  // A walking stride for one leg, at a point in it. From 0 to π the foot's on the
+  // floor, taking the weight, as the thigh goes from forward to back, the knee nearly
+  // straight; from π to 2π it swings through, the knee bending most just after the toe
+  // leaves the floor, and straightening to reach forward for the next step. The arm on
+  // the other side swings with it, forward as it does, the elbow bending a little more
+  // as the arm comes forward
+  const stride = (at: number) => {
+    const forward = Math.cos(at)
+    const through = Math.max(0, -Math.sin(at - 0.35))
+    return {
+      thigh: -0.38 * forward,
+      knee: 0.08 + 1.05 * through ** 1.4,
+      arm: -0.3 * forward,
+      elbow: -(0.2 + 0.32 * Math.max(0, forward)),
+    }
+  }
+
+  const pose = (): Pose => {
+    const back = stride(phase)
+    const front = stride(phase + Math.PI)
+    const w = walking
+    const sway = Math.sin(time * 1.3) * 0.04
+    const target: Pose = {
+      thighs: [back.thigh * w, front.thigh * w],
+      knees: [0.04 + (back.knee - 0.04) * w, 0.04 + (front.knee - 0.04) * w],
+      // Each arm swings with the leg on the other side
+      arms: [front.arm * w + sway, back.arm * w - sway],
+      elbows: [-0.15 + (front.elbow + 0.15) * w, -0.15 + (back.elbow + 0.15) * w],
+      head: 0,
+      lean: 0.04 * w,
+      hop: 0,
+    }
+    const both = (a: number, b: number): [number, number] => [a, b]
+    if (action === "cheer") {
+      // Arms up, waving from the elbows, and bouncing on the toes
+      target.arms = both(-2.6, -2.75)
+      target.elbows = both(-0.25 + Math.sin(time * 9) * 0.35, -0.25 - Math.sin(time * 9) * 0.35)
+      target.head = -0.15
+      target.hop = Math.abs(Math.sin(time * 5.5)) * 4
+      target.knees = both(0.15 + target.hop * 0.05, 0.15 + target.hop * 0.05)
+    } else if (action === "clap") {
+      // Forearms up in front of the chest, the hands coming together and apart
+      const clap = Math.abs(Math.sin(time * 7)) * 0.35
+      target.arms = both(-0.45, -0.55)
+      target.elbows = both(-1.35 + clap, -1.35 - clap)
+      target.head = -0.08
+    } else if (action === "startle") {
+      // Hands to the ears, leaning back from it
+      target.arms = both(-2.5, -2.6)
+      target.elbows = both(-2.1, -2.1)
+      target.lean = -0.12
+      target.hop = 2
+    } else if (action === "namaste") {
+      // Hands together in front of the chest, the head bowed a little
+      target.arms = both(-0.3, -0.35)
+      target.elbows = both(-1.8, -1.8)
+      target.lean = 0.12
+      target.head = 0.12
+    } else if (action === "bend") {
+      // Bending at the hips and the knees to reach the floor in front of them
+      target.lean = 0.75
+      target.thighs = both(-0.35, -0.6)
+      target.knees = both(0.85, 1.15)
+      target.arms = both(-0.25, -0.75)
+      target.elbows = both(-0.2, -0.15)
+      target.head = 0.15
+    } else if (action === "carry") {
+      // The diya held out in front, the forearm level
+      target.arms[1] = -0.35
+      target.elbows[1] = -1.15
+    } else if (action === "talk") {
+      target.arms[1] = -0.3 + Math.sin(time * 2.1) * 0.1
+      target.elbows[1] = -1 + Math.sin(time * 4.2) * 0.35
+      target.head = Math.sin(time * 2.1) * 0.06
+    } else if (typeof action === "object") {
+      // An arm out straight towards it, and the head turned up to it. The point's in
+      // the root's parent, and they're turned to face it already
+      const at = root.parent ? root.toLocal(action.point, root.parent) : action.point
+      const angle = Math.atan2(at.y - shoulder.y, Math.abs(at.x - shoulder.x))
+      target.arms[1] = Math.min(-0.3, angle - Math.PI / 2)
+      target.elbows[1] = -0.05
+      target.head = Math.max(-0.45, Math.min(0.2, angle * 0.5))
+    }
+    return target
   }
 
   return {
@@ -428,71 +595,56 @@ const createFigure = (look: Look) => {
       into.y = local.y
       return into
     },
-    // Moves the pose on by a frame, walking at a speed from 0 (standing) to 1 (a full
-    // stride), which sets how far the legs swing as well as how fast
-    update(dt: number, walking: number) {
+    // Moves the pose on by a frame, having walked a distance in their own units, at a
+    // speed from 0 (standing) to 1 (a full stride), which sets how long their steps are.
+    // A stride's two steps are as long as the legs reach, so the foot on the floor
+    // stays put as they go
+    update(dt: number, distance: number, speed: number) {
       time += dt
-      phase += dt * Math.PI * 2 / look.stride * Math.max(walking, 0)
-      const swing = Math.sin(phase) * walking
-      const target = {legs: swing * 0.4, backArm: swing * 0.35, frontArm: -swing * 0.35, head: 0, lean: 0, lift: 0}
-      // Standing, a little sway
-      if (walking < 0.05) {
-        target.backArm = Math.sin(time * 1.3) * 0.04
-        target.frontArm = -Math.sin(time * 1.3) * 0.04
-      }
-      if (action === "cheer") {
-        target.backArm = -2.75 + Math.sin(time * 9) * 0.2
-        target.frontArm = -2.55 - Math.sin(time * 9) * 0.2
-        target.head = -0.15
-        target.lift = Math.abs(Math.sin(time * 5.5)) * 5
-      } else if (action === "clap") {
-        const clap = Math.sin(time * 14) * 0.18
-        target.backArm = -1.15 + clap
-        target.frontArm = -1.15 - clap
-        target.head = -0.08
-      } else if (action === "startle") {
-        target.backArm = -2.85
-        target.frontArm = -2.95
-        target.lean = -0.12
-        target.lift = 3
-      } else if (action === "namaste") {
-        target.backArm = -0.95
-        target.frontArm = -0.95
-        target.lean = 0.12
-        target.head = 0.1
-      } else if (action === "bend") {
-        target.lean = 0.6
-        target.frontArm = -0.55
-        target.backArm = -0.2
-        target.head = 0.2
-        target.legs = 0
-      } else if (action === "carry") {
-        target.frontArm = -1.05
-      } else if (action === "talk") {
-        target.frontArm = -0.7 + Math.sin(time * 4.2) * 0.3
-        target.head = Math.sin(time * 2.1) * 0.06
-      } else if (typeof action === "object") {
-        // Their arm out towards it, and their head turned up to it. The point's in the
-        // root's parent, and they're turned to face it already
-        const at = root.parent ? root.toLocal(action.point, root.parent) : action.point
-        const angle = Math.atan2(at.y - shoulder.y, Math.abs(at.x - shoulder.x))
-        target.frontArm = Math.min(-0.3, angle - Math.PI / 2)
-        target.head = Math.max(-0.45, Math.min(0.2, angle * 0.5))
-      }
+      walking += (Math.min(1, speed) - walking) * (1 - Math.exp(-6 * dt))
+      const step = 2 * (thighLength + shinLength) * Math.sin(0.32 * Math.max(walking, 0.3))
+      phase = (phase + distance / (2 * step) * Math.PI * 2) % (Math.PI * 2)
+      const target = pose()
       const ease = 1 - Math.exp(-easeRate * dt)
-      ;(Object.keys(now) as (keyof typeof now)[]).forEach(key => {
-        now[key] += (target[key] - now[key]) * ease
-      })
-      // A walk bobs up and down twice a stride
-      bobbing.y = -Math.abs(Math.sin(phase)) * 1.4 * walking - now.lift
-      legs?.forEach((leg, idx) => leg.rotation = idx === 0 ? now.legs : -now.legs)
-      feet?.forEach((foot, idx) => foot.x = (idx === 0 ? 1 : -1) * Math.sin(phase) * 5 * walking)
+      const towards = (from: number, to: number) => from + (to - from) * ease
+      now.thighs = [towards(now.thighs[0], target.thighs[0]), towards(now.thighs[1], target.thighs[1])]
+      now.knees = [towards(now.knees[0], target.knees[0]), towards(now.knees[1], target.knees[1])]
+      now.arms = [towards(now.arms[0], target.arms[0]), towards(now.arms[1], target.arms[1])]
+      now.elbows = [towards(now.elbows[0], target.elbows[0]), towards(now.elbows[1], target.elbows[1])]
+      now.head = towards(now.head, target.head)
+      now.lean = towards(now.lean, target.lean)
+      now.hop = towards(now.hop, target.hop)
+      if (legs) {
+        legs.forEach(({thigh, shin, foot}, idx) => {
+          thigh.rotation = now.thighs[idx]
+          shin.rotation = now.knees[idx]
+          // The foot's kept flat on the floor, its toes dropping a little as it swings
+          // through
+          const through = walking * Math.max(0, -Math.sin(phase + idx * Math.PI - 0.35)) * 0.35
+          foot.rotation = -(now.thighs[idx] + now.knees[idx]) + through
+        })
+        // The body's as high as the longer leg reaches, so the foot taking the weight
+        // stays on the floor and they rise and fall as they step
+        const reach = Math.max(legReach(now.thighs[0], now.knees[0]), legReach(now.thighs[1], now.knees[1]))
+        bobbing.y = -hip.y - reach - now.hop
+      } else {
+        // Under a long skirt, the feet step out from under its hem in turn, and it sways
+        feet?.forEach((foot, idx) => {
+          const at = phase + idx * Math.PI
+          foot.x = -Math.cos(at) * 5.5 * walking
+          foot.y = -Math.max(0, Math.sin(at)) * 1.6 * walking
+        })
+        bobbing.y = -Math.abs(Math.sin(phase)) * 1.2 * walking - now.hop
+        lower.rotation = Math.sin(phase * 2) * 0.015 * walking
+      }
       leant(body, hip, 0)
       leant(head, neck, now.head)
-      leant(backArm, shoulder, now.backArm)
-      leant(frontArm, shoulder, now.frontArm)
+      arms.forEach(({upper, lower: forearm}, idx) => {
+        leant(upper, shoulder, now.arms[idx])
+        forearm.rotation = now.elbows[idx]
+      })
       // The held diya stays upright
-      held.diya.rotation = -frontArm.rotation
+      held.diya.rotation = -(arms[1].upper.rotation + arms[1].lower.rotation)
       held.flame.scale.set(1 + Math.sin(time * 23) * 0.08, 1 + Math.sin(time * 17) * 0.12)
     },
     destroy() {
