@@ -352,7 +352,8 @@ const heldDiya = () => {
     .path(new GraphicsPath("M-6 -1 L6 -1 L5 -2.2 L-5 -2.2 Z")).fill(0x8a3d1f)
   const flame = new Graphics().path(new GraphicsPath("M0 -2 Q-2.6 -6 0 -10.5 Q2.6 -6 0 -2 Z")).fill(0xffc04a)
   diya.addChild(bowl, flame)
-  diya.position.set(hand.x + 3, hand.y + 3)
+  // In the hand, on the arm, which turns about the shoulder
+  diya.position.set(hand.x - shoulder.x + 3, hand.y - shoulder.y + 3)
   diya.visible = false
   return {diya, flame}
 }

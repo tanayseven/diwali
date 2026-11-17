@@ -19,7 +19,7 @@ import type {Light, Lighting} from "./lighting"
 // What they can see on the porch, from the tools that put it there
 type Porch = {
   diyas?: {
-    placedAt: () => PointData[]
+    placedAt: () => (PointData & {lit: boolean})[]
     placeLitDiya: (at: PointData, facing: "left" | "right") => void
   }
   fireworks?: {placedAt: () => (PointData & {alight: boolean})[]}
@@ -114,6 +114,8 @@ const figureHeight = 105
 const tallBack = 84
 const tallFront = 96
 
+// How far a bang is heard from, across the scene, to flinch at it
+const bangHeard = 420
 // How close they come to things, and how far they keep from a lit firework
 const keepFromPot = 26
 const keepFromDiya = 24
@@ -227,11 +229,29 @@ const createGuests = (
     guests[idx].leader = follows === undefined ? undefined : guests[follows]
   })
   const others = (guest: Guest) => guests.filter(other => other !== guest && !other.isInside)
+  // Whether there's room for another diya from a guest, with so many on the porch now,
+  // counting those other guests are already carrying out
+  const room = (diyasNow: number, carrier?: Guest) => {
+    const carried = guests.filter(guest => guest.carrying && guest !== carrier).length
+    return guestDiyas + carried < mostGuestDiyas && diyasNow + carried < mostDiyas
+  }
+
+  // How near a point comes to the straight line between two others
+  const fromLine = (point: PointData, from: PointData, to: PointData) => {
+    const dx = to.x - from.x
+    const dy = to.y - from.y
+    const along = clamp(((point.x - from.x) * dx + (point.y - from.y) * dy) / (dx * dx + dy * dy || 1), 0, 1)
+    return Math.hypot(point.x - from.x - dx * along, point.y - from.y - dy * along)
+  }
 
   // A point on the porch floor a guest could stand at, clear of the pots and of what's
   // been put down, and well away from any firework that's alight, or nothing if none's
-  // found. Near a point, if given, within a reach of it
-  const freeSpot = (keep: number, near?: PointData, reach = 80, avoid: PointData[] = []) => {
+  // found. Near a point, if given, within a reach of it. Walking there from a point, if
+  // given, mustn't take them through a pot or near a firework that's alight either
+  const freeSpot = (
+    keep: number,
+    {near, reach = 80, avoid = [], from}: {near?: PointData, reach?: number, avoid?: PointData[], from?: PointData} = {},
+  ) => {
     const diyas = porch.diyas?.placedAt() ?? []
     const fireworks = porch.fireworks?.placedAt() ?? []
     const kandils = porch.kandils?.standingAt() ?? []
@@ -246,7 +266,9 @@ const createGuests = (
         && diyas.every(diya => distance(diya, spot) > keep)
         && kandils.every(kandil => distance(kandil, spot) > keepFromKandil)
         && fireworks.every(firework => distance(firework, spot) > (firework.alight ? keepFromAlight : keepFromFirework))
-        && avoid.every(point => distance(point, spot) > keep)) {
+        && avoid.every(point => distance(point, spot) > keep)
+        && (!from || (pots.every(pot => fromLine(pot, from, spot) > keepFromPot * 0.6)
+          && fireworks.every(firework => !firework.alight || fromLine(firework, from, spot) > keepFromAlight)))) {
         return spot
       }
     }
@@ -278,14 +300,13 @@ const createGuests = (
     guest.outSince = now
     guest.stayFor = random(35, 80)
     const diyasNow = porch.diyas?.placedAt().length ?? Infinity
-    const bringing = porch.diyas && guestDiyas < mostGuestDiyas && diyasNow < mostDiyas && now >= guest.nextDiyaAt
-      && chance(0.6)
+    const bringing = porch.diyas && room(diyasNow) && now >= guest.nextDiyaAt && chance(0.6)
     const steps: Step[] = [
       {do: "walk", to: sill, pace: 0.7},
       {do: "walk", to: {x: outside.x + random(-10, 10), y: outside.y + random(4, 14)}, pace: 0.8},
     ]
     if (bringing) {
-      const spot = freeSpot(keepFromDiya, undefined, 80, guests.flatMap(other => other.carrying ? [other.carrying] : []))
+      const spot = freeSpot(keepFromDiya, {avoid: guests.flatMap(other => other.carrying ? [other.carrying] : [])})
       if (spot) {
         guest.carrying = spot
         guest.figure.carrying(true)
@@ -330,7 +351,7 @@ const createGuests = (
     }
     if (leader && chance(0.75)) {
       const near = {x: leader.x - leader.facing * random(18, 30), y: clamp(leader.y + random(2, 10), porchBack + 6, porchFront - 4)}
-      const spot = isOnFloor(near) ? near : freeSpot(10, leader, 40)
+      const spot = isOnFloor(near) ? near : freeSpot(10, {near: leader, reach: 40, from: guest})
       return [
         ...(spot ? [{do: "walk", to: spot, pace: random(0.9, 1.2)} as Step] : []),
         {do: "act", action: chance(0.3) ? "talk" : "idle", for: random(0.8, 2.5), face: leader},
@@ -350,10 +371,10 @@ const createGuests = (
       }
     } else if (roll < 0.4) {
       // Over to admire something lit
-      const lit = [...(porch.kandils?.litAt() ?? []), ...(porch.diyas?.placedAt() ?? [])]
+      const lit = [...(porch.kandils?.litAt() ?? []), ...(porch.diyas?.placedAt().filter(diya => diya.lit) ?? [])]
       if (lit.length) {
         const thing = pick(lit)
-        const spot = freeSpot(keepFromDiya, thing, 60)
+        const spot = freeSpot(keepFromDiya, {near: thing, reach: 60, from: guest})
         if (spot) {
           const up = thing.y < porchBack - 20
           return [
@@ -364,7 +385,7 @@ const createGuests = (
       }
     }
     // Or a stroll to somewhere on the porch, and a look round
-    const spot = freeSpot(keepFromDiya)
+    const spot = freeSpot(keepFromDiya, {from: guest})
     const steps: Step[] = spot ? [{do: "walk", to: spot, pace: random(0.75, 1.1)}] : []
     steps.push({do: "act", action: "idle", for: random(1, 4)})
     if (chance(0.4)) {
@@ -380,7 +401,8 @@ const createGuests = (
     // Whatever they were carrying they still mean to put down after
     const after = () => guest.carrying ? putDown(guest) : []
     if (kind === "bang") {
-      if (away > 320 || now < guest.startledUntil) {
+      // Heard from across the porch, even from a rocket bursting high above it
+      if (Math.abs(guest.x - at.x) > bangHeard || now < guest.startledUntil) {
         return
       }
       const flinch = child && chance(0.6) ? "cheer" : "startle"
@@ -397,7 +419,7 @@ const createGuests = (
         // Too close: back off from it, quickly, then watch
         const dx = guest.x - at.x || (chance(0.5) ? 1 : -1)
         const back = {x: at.x + Math.sign(dx) * keepFromAlight * 1.2, y: clamp(guest.y + random(-10, 10), porchBack + 6, porchFront - 4)}
-        const spot = isOnFloor(back) ? back : freeSpot(10, back, 60)
+        const spot = isOnFloor(back) ? back : freeSpot(10, {near: back, reach: 60})
         guest.plan = [...(spot ? [{do: "walk", to: spot, pace: 1.7} as Step] : []), watch, ...after()]
       } else if (chance(0.7)) {
         guest.plan = [watch, ...after()]
@@ -419,7 +441,7 @@ const createGuests = (
       if (away > 280 || !chance(0.6)) {
         return
       }
-      const spot = freeSpot(keepFromDiya, at, 50)
+      const spot = freeSpot(keepFromDiya, {near: at, reach: 50, from: guest})
       guest.plan = [
         ...(spot ? [{do: "walk", to: spot, pace: random(0.8, 1.1)} as Step] : []),
         {do: "act", action: "namaste", for: random(1.5, 2.5), face: at},
@@ -485,7 +507,8 @@ const createGuests = (
       }
       done = guest.elapsed >= step.for
     } else if (step.do === "place") {
-      if (guest.carrying && porch.diyas) {
+      // Unless the porch has filled up since they set out, in which case they keep it
+      if (guest.carrying && porch.diyas && room(porch.diyas.placedAt().length, guest)) {
         porch.diyas.placeLitDiya(guest.carrying, guest.facing > 0 ? "right" : "left")
         guestDiyas++
       }

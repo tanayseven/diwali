@@ -758,8 +758,9 @@ const createDiyaInventory = (
   return {
     container,
     layout: bar.layout,
-    // Where each placed diya is in the scene, for the guests on the porch
-    placedAt: () => placed.map(({sprite}) => ({x: sprite.x, y: sprite.y})),
+    // Where each placed diya is in the scene, and whether it's lit, for the guests on
+    // the porch
+    placedAt: () => placed.map(({sprite, lit}) => ({x: sprite.x, y: sprite.y, lit})),
     // A guest puts down a diya they've brought, lit, at a point in the scene, facing
     // one way or the other. It's the player's from then on, to move, turn, or put on
     // the stack, which it adds to, as one of theirs would
