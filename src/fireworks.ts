@@ -565,6 +565,14 @@ const createFireworks = (
   const blastSounds = blastSoundUrls.map(url => audio.createEffect(url))
   const playSutliSound = audio.createEffect(sutliSoundUrl)
   const playRocketSound = audio.createEffect(rocketSoundUrl)
+  // Where a sound's heard from, left or right, and how muffled, by where it's made: off
+  // screen, it's muffled, more the further off. And moving one on as what makes it moves,
+  // or the camera does
+  const heardFrom = (at: PointData): [number, number] => [background.panOf(at), background.muffleOf(at)]
+  const moveSound = (sound: Placed["sound"], at: PointData) => {
+    sound?.setPan(background.panOf(at))
+    sound?.setMuffle(background.muffleOf(at))
+  }
   const container = new Container()
   // Over the whole screen, under the HUD, for the blasts' flashes
   const screenFlash = new Graphics()
@@ -1118,7 +1126,7 @@ const createFireworks = (
       }
       if (anar.elapsed >= fuseDuration) {
         anar.state = "burning"
-        anar.sound = playAnarSound(background.panOf(anar.sprite.position))
+        anar.sound = playAnarSound(...heardFrom(anar.sprite.position))
         haptics.anar()
         happen("show", anar.sprite.position)
         for (let idx = 0; idx < catchPuffs; idx++) {
@@ -1130,7 +1138,7 @@ const createFireworks = (
       strength = fountainStrength(anar)
       anar.sound?.setLevel(strength * anarVolume)
       // Still heard from where it is as the camera pans
-      anar.sound?.setPan(background.panOf(anar.sprite.position))
+      moveSound(anar.sound, anar.sprite.position)
       anar.sparkDebt += maxSparkRate * strength * dt
       while (anar.sparkDebt >= 1) {
         anar.sparkDebt--
@@ -1203,7 +1211,7 @@ const createFireworks = (
     flash = 1
     flashAlpha = screenFlashAlpha
     flashFade = blastFade
-    blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(at))
+    blastSounds[Math.floor(Math.random() * blastSounds.length)](...heardFrom(at))
     haptics.cracker()
     happen("bang", at)
   }
@@ -1317,7 +1325,7 @@ const createFireworks = (
       if (chakri.elapsed >= chakriFuse.duration) {
         chakri.state = "burning"
         chakri.burnFor = random(chakriBurn.min, chakriBurn.max)
-        chakri.sound = playChakriSound(background.panOf(chakri.sprite.position))
+        chakri.sound = playChakriSound(...heardFrom(chakri.sprite.position))
         haptics.chakri()
         happen("show", chakri.sprite.position)
       }
@@ -1328,7 +1336,7 @@ const createFireworks = (
       strength = spinStrength(chakri)
       chakri.sound?.setLevel(strength)
       // Heard from where it's skittered to, and as the camera pans
-      chakri.sound?.setPan(background.panOf(chakri.sprite.position))
+      moveSound(chakri.sound, chakri.sprite.position)
       // Its drawings burn through the coil, after the whole one with its wick
       const frame = 1 + Math.min(chakriUrls.length - 3, Math.floor(progress * (chakriUrls.length - 2)))
       chakri.sprite.texture = Assets.get<Texture>(chakriUrls[frame])
@@ -1478,7 +1486,7 @@ const createFireworks = (
     flash = 1
     flashAlpha = sutliFlashAlpha
     flashFade = sutliFade
-    playSutliSound(background.panOf(at))
+    playSutliSound(...heardFrom(at))
     haptics.sutli()
     happen("bang", at)
   }
@@ -1546,7 +1554,7 @@ const createFireworks = (
     sprite.rotation = lean
     background.decorations.addChild(sprite)
     rocket.sprite.texture = Assets.get<Texture>(rocketUrls.bottle)
-    rocket.sound = playRocketSound(background.panOf(nozzle))
+    rocket.sound = playRocketSound(...heardFrom(nozzle))
     haptics.rocketLaunch()
     happen("show", nozzle)
     for (let idx = 0; idx < catchPuffs; idx++) {
@@ -1585,7 +1593,7 @@ const createFireworks = (
     flash = 1
     flashAlpha = screenFlashAlpha
     flashFade = blastFade
-    blastSounds[Math.floor(Math.random() * blastSounds.length)](background.panOf(rocket.lightAt))
+    blastSounds[Math.floor(Math.random() * blastSounds.length)](...heardFrom(rocket.lightAt))
     haptics.rocketBurst()
     happen("bang", rocket.lightAt)
     rocket.sound?.stop()
@@ -1630,7 +1638,7 @@ const createFireworks = (
       flight.y += flight.vy * dt
       flight.sprite.position.set(flight.x, flight.y)
       flight.sprite.rotation = Math.atan2(flight.vx, -flight.vy)
-      rocket.sound?.setPan(background.panOf(flight))
+      moveSound(rocket.sound, flight)
 
       // Sparks stream back out of its nozzle, a shower while it's driven and a dribble
       // as it coasts, and fall back to the porch around its bottle
