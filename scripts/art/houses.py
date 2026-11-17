@@ -213,6 +213,9 @@ def thulasi_mana():
         window(428, 118, 26, 56, panes=1, frame=WOOD_DARK),
         railing(160, 230, 160, 32, WOOD_DARK, 8),
         rect(160, 120, 70, 40, DARK),
+        # The gable's filled in under its roof, down to the top of the wall, with the
+        # wooden panel in it
+        poly([(130, 114), (305, 30), (485, 114)], WALL),
         tiles([(110, 108), (305, 14), (505, 108), (485, 114), (305, 34), (130, 114)], 20, 110, 130, 480),
         poly([(195, 100), (305, 42), (415, 100)], WOOD_DARK),
         *[line(195 + i * 22, 100, 195 + i * 22, max(42, 100 - min(i * 22, 220 - i * 22) * 0.53), WOOD, 3) for i in range(1, 10)],
