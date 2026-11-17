@@ -6,6 +6,7 @@ import {createDiyaInventory, diyaAssets, diyaImages} from "./diyaInventory"
 import {createHouseLights, fairyLightAssets} from "./fairyLights"
 import {createFireworks, fireworksAssets} from "./fireworks"
 import {createFooter} from "./footer"
+import {createGuests} from "./guests"
 import {startHints} from "./hints"
 import {createHudToggle} from "./hudToggle"
 import {createKandils, kandilAssets} from "./kandil"
@@ -138,23 +139,29 @@ const main = async () => {
   const controls: Partial<Record<Tool, ToolControls>> = {}
   // What either bar's matchstick can light: diyas and fireworks alike
   const lightables: Lightable[] = []
-  if (loaded(diyaAssets)) {
-    const diyas = createDiyaInventory(app, background, lighting, audio, lightables)
+  const diyas = loaded(diyaAssets) ? createDiyaInventory(app, background, lighting, audio, lightables) : undefined
+  if (diyas) {
     diyas.setInteractive(true)
     controls.diyas = diyas
   }
-  if (loaded(fireworksAssets)) {
-    const fireworks = createFireworks(app, background, lighting, audio, wind, lightables)
+  const fireworks = loaded(fireworksAssets) ? createFireworks(app, background, lighting, audio, wind, lightables) : undefined
+  if (fireworks) {
     fireworks.setInteractive(true)
     controls.fireworks = fireworks
   }
-  if (loaded(kandilAssets)) {
-    controls.kandil = createKandils(app, background, lighting, wind)
+  const kandils = loaded(kandilAssets) ? createKandils(app, background, lighting, wind) : undefined
+  if (kandils) {
+    controls.kandil = kandils
   }
   if (loaded(fairyLightAssets)) {
     controls.decorate = createHouseLights(app, background, lighting, wind)
   }
   controls.rangoli = createRangoli(app, background)
+  // The family, out on the porch to celebrate, unless asked not to be, as the tests
+  // that look at what's on screen do
+  if (new URLSearchParams(window.location.search).get("guests") !== "off") {
+    createGuests(app, background, lighting, {diyas, fireworks, kandils})
+  }
   // A "?" badge, and a faint outline, on whatever's placed and still to be finished,
   // such as an unlit diya, which shows what to do next with it
   startHints(app)

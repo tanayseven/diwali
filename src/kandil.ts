@@ -9,6 +9,7 @@ import {mostOverlapped, screenBox} from "./overlap"
 import {accelerate, airFriction, createParticleBody, hangingWorld, place as placeBody, velocityOf} from "./physics"
 import {addHint} from "./hints"
 import {haptics, refusalShown} from "./feedback"
+import {happen} from "./happenings"
 import {setOutline} from "./outline"
 import {addTooltip, showTooltipOf, Tooltip} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
@@ -473,6 +474,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
 
   const light = (kandil: Kandil) => {
     haptics.lit()
+    happen("kandil", kandil.container.position)
     kandil.lit = true
     kandil.light = lighting.addLight(lampColours[kandil.paper!])
     litLayer.addChild(kandil.container)
@@ -615,6 +617,10 @@ const createKandils = (app: Application, background: Background, lighting: Light
   return {
     container,
     layout: bar.layout,
+    // Where each kandil standing on the porch is in the scene, for the guests there to
+    // keep clear of, and each lit one, standing or hung, for them to look at
+    standingAt: () => placed.flatMap(({place}) => place.on === "porch" ? [place.at] : []),
+    litAt: () => placed.filter(kandil => kandil.lit).map(({container}) => ({x: container.x, y: container.y})),
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Craft Kandil tool is the one in use

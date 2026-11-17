@@ -63,6 +63,14 @@ const porchFloor: PointData[] = [
   fromHouseSvg(131.386, 815.426),
 ]
 
+// The open front door, from its top to the step at its foot, where the guests come and
+// go, and the pots of plants standing on the porch, by the middle of their feet
+const doorway = {topLeft: fromHouseSvg(860, 475), bottomRight: fromHouseSvg(942, 660)}
+const porchPots = [
+  fromHouseSvg(215, 800), fromHouseSvg(670, 710), fromHouseSvg(750, 685), fromHouseSvg(1080, 685),
+  fromHouseSvg(1320, 685), fromHouseSvg(1358, 730), fromHouseSvg(1522, 820), fromHouseSvg(1604, 800),
+]
+
 // The bottom edges of the roofs' eaves, which things can hang from: the upper storey's,
 // the porch roof's and the two wings', each from its left end to its right
 const eaves = [
@@ -472,5 +480,5 @@ const createBackground = (app: Application) => {
 
 type Background = ReturnType<typeof createBackground>
 
-export {addBackgroundAssets, backgroundAssets, createBackground, groundBelow, houseUrl, porchFloor, sceneHeight, sceneWidth, scenery, skylineUrls}
+export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houseUrl, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
 export type {Background}

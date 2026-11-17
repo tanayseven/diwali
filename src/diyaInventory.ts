@@ -8,6 +8,7 @@ import {addHint} from "./hints"
 import {createMatchHand, createMatchstick, draggedFrom, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy, screenBox} from "./overlap"
 import {haptics, refusalShown} from "./feedback"
+import {happen} from "./happenings"
 import {setOutline} from "./outline"
 import {addTooltip, showTooltipOf, Tooltip, wasLongPressed} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
@@ -417,9 +418,13 @@ const createDiyaInventory = (
     app.ticker.add(tick)
   }
 
-  // The held match lights a diya's wick
-  const light = (diya: PlacedDiya) => {
-    haptics.lit()
+  // The held match lights a diya's wick, or a guest puts down one they've brought lit,
+  // which only they notice
+  const light = (diya: PlacedDiya, byGuest = false) => {
+    if (!byGuest) {
+      haptics.lit()
+      happen("diya", diya.sprite.position)
+    }
     diya.lit = true
     diya.light = lighting.addLight(diyaLightColour)
     diya.glow = new Sprite(lighting.glowTexture)
@@ -509,15 +514,20 @@ const createDiyaInventory = (
     nothingToLight: () => refuse(matchSlot),
   })
 
+  // A diya, with its tooltip and hint, not yet placed
+  const newDiya = (filled = false) => {
+    const diya: PlacedDiya = {sprite: new Sprite(), wick: filled, oil: filled, lit: false, busy: false, facing: "right"}
+    addTooltip(diya.sprite, diyaTooltip(diya))
+    addHint(diya.sprite, diyaHint(diya), diyaBowl)
+    return diya
+  }
+
   diyaSlot.container.on("pointerdown", e => {
     if (emptyDiyas.count === 0 || drag) {
       return
     }
     emptyDiyas.count! -= 1
-    const diya: PlacedDiya = {sprite: new Sprite(), wick: false, oil: false, lit: false, busy: false, facing: "right"}
-    addTooltip(diya.sprite, diyaTooltip(diya))
-    addHint(diya.sprite, diyaHint(diya), diyaBowl)
-    startDiyaDrag(e.global, e.pointerType, diya)
+    startDiyaDrag(e.global, e.pointerType, newDiya())
   })
 
   wickSlot.container.on("pointerdown", e => {
@@ -748,6 +758,18 @@ const createDiyaInventory = (
   return {
     container,
     layout: bar.layout,
+    // Where each placed diya is in the scene, and whether it's lit, for the guests on
+    // the porch
+    placedAt: () => placed.map(({sprite, lit}) => ({x: sprite.x, y: sprite.y, lit})),
+    // A guest puts down a diya they've brought, lit, at a point in the scene, facing
+    // one way or the other. It's the player's from then on, to move, turn, or put on
+    // the stack, which it adds to, as one of theirs would
+    placeLitDiya(at: PointData, facing: "left" | "right") {
+      const diya = newDiya(true)
+      diya.facing = facing
+      placeDiya(diya, at)
+      light(diya, true)
+    },
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     // Shows its bar, while the Diyas tool is the one in use. The match is put away
