@@ -360,10 +360,10 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     string.container.destroy({children: true})
   }
 
-  // Both ends have to be on the same house, and far enough apart
+  // Both ends have to be on the player's house, and far enough apart
   const canHang = (from: PointData, to: PointData) => {
-    const house = background.houseAt(from)
-    return house >= 0 && background.houseAt(to) === house && Math.hypot(to.x - from.x, to.y - from.y) >= minLength
+    const house = background.home()
+    return background.houseAt(from) === house && background.houseAt(to) === house && Math.hypot(to.x - from.x, to.y - from.y) >= minLength
   }
 
   // A point on the house moved onto the eave it's just by, if it's by one, so a string's
@@ -436,7 +436,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     }
     // A finger holds the bulb up and to its left, where it starts
     const at = snap(e.pointerType === "touch" ? background.toScene(touch.follow(e.global, e.pointerType)) : pressed)
-    if (!background.isOnHouse(at)) {
+    if (!background.isOnHomeHouse(at)) {
       touch.hide()
       return false
     }
@@ -555,7 +555,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       return
     }
     const at = snap(background.toScene(stage))
-    hovering = {at, onHouse: background.isOnHouse(at)}
+    hovering = {at, onHouse: background.isOnHomeHouse(at)}
   }
   const onLeave = () => {
     hovering = undefined
@@ -627,6 +627,15 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     pressHandler,
+    // Hangs a string of lights on a neighbour's house, of a colour by its place among
+    // them, or mixed, that can't be picked up or moved
+    hangFixed(from: PointData, to: PointData, colour: number) {
+      const string = createString({...from}, {...to}, choices[colour % choices.length])
+      string.container.eventMode = "none"
+      string.container.cursor = "default"
+      build(string)
+      strings.push(string)
+    },
     // Shows its bar, while the Decorate House tool is the one in use
     setHudShown(shown: boolean) {
       hudShown = shown

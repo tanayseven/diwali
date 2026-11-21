@@ -57,7 +57,11 @@ before(async () => {
   const context = await browser.newContext(phone)
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
-    // Without the guided first run, which has a test of its own, in a game of its own
+    // In the first house, without picking it, and without the guided first run, which
+    // have a test of their own, in a game of their own
+    if (!localStorage.getItem("diwali-house")) {
+      localStorage.setItem("diwali-house", "deepaNiwas")
+    }
     if (!localStorage.getItem("diwali-introduced-tools")) {
       localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
     }
@@ -488,7 +492,7 @@ test("the gear opens the settings, where the music's turned off, which is rememb
   await panel.waitFor({state: "hidden", timeout: 3000})
 })
 
-test("the guided first run waits for each step to be done, and Skip ends it", async () => {
+test("the first visit picks a house, then the guided first run waits for each step to be done, and Skip ends it", async () => {
   // A first visit of its own, muted
   const context = await browser.newContext(phone)
   await context.addInitScript(settings => localStorage.setItem("diwali-audio", JSON.stringify(settings)), muted)
@@ -502,6 +506,29 @@ test("the guided first run waits for each step to be done, and Skip ends it", as
       await first.waitForTimeout(900)
       await first.touchscreen.tap(screen.width / 2, screen.height / 2)
     }
+    // Every house on the street to pick from, and the first picked, and remembered
+    const picker = first.getByRole("dialog", {name: "Pick your house"})
+    await picker.waitFor({timeout: 10000})
+    assert.equal(await picker.getByRole("button").count(), 6)
+    // Once it's faded in, as taps before then are taken to be meant for the screen before
+    await first.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Pick your house']")).opacity === "1")
+    await first.waitForTimeout(500)
+    await picker.getByRole("button", {name: "Deepa Niwas"}).tap()
+    // Fading out can take a while on a slow, busy machine, as the tests' runner can be
+    try {
+      await picker.waitFor({state: "hidden", timeout: 20000})
+    } catch (error) {
+      const state = await first.evaluate(() => {
+        const shown = document.querySelector("[aria-label='Pick your house']")
+        return {
+          house: localStorage.getItem("diwali-house"),
+          opacity: shown ? getComputedStyle(shown).opacity : "gone",
+          disabled: [...document.querySelectorAll("[aria-label='Pick your house'] button")].map(button => button.disabled),
+        }
+      })
+      throw new Error(`the house picker didn't close: ${JSON.stringify(state)}`, {cause: error})
+    }
+    assert.equal(await first.evaluate(() => localStorage.getItem("diwali-house")), "deepaNiwas")
     // After how to zoom
     const card = first.getByRole("status")
     await first.getByText("1 / 5").waitFor({timeout: 30000})
@@ -529,6 +556,7 @@ test("in the Android app, a kandil lit in a later session is followed, after a p
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
     localStorage.setItem("diwali-introduced-tools", JSON.stringify(
       ["zoom", "tour", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
+    localStorage.setItem("diwali-house", "deepaNiwas")
     if (!localStorage.getItem("diwali-rating")) {
       localStorage.setItem("diwali-rating", JSON.stringify({sessions: 1, askFrom: 2, never: false}))
     }

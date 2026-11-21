@@ -75,6 +75,11 @@ const or = {
 		later: "ଏବେ ନୁହେଁ",
 		never: "ଆଉ ପଚାରନ୍ତୁ ନାହିଁ",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "ଆପଣଙ୍କ ଘର ବାଛନ୍ତୁ",
+		hint: "ଦୀପାବଳି ପାଇଁ ଏହାକୁ ସଜାନ୍ତୁ। ଆପଣଙ୍କ ପଡ଼ୋଶୀମାନେ ସେମାନଙ୍କ ଘର ଆଗରୁ ସଜାଇ ସାରିଛନ୍ତି, ଏବଂ ସେମାନଙ୍କ ପରିବାର ବାହାରେ ଉତ୍ସବ ପାଳନ କରୁଛନ୍ତି।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ସେଟିଂସ୍",
@@ -86,6 +91,8 @@ const or = {
 		language: "ଭାଷା",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "ଝଲସ କମାନ୍ତୁ",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "ଆପଣଙ୍କ ଘର",
 	},
 	tooltip: {
 		hintButton: "ଏହା ପରେ କ'ଣ କରିବେ",

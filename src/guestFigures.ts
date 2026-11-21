@@ -384,6 +384,9 @@ const makeLook = (role: Role, random: () => number): Look => {
 type Action =
   | "idle" | "cheer" | "clap" | "startle" | "namaste" | "bend" | "carry" | "talk"
   | {point: PointData}
+  // Head tipped back to look up at something high, like a rocket climbing or bursting,
+  // cheering or clapping as they do, or with their arms down
+  | {lookUp: PointData, with?: "cheer" | "clap"}
 
 const easeRate = 9
 
@@ -575,6 +578,22 @@ const createFigure = (look: Look) => {
       target.arms[1] = -0.3 + Math.sin(time * 2.1) * 0.1
       target.elbows[1] = -1 + Math.sin(time * 4.2) * 0.35
       target.head = Math.sin(time * 2.1) * 0.06
+    } else if (typeof action === "object" && "lookUp" in action) {
+      // The head tipped back towards it, as far as a neck goes, leaning back a little,
+      // and cheering or clapping, or not
+      const at = root.parent ? root.toLocal(action.lookUp, root.parent) : action.lookUp
+      const angle = Math.atan2(at.y - neck.y, Math.abs(at.x - neck.x))
+      target.head = Math.max(-0.8, Math.min(0, angle * 0.7))
+      target.lean = -0.06
+      if (action.with === "cheer") {
+        target.arms = both(-2.6, -2.75)
+        target.elbows = both(-0.25 + Math.sin(time * 9) * 0.35, -0.25 - Math.sin(time * 9) * 0.35)
+        target.hop = Math.abs(Math.sin(time * 5.5)) * 3
+      } else if (action.with === "clap") {
+        const clap = Math.abs(Math.sin(time * 7)) * 0.35
+        target.arms = both(-0.45, -0.55)
+        target.elbows = both(-1.35 + clap, -1.35 - clap)
+      }
     } else if (typeof action === "object") {
       // An arm out straight towards it, and the head turned up to it. The point's in
       // the root's parent, and they're turned to face it already

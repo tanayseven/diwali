@@ -75,6 +75,11 @@ const sa = {
 		later: "इदानीं न",
 		never: "पुनः न पृच्छतु",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "स्वगृहं चिनोतु",
+		hint: "दीपावल्यै तद् अलङ्करोतु। भवतः प्रतिवेशिनः स्वगृहाणि पूर्वमेव अलङ्कृतवन्तः, तेषां कुटुम्बानि च बहिः उत्सवम् आचरन्ति।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "विन्यासाः",
@@ -86,6 +91,8 @@ const sa = {
 		language: "भाषा",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "स्फुरणं न्यूनीकरोतु",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "भवतः गृहम्",
 	},
 	tooltip: {
 		hintButton: "अग्रे किं करणीयम्",

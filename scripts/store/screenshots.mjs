@@ -36,6 +36,7 @@ page.on("pageerror", error => console.error("Page error:", error.message))
 // first step, nor how to zoom, nor the guided first run, nor how to make a kandil, is
 // shown over the scene
 await page.addInitScript(() => {
+  localStorage.setItem("diwali-house", "deepaNiwas")
   localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "tour", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
 })
 

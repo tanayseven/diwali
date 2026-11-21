@@ -77,6 +77,14 @@ const shapes: Record<Layer, Record<string, () => Line[]>> = {
 type Choice = {shape: string, colour: string}
 type Design = Record<Layer, Choice>
 
+// A design of a shape for each layer, none left empty but the border now and then, each
+// in a colour of powder, picked by a source of random numbers from 0 to 1
+const randomDesign = (colourNames: string[], random: () => number): Design => {
+  const pick = <T>(items: T[]) => items[Math.floor(random() * items.length)]
+  const shapesOf = (layer: Layer) => Object.keys(shapes[layer]).filter(shape => shape !== "none")
+  return Object.fromEntries(layers.map(layer => [layer, {shape: pick(shapesOf(layer)), colour: pick(colourNames)}])) as Design
+}
+
 // A design's lines, each in its layer's colour
 const designLines = (design: Design) => layers.flatMap(layer =>
   shapes[layer][design[layer].shape]().map(points => ({points, colour: design[layer].colour})))
@@ -306,5 +314,5 @@ const createDesignPicker = (
   }
 }
 
-export {createDesignPicker, designLines, layers, shapes}
+export {createDesignPicker, designLines, layers, randomDesign, shapes}
 export type {Design, Layer}

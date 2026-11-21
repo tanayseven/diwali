@@ -75,6 +75,11 @@ const gu = {
 		later: "હમણાં નહીં",
 		never: "ફરી ન પૂછશો",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "તમારું ઘર પસંદ કરો",
+		hint: "તેને દિવાળી માટે શણગારો. તમારા પડોશીઓએ પોતાનાં ઘર પહેલેથી જ શણગારી દીધાં છે, અને તેમના પરિવારો બહાર ઉજવણી કરી રહ્યા છે.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "સેટિંગ્સ",
@@ -86,6 +91,8 @@ const gu = {
 		language: "ભાષા",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "ઝબકારા ઓછા કરો",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "તમારું ઘર",
 	},
 	tooltip: {
 		hintButton: "હવે શું કરવું",

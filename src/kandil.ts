@@ -333,10 +333,10 @@ const createKandils = (app: Application, background: Background, lighting: Light
     }
     const top = background.toScene(at)
     const foot = {x: top.x, y: top.y + baseY * kandilScale}
-    if (background.isOnPorchFloor(foot)) {
+    if (background.isOnHomePorch(foot)) {
       return {on: "porch", at: foot}
     }
-    if (!background.isOnHouse(top)) {
+    if (!background.isOnHomeHouse(top)) {
       return undefined
     }
     const tiedAt = {x: top.x, y: background.eaveAbove(top) ?? top.y}
@@ -885,7 +885,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     for (const down of [0.2, 0.3, 0.15, 0.4]) {
       for (const across of [0, -0.1, 0.1, -0.2, 0.2, -0.3, 0.3]) {
         const at = {x: middle.x + across * (view.right - view.left), y: view.top + down * height}
-        if (at.x > view.left + margin && at.x < view.right - margin && background.isOnHouse(at)
+        if (at.x > view.left + margin && at.x < view.right - margin && background.isOnHomeHouse(at)
           && background.inView(at.x, at.y + baseY * kandilScale)) {
           return {eave: {x: at.x, y: background.eaveAbove(at) ?? at.y}, at}
         }
@@ -900,7 +900,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     const hangHere = eaves.flatMap(([left, right]) => {
       const x = Math.min(Math.min(right.x, view.right - margin), Math.max(Math.max(left.x, view.left + margin), middle.x))
       const at = {x, y: left.y + 4}
-      return x >= left.x && x <= right.x && background.inView(at.x, at.y) && background.isOnHouse(at)
+      return x >= left.x && x <= right.x && background.inView(at.x, at.y) && background.isOnHomeHouse(at)
         && background.inView(at.x, at.y + baseY * kandilScale) ? [{eave: {x, y: left.y}, at}] : []
     }).sort((a, b) => Math.hypot(a.at.x - middle.x, a.at.y - middle.y) - Math.hypot(b.at.x - middle.x, b.at.y - middle.y))[0]
       // Or, zoomed in with no eave on screen, from the house high up near the middle, by
@@ -997,6 +997,19 @@ const createKandils = (app: Application, background: Background, lighting: Light
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     demonstrate,
+    // Hangs a lit kandil on a neighbour's house, by its string from a point under an eave,
+    // in paper and tails by their place among them, that can't be picked up or given anything
+    hangFixed(tiedAt: PointData, length: number, paper: number, tails: number) {
+      const kandil = createKandil()
+      kandil.paper = papers[paper % papers.length]
+      kandil.tails = tailColours[tails % tailColours.length]
+      putKandil(kandil, {on: "house", tiedAt: {...tiedAt}, length}, false)
+      kandil.lit = true
+      kandil.light = lighting.addLight(lampColours[kandil.paper])
+      litLayer.addChild(kandil.container)
+      showKandil(kandil)
+      kandil.container.eventMode = "none"
+    },
     // Whether it's the tool in use; when it isn't, no kandil's left picked, and the
     // showing of how to make one ends
     setActive(active: boolean) {

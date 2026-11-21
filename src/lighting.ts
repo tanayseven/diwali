@@ -100,6 +100,14 @@ const createLighting = (app: Application, background: Background) => {
   inFrontOfHouse.eventMode = "none"
   houseShortfall.setMask({mask: inFrontOfHouse, inverse: true})
   background.decorations.addChild(houseShortfall, inFrontOfHouse)
+  // The same shapes again, for the glows of lights behind someone, which they stand in
+  // front of, to be cut out of. And where everyone standing out is, by the middle of their
+  // feet, how high their head is and how far they reach either side, to tell which lights
+  // they're in front of
+  const people = new Container()
+  people.eventMode = "none"
+  background.decorations.addChild(people)
+  const standing = new Map<object, {x: number, y: number, top: number, half: number}>()
   // Outlines of things in the scene, over everything there so the night never dims them
   const outlines = new Container()
   outlines.zIndex = sceneHeight + 20
@@ -122,6 +130,18 @@ const createLighting = (app: Application, background: Background) => {
     // Shapes of whatever stands in front of the houses, in the scene's units, for their
     // lit windows not to shine through them
     inFrontOfHouse,
+    people,
+    standing,
+    // Whether someone's standing in front of a light at a point, on the ground at a
+    // height, overlapping its glow this far round it
+    isBehindSomeone(at: PointData, ground: number, reach: number) {
+      for (const {x, y, top, half} of standing.values()) {
+        if (y > ground + 1 && Math.abs(x - at.x) < half + reach && at.y > top - reach && at.y < y + reach) {
+          return true
+        }
+      }
+      return false
+    },
     // A light of a colour, off until it's shone somewhere
     addLight(colour: number) {
       const light = new Sprite(glowTexture)

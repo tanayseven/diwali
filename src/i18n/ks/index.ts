@@ -75,6 +75,11 @@ const ks = {
 		later: "وۄنۍ نہٕ",
 		never: "دوبارٕ مہٕ پرٛژھِو",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "پنُن گرٕ ژارِو",
+		hint: "یہِ سجٲوِو دیوالی خٲطرٕ۔ توٚہی ہٕندۍ ہمسایہٕ چھِ پنٕنۍ گرٕ گۄڈٕے سجٲوِتھ، تہٕ تِہندۍ کٔنبہٕ چھِ نیبرٕ جشن مناوان۔",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سیٹِنگز",
@@ -86,6 +91,8 @@ const ks = {
 		language: "زبان",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "چمک کٔم کٔرِو",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "تُہُند گرٕ",
 	},
 	tooltip: {
 		hintButton: "پتہٕ کیا کرُن",

@@ -336,6 +336,9 @@ const createBackground = (app: Application) => {
   let zoomAnimation: {from: number, to: number, about: PointData, elapsed: number} | undefined
   let panFrom: Point | undefined
   let onPress: PressHandler | undefined
+  // The player's house, by its place along the street: the only one they can decorate
+  let home = houses.findIndex(({url}) => url === houseUrl)
+  const middleOf = (idx: number) => houses[idx].left + houses[idx].width / 2
   // What the camera's following, where it was last seen, how long it's been gone, and
   // where the camera was before, to go back to, or once it's going back, from where
   let following: {
@@ -652,6 +655,21 @@ const createBackground = (app: Application) => {
     },
     // Whether a point in the scene is on a porch's floor, of any house
     isOnPorchFloor: (point: PointData) => houses.some(({porch}) => isInside(point, porch)),
+    // The player's house, by its place along the street, which they decorate, and only
+    // they can, and whether a point's on its porch's floor, or on it
+    home: () => home,
+    isOnHomePorch: (point: PointData) => isInside(point, houses[home].porch),
+    isOnHomeHouse: (point: PointData) => {
+      const {left, width} = houses[home]
+      return point.x >= left - 2 && point.x <= left + width + 2 && onHouse(home, point)
+    },
+    // Makes a house the player's, and moves the camera across to it, framed as it frames
+    // the first house to begin with
+    setHome(idx: number) {
+      centre.x += middleOf(idx) - middleOf(home)
+      home = idx
+      layout()
+    },
     // How high the nearest eave straight above a point in the scene is, if there's one
     eaveAbove(point: PointData) {
       const above = houses.flatMap(house => house.eaves)

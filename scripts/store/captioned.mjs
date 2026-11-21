@@ -24,8 +24,8 @@ const captions = [
   {title: "Hang twinkling fairy lights", line: "Strings that sway in the evening breeze"},
   {title: "Lay a rangoli", line: "Make your own design and put it down in coloured powder"},
   {title: "Craft akash kandils", line: "Paper, tails and a bulb, step by step"},
-  {title: "Light up a whole street", line: "Six houses, with fireworks over the city"},
-  {title: "Celebrate with the family", line: "They light diyas and set off fireworks too"},
+  {title: "Pick your house on the street", line: "The neighbours have decorated theirs already"},
+  {title: "Celebrate with the family", line: "They light what you leave unlit, and clear up after"},
 ]
 
 const font = readFileSync(`${root}node_modules/@fontsource/jaini/files/jaini-latin-400-normal.woff2`).toString("base64")

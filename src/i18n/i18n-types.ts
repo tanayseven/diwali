@@ -241,6 +241,16 @@ type RootTranslation = {
 		 */
 		never: string
 	}
+	housePicker: {
+		/**
+		 * P​i​c​k​ ​y​o​u​r​ ​h​o​u​s​e
+		 */
+		heading: string
+		/**
+		 * D​e​c​o​r​a​t​e​ ​i​t​ ​f​o​r​ ​D​i​w​a​l​i​.​ ​Y​o​u​r​ ​n​e​i​g​h​b​o​u​r​s​ ​h​a​v​e​ ​d​e​c​o​r​a​t​e​d​ ​t​h​e​i​r​s​ ​a​l​r​e​a​d​y​,​ ​a​n​d​ ​t​h​e​i​r​ ​f​a​m​i​l​i​e​s​ ​a​r​e​ ​o​u​t​ ​c​e​l​e​b​r​a​t​i​n​g​.
+		 */
+		hint: string
+	}
 	settings: {
 		/**
 		 * S​e​t​t​i​n​g​s
@@ -274,6 +284,10 @@ type RootTranslation = {
 		 * R​e​d​u​c​e​ ​f​l​a​s​h​i​n​g
 		 */
 		reduceFlashing: string
+		/**
+		 * Y​o​u​r​ ​h​o​u​s​e
+		 */
+		house: string
 	}
 	tooltip: {
 		/**
@@ -802,6 +816,16 @@ export type TranslationFunctions = {
 		 */
 		never: () => LocalizedString
 	}
+	housePicker: {
+		/**
+		 * Pick your house
+		 */
+		heading: () => LocalizedString
+		/**
+		 * Decorate it for Diwali. Your neighbours have decorated theirs already, and their families are out celebrating.
+		 */
+		hint: () => LocalizedString
+	}
 	settings: {
 		/**
 		 * Settings
@@ -835,6 +859,10 @@ export type TranslationFunctions = {
 		 * Reduce flashing
 		 */
 		reduceFlashing: () => LocalizedString
+		/**
+		 * Your house
+		 */
+		house: () => LocalizedString
 	}
 	tooltip: {
 		/**

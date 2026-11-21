@@ -75,6 +75,11 @@ const asm = {
 		later: "এতিয়া নহয়",
 		never: "আকৌ নুসুধিব",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "আপোনাৰ ঘৰটো বাছক",
+		hint: "দীপাৱলীৰ বাবে ইয়াক সজাওক। আপোনাৰ চুবুৰীয়াসকলে নিজৰ ঘৰ আগতেই সজাই থৈছে, আৰু তেওঁলোকৰ পৰিয়াল বাহিৰত উৎসৱ পালন কৰিছে।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ছেটিংছ",
@@ -86,6 +91,8 @@ const asm = {
 		language: "ভাষা",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "জিলিকনি কমাওক",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "আপোনাৰ ঘৰ",
 	},
 	tooltip: {
 		hintButton: "ইয়াৰ পিছত কি কৰিব",
