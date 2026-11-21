@@ -53,6 +53,19 @@ const hi = {
 		unmute: "संगीत चालू करें",
 		volume: "आवाज़",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "पट्टी से एक दीया खींचकर बरामदे में रखें",
+		lightDiya: "अब बाती और तेल इस पर खींचें, फिर माचिस की तीली से इसे जलाएँ",
+		pickFireworks: "बाईं ओर से पटाखे चुनें",
+		firework: "एक अनार खींचकर बरामदे में रखें, फिर माचिस की तीली से उसे जलाएँ",
+		more: "इनसे आकाश कंदील बनाएँ, झालर टाँगें और रंगोली बनाएँ। दिवाली की शुभकामनाएँ!",
+		skip: "छोड़ें",
+		done: "हो गया",
+		// In the settings, to go through it again
+		title: "मार्गदर्शन",
+		replay: "फिर से दिखाएँ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

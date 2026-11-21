@@ -62,6 +62,19 @@ const en = {
 		unmute: "Unmute music",
 		volume: "Volume",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "Drag a diya from the bar onto the porch",
+		lightDiya: "Now drag a wick and the oil onto it, then light it with the matchstick",
+		pickFireworks: "Pick the fireworks from the left",
+		firework: "Drag an anar onto the porch, then light it with the matchstick",
+		more: "Make akash kandils, hang fairy lights and draw rangoli with these. Happy Diwali!",
+		skip: "Skip",
+		done: "Done",
+		// In the settings, to go through it again
+		title: "Walkthrough",
+		replay: "Show again",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",

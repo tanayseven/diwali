@@ -53,6 +53,19 @@ const or = {
 		unmute: "ସଙ୍ଗୀତ ଚାଲୁ କରନ୍ତୁ",
 		volume: "ଶବ୍ଦ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "ବାର୍‌ରୁ ଗୋଟିଏ ଦୀପ ଟାଣି ପିଣ୍ଡାରେ ରଖନ୍ତୁ",
+		lightDiya: "ଏବେ ସଳିତା ଓ ତେଲ ଏହା ଉପରକୁ ଟାଣନ୍ତୁ, ତା'ପରେ ଦିଆସିଲି କାଠିରେ ଏହାକୁ ଜାଳନ୍ତୁ",
+		pickFireworks: "ବାମ ପଟରୁ ବାଣ ବାଛନ୍ତୁ",
+		firework: "ଗୋଟିଏ ଅନାର ଟାଣି ପିଣ୍ଡାରେ ରଖନ୍ତୁ, ତା'ପରେ ଦିଆସିଲି କାଠିରେ ତାକୁ ଜାଳନ୍ତୁ",
+		more: "ଏଗୁଡ଼ିକରେ ଆକାଶଦୀପ ତିଆରି କରନ୍ତୁ, ଆଲୁଅ ମାଳ ଝୁଲାନ୍ତୁ ଓ ଝୋଟି ପକାନ୍ତୁ। ଦୀପାବଳିର ଶୁଭେଚ୍ଛା!",
+		skip: "ଛାଡ଼ନ୍ତୁ",
+		done: "ହୋଇଗଲା",
+		// In the settings, to go through it again
+		title: "ମାର୍ଗଦର୍ଶନ",
+		replay: "ପୁଣି ଦେଖାନ୍ତୁ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ସେଟିଂସ୍",

@@ -1,4 +1,5 @@
 import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {report} from "./progress"
 import type {createAudioControl} from "./audioControl"
 import {createBackground} from "./background"
 import {Item, createHud, cropped} from "./hud"
@@ -424,6 +425,7 @@ const createDiyaInventory = (
     if (!byGuest) {
       haptics.lit()
       happen("diya", diya.sprite.position)
+      report("diyaLit")
     }
     diya.lit = true
     diya.light = lighting.addLight(diyaLightColour)
@@ -641,6 +643,7 @@ const createDiyaInventory = (
       } else if (background.isOnPorchFloor(scene)) {
         placeDiya(current.diya, scene)
         haptics.placed()
+        report("diyaPlaced")
       } else {
         // Diyas only go on the porch's floor; let go anywhere else, it goes back, and
         // its slot says where it goes
@@ -772,6 +775,8 @@ const createDiyaInventory = (
     },
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
+    // Any slot of its bar, by its place along it, for the guided first run to point to
+    slotAt: (idx: number) => bar.slotAt(idx),
     // Shows its bar, while the Diyas tool is the one in use. The match is put away
     // with the bar
     setHudShown(shown: boolean) {

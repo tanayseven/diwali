@@ -53,6 +53,19 @@ const sat = {
 		unmute: "ᱥᱮᱨᱮᱧ ᱮᱦᱚᱵ ᱢᱮ",
 		volume: "ᱟᱲᱟᱝ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "ᱯᱟᱴᱤ ᱠᱷᱚᱱ ᱢᱤᱫᱴᱟᱝ ᱫᱤᱭᱟ ᱚᱨ ᱠᱟᱛᱮ ᱵᱟᱨᱟᱱᱰᱟ ᱨᱮ ᱫᱚᱦᱚ ᱢᱮ",
+		lightDiya: "ᱱᱤᱛᱚᱜ ᱵᱟᱛᱤ ᱟᱨ ᱥᱩᱱᱩᱢ ᱱᱚᱶᱟ ᱪᱮᱛᱟᱱ ᱚᱨ ᱢᱮ, ᱛᱟᱭᱚᱢ ᱫᱮᱥᱞᱟᱭ ᱠᱟᱴᱤ ᱛᱮ ᱡᱚᱞ ᱢᱮ",
+		pickFireworks: "ᱞᱮᱸᱜᱟ ᱥᱮᱫ ᱠᱷᱚᱱ ᱯᱟᱴᱟᱠᱟ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+		firework: "ᱢᱤᱫᱴᱟᱝ ᱟᱱᱟᱨ ᱚᱨ ᱠᱟᱛᱮ ᱵᱟᱨᱟᱱᱰᱟ ᱨᱮ ᱫᱚᱦᱚ ᱢᱮ, ᱛᱟᱭᱚᱢ ᱫᱮᱥᱞᱟᱭ ᱠᱟᱴᱤ ᱛᱮ ᱡᱚᱞ ᱢᱮ",
+		more: "ᱱᱚᱶᱟ ᱠᱚ ᱛᱮ ᱟᱠᱟᱥ ᱠᱟᱱᱰᱤᱞ ᱵᱮᱱᱟᱣ ᱢᱮ, ᱵᱤᱡᱞᱤ ᱢᱟᱨᱥᱟᱞ ᱚᱛᱚᱝ ᱢᱮ ᱟᱨ ᱨᱟᱝᱜᱚᱞᱤ ᱚᱞ ᱢᱮ᱾ ᱫᱤᱣᱟᱞᱤ ᱨᱮᱭᱟᱜ ᱥᱟᱹᱜᱩᱱ!",
+		skip: "ᱟᱲᱟᱜ ᱢᱮ",
+		done: "ᱪᱟᱵᱟ ᱮᱱᱟ",
+		// In the settings, to go through it again
+		title: "ᱦᱚᱨ ᱫᱮᱠᱷᱟᱣ",
+		replay: "ᱫᱩᱦᱲᱟᱹᱣ ᱩᱫᱩᱜ ᱢᱮ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ᱥᱮᱴᱤᱝᱥ",

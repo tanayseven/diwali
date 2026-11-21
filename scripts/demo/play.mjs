@@ -57,9 +57,12 @@ const browser = await chromium.launch({
   ...process.env.PLAYWRIGHT_CHROMIUM ? {executablePath: process.env.PLAYWRIGHT_CHROMIUM} : {},
 })
 const context = await browser.newContext(phone)
-// Heard, but quietly
+// Heard, but quietly, and without the guided first run, which it plays through itself
 await context.addInitScript(() => {
   localStorage.setItem("diwali-audio", JSON.stringify({volume: 0.3, muted: false}))
+  if (!localStorage.getItem("diwali-introduced-tools")) {
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
+  }
 })
 const page = await context.newPage()
 const errors = []

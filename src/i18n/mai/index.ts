@@ -53,6 +53,19 @@ const mai = {
 		unmute: "संगीत चालू करू",
 		volume: "आवाज",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "पट्टीसँ एकटा दीया घीचि क' ओसारा पर राखू",
+		lightDiya: "आब बाती आ तेल एहि पर घीचू, फेर सलाइक काठीसँ एकरा लेसू",
+		pickFireworks: "बामाँ दिससँ पटाखा चुनू",
+		firework: "एकटा अनार घीचि क' ओसारा पर राखू, फेर सलाइक काठीसँ ओकरा लेसू",
+		more: "एहिसँ आकाश कंदील बनाउ, झालर टाँगू आ रंगोली बनाउ। दिवालीक शुभकामना!",
+		skip: "छोड़ू",
+		done: "भ' गेल",
+		// In the settings, to go through it again
+		title: "मार्गदर्शन",
+		replay: "फेरसँ देखाउ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

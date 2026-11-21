@@ -1,4 +1,5 @@
 import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
+import {report} from "./progress"
 import {fontFamily, quality} from "./app"
 import {Background} from "./background"
 import type {Lighting} from "./lighting"
@@ -423,6 +424,10 @@ const createRangoli = (app: Application, background: Background, lighting: Light
   const onPointerUp = (e?: PointerEvent) => {
     if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId && background.isOnPorchFloor(placing.at)) {
       putDesign(placing.at, placing.made)
+      report("rangoliPlaced")
+    }
+    if (drawingNow && e?.type === "pointerup" && e.pointerId === drawingWith) {
+      report("rangoliDrawn")
     }
     placing = undefined
     drawingNow = false

@@ -53,6 +53,19 @@ const ks = {
 		unmute: "موسیقی چالو کٔرِو",
 		volume: "آواز",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "پٹی پیٹھٕ اَکھ ژونٛگ لٔمِتھ تھٲوِو برانڈس پیٹھ",
+		lightDiya: "وۄنۍ وَٹ تہٕ تیل اَتھ پیٹھ لٔمِو، پتہٕ ماچسہِ سٟتۍ زٲلِو",
+		pickFireworks: "کھوورِ طرفہٕ پٹاخہٕ ژٲرِو",
+		firework: "اَکھ انار لٔمِتھ تھٲوِو برانڈس پیٹھ، پتہٕ ماچسہِ سٟتۍ زٲلِو",
+		more: "یِمَو سٟتۍ آکاش قندیل بنٲوِو، جھالر لَگٲوِو تہٕ رنگولی بنٲوِو۔ دیوالی مبارک!",
+		skip: "ترٲوِو",
+		done: "مُکمل",
+		// In the settings, to go through it again
+		title: "رہنُمٲیی",
+		replay: "دوبارٕ ہٲوِو",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سیٹِنگز",

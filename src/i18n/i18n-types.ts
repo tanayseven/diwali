@@ -181,6 +181,44 @@ type RootTranslation = {
 		 */
 		volume: string
 	}
+	tour: {
+		/**
+		 * D​r​a​g​ ​a​ ​d​i​y​a​ ​f​r​o​m​ ​t​h​e​ ​b​a​r​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+		 */
+		diya: string
+		/**
+		 * N​o​w​ ​d​r​a​g​ ​a​ ​w​i​c​k​ ​a​n​d​ ​t​h​e​ ​o​i​l​ ​o​n​t​o​ ​i​t​,​ ​t​h​e​n​ ​l​i​g​h​t​ ​i​t​ ​w​i​t​h​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k
+		 */
+		lightDiya: string
+		/**
+		 * P​i​c​k​ ​t​h​e​ ​f​i​r​e​w​o​r​k​s​ ​f​r​o​m​ ​t​h​e​ ​l​e​f​t
+		 */
+		pickFireworks: string
+		/**
+		 * D​r​a​g​ ​a​n​ ​a​n​a​r​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h​,​ ​t​h​e​n​ ​l​i​g​h​t​ ​i​t​ ​w​i​t​h​ ​t​h​e​ ​m​a​t​c​h​s​t​i​c​k
+		 */
+		firework: string
+		/**
+		 * M​a​k​e​ ​a​k​a​s​h​ ​k​a​n​d​i​l​s​,​ ​h​a​n​g​ ​f​a​i​r​y​ ​l​i​g​h​t​s​ ​a​n​d​ ​d​r​a​w​ ​r​a​n​g​o​l​i​ ​w​i​t​h​ ​t​h​e​s​e​.​ ​H​a​p​p​y​ ​D​i​w​a​l​i​!
+		 */
+		more: string
+		/**
+		 * S​k​i​p
+		 */
+		skip: string
+		/**
+		 * D​o​n​e
+		 */
+		done: string
+		/**
+		 * W​a​l​k​t​h​r​o​u​g​h
+		 */
+		title: string
+		/**
+		 * S​h​o​w​ ​a​g​a​i​n
+		 */
+		replay: string
+	}
 	settings: {
 		/**
 		 * S​e​t​t​i​n​g​s
@@ -721,6 +759,44 @@ export type TranslationFunctions = {
 		 * Volume
 		 */
 		volume: () => LocalizedString
+	}
+	tour: {
+		/**
+		 * Drag a diya from the bar onto the porch
+		 */
+		diya: () => LocalizedString
+		/**
+		 * Now drag a wick and the oil onto it, then light it with the matchstick
+		 */
+		lightDiya: () => LocalizedString
+		/**
+		 * Pick the fireworks from the left
+		 */
+		pickFireworks: () => LocalizedString
+		/**
+		 * Drag an anar onto the porch, then light it with the matchstick
+		 */
+		firework: () => LocalizedString
+		/**
+		 * Make akash kandils, hang fairy lights and draw rangoli with these. Happy Diwali!
+		 */
+		more: () => LocalizedString
+		/**
+		 * Skip
+		 */
+		skip: () => LocalizedString
+		/**
+		 * Done
+		 */
+		done: () => LocalizedString
+		/**
+		 * Walkthrough
+		 */
+		title: () => LocalizedString
+		/**
+		 * Show again
+		 */
+		replay: () => LocalizedString
 	}
 	settings: {
 		/**

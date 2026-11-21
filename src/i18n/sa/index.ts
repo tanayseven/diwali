@@ -53,6 +53,19 @@ const sa = {
 		unmute: "सङ्गीतं चालयतु",
 		volume: "ध्वनिः",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "पट्टिकायाः एकं दीपम् आकृष्य अलिन्दे स्थापयतु",
+		lightDiya: "इदानीं वर्तिं तैलं च अस्मिन् कर्षतु, ततः अग्निशलाकया इमं प्रज्वालयतु",
+		pickFireworks: "वामतः स्फोटकान् चिनोतु",
+		firework: "एकम् अनारम् आकृष्य अलिन्दे स्थापयतु, ततः अग्निशलाकया तं प्रज्वालयतु",
+		more: "एभिः आकाशदीपान् रचयतु, दीपमालाः लम्बयतु, रङ्गवल्लीं च लिखतु। दीपावल्याः शुभाशयाः!",
+		skip: "त्यजतु",
+		done: "सम्पन्नम्",
+		// In the settings, to go through it again
+		title: "मार्गदर्शनम्",
+		replay: "पुनः दर्शयतु",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "विन्यासाः",

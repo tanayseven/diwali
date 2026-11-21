@@ -53,6 +53,19 @@ const ur = {
 		unmute: "موسیقی چلائیں",
 		volume: "آواز",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "پٹی سے ایک دیا کھینچ کر برآمدے میں رکھیں",
+		lightDiya: "اب بتی اور تیل اس پر کھینچیں، پھر ماچس کی تیلی سے اسے جلائیں",
+		pickFireworks: "بائیں طرف سے پٹاخے چنیں",
+		firework: "ایک انار کھینچ کر برآمدے میں رکھیں، پھر ماچس کی تیلی سے اسے جلائیں",
+		more: "ان سے آکاش قندیل بنائیں، جھالر لٹکائیں اور رنگولی بنائیں۔ دیوالی مبارک!",
+		skip: "چھوڑیں",
+		done: "ہو گیا",
+		// In the settings, to go through it again
+		title: "رہنمائی",
+		replay: "دوبارہ دکھائیں",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ترتیبات",

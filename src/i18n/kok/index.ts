@@ -53,6 +53,19 @@ const kok = {
 		unmute: "संगीत सुरू करात",
 		volume: "आवाज",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "पट्टयेसावन एक पणती ओडून सोप्यार दवरात",
+		lightDiya: "आतां वात आनी तेल ताचेर ओडात, मागीर काडयेन ती पेटयात",
+		pickFireworks: "दाव्या वटेनसावन फटाके वेंचात",
+		firework: "एक अनार ओडून सोप्यार दवरात, मागीर काडयेन तो पेटयात",
+		more: "हांचे वरवीं आकाशकंदील करात, दिव्यांची माळ लायात आनी रांगोळी काडात. दिवाळयेच्यो परबी!",
+		skip: "सोडात",
+		done: "जालें",
+		// In the settings, to go through it again
+		title: "मार्गदर्शन",
+		replay: "परत दाखयात",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्ज",

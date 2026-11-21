@@ -53,6 +53,19 @@ const mr = {
 		unmute: "संगीत सुरू करा",
 		volume: "आवाज",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "पट्टीवरून एक पणती ओढून ओसरीवर ठेवा",
+		lightDiya: "आता वात आणि तेल त्यावर ओढा, मग आगकाडीने ती पेटवा",
+		pickFireworks: "डावीकडून फटाके निवडा",
+		firework: "एक अनार ओढून ओसरीवर ठेवा, मग आगकाडीने तो पेटवा",
+		more: "इथून आकाशकंदील बनवा, दिव्यांची माळ लावा आणि रांगोळी काढा. दिवाळीच्या हार्दिक शुभेच्छा!",
+		skip: "वगळा",
+		done: "झाले",
+		// In the settings, to go through it again
+		title: "मार्गदर्शन",
+		replay: "पुन्हा दाखवा",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्ज",

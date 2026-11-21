@@ -53,6 +53,19 @@ const mni = {
 		unmute: "ꯏꯁꯩ ꯍꯧꯗꯣꯛꯄꯤꯌꯨ",
 		volume: "ꯈꯣꯟꯖꯦꯜ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "ꯕꯥꯔꯗꯒꯤ ꯊꯥꯎꯃꯩ ꯑꯃꯥ ꯆꯤꯡꯗꯨꯅꯥ ꯃꯪꯒꯣꯜꯗꯥ ꯊꯝꯕꯤꯌꯨ",
+		lightDiya: "ꯍꯧꯖꯤꯛ ꯕꯇꯤ ꯑꯃꯁꯨꯡ ꯊꯥꯎ ꯃꯁꯤꯒꯤ ꯃꯊꯛꯇꯥ ꯆꯤꯡꯕꯤꯌꯨ, ꯃꯗꯨꯒꯤ ꯃꯇꯨꯡꯗꯥ ꯃꯦꯆ ꯆꯩꯅꯥ ꯃꯩ ꯊꯥꯕꯤꯌꯨ",
+		pickFireworks: "ꯑꯣꯏ ꯃꯥꯏꯀꯩꯗꯒꯤ ꯄꯇꯥꯀꯥꯁꯤꯡ ꯈꯟꯕꯤꯌꯨ",
+		firework: "ꯑꯅꯥꯔ ꯑꯃꯥ ꯆꯤꯡꯗꯨꯅꯥ ꯃꯪꯒꯣꯜꯗꯥ ꯊꯝꯕꯤꯌꯨ, ꯃꯗꯨꯒꯤ ꯃꯇꯨꯡꯗꯥ ꯃꯦꯆ ꯆꯩꯅꯥ ꯃꯩ ꯊꯥꯕꯤꯌꯨ",
+		more: "ꯃꯁꯤꯁꯤꯡꯅꯥ ꯑꯇꯤꯌꯥ ꯊꯥꯎꯃꯩ ꯁꯦꯝꯕꯤꯌꯨ, ꯃꯉꯥꯜ ꯃꯔꯤ ꯌꯥꯡꯕꯤꯌꯨ ꯑꯃꯁꯨꯡ ꯔꯪꯒꯣꯂꯤ ꯌꯦꯛꯄꯤꯌꯨ꯫ ꯅꯨꯡꯉꯥꯏꯕꯥ ꯗꯤꯋꯥꯂꯤ!",
+		skip: "ꯊꯥꯗꯣꯛꯄꯤꯌꯨ",
+		done: "ꯂꯣꯏꯔꯦ",
+		// In the settings, to go through it again
+		title: "ꯂꯝꯖꯤꯡꯕꯤ",
+		replay: "ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯎꯠꯄꯤꯌꯨ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ꯁꯦꯇꯤꯡꯁ",
