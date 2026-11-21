@@ -1,0 +1,7 @@
+• Shake the view for a moment when a sutli bomb bursts
+• Clear burnt-out fireworks into a waste bin, not onto the bar
+• Give the house picker as long as a slow test runner needs to fade out
+• Time the house picker's fade-in from when it's shown, not first drawn
+• Don't take a tap meant to skip the screen before as picking a house
+• Pick your house; neighbours decorated already; families look up at rockets and walk round things
+• Only ready-made rangolis: drop freehand drawing
