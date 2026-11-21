@@ -182,7 +182,12 @@ const hiLatn = {
 		noneLeft: "Ek bhi nahi bacha",
 		move: "Hilane ke liye drag karo, ya wapas rakhne ke liye bar pe drag karo",
 		unlit: "Maachis se jalao",
-		spent: "Bujh gaya. Hatane ke liye bar pe drag karo",
+		spent: "Bujh gaya. Hatane ke liye porch ke dustbin mein drag karo",
+		// The waste bin on the porch, for burnt-out fireworks
+		bin: {
+			name: "Dustbin",
+			hint: "Bujhe hue patakhe hatane ke liye yahan drag karo",
+		},
 		lights: {
 			name: "Fairy lights",
 			red: "Laal fairy lights",

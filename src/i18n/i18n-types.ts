@@ -549,9 +549,19 @@ type RootTranslation = {
 		 */
 		unlit: string
 		/**
-		 * B​u​r​n​t​ ​o​u​t​.​ ​D​r​a​g​ ​o​n​t​o​ ​t​h​e​ ​b​a​r​ ​t​o​ ​c​l​e​a​r​ ​i​t​ ​a​w​a​y
+		 * B​u​r​n​t​ ​o​u​t​.​ ​D​r​a​g​ ​i​t​ ​i​n​t​o​ ​t​h​e​ ​w​a​s​t​e​ ​b​i​n​ ​o​n​ ​t​h​e​ ​p​o​r​c​h​ ​t​o​ ​c​l​e​a​r​ ​i​t​ ​a​w​a​y
 		 */
 		spent: string
+		bin: {
+			/**
+			 * W​a​s​t​e​ ​b​i​n
+			 */
+			name: string
+			/**
+			 * D​r​a​g​ ​b​u​r​n​t​-​o​u​t​ ​f​i​r​e​w​o​r​k​s​ ​h​e​r​e​ ​t​o​ ​c​l​e​a​r​ ​t​h​e​m​ ​a​w​a​y
+			 */
+			hint: string
+		}
 		lights: {
 			/**
 			 * F​a​i​r​y​ ​l​i​g​h​t​s
@@ -1124,9 +1134,19 @@ export type TranslationFunctions = {
 		 */
 		unlit: () => LocalizedString
 		/**
-		 * Burnt out. Drag onto the bar to clear it away
+		 * Burnt out. Drag it into the waste bin on the porch to clear it away
 		 */
 		spent: () => LocalizedString
+		bin: {
+			/**
+			 * Waste bin
+			 */
+			name: () => LocalizedString
+			/**
+			 * Drag burnt-out fireworks here to clear them away
+			 */
+			hint: () => LocalizedString
+		}
 		lights: {
 			/**
 			 * Fairy lights

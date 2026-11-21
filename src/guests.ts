@@ -43,6 +43,8 @@ type Home = {
   door: {left: number, right: number, top: number, bottom: number}
   floor: PointData[]
   pots: PointData[]
+  // The waste bin on the porch, by its foot, for what's burnt out
+  bin?: PointData
 }
 
 // Someone in the family: how they look, how fast they walk (scene units a second, at
@@ -176,6 +178,8 @@ type Step =
   | {do: "lightFirework"}
   // Picking up a burnt-out firework, to take away
   | {do: "pickUp"}
+  // Dropping what's burnt out in the waste bin
+  | {do: "throwAway"}
   // Out of sight inside the house, for a while or until the one they follow comes out
   | {do: "inside", for: number}
 
@@ -359,7 +363,8 @@ const createGuests = (
     ...(porch.kandils?.standingAt() ?? []).map(at => ({at, x: 15, y: 8})),
     ...(porch.rangoli?.placedAt() ?? []).map(at => ({at, ...porch.rangoli!.reach})),
     ...pots.map(at => ({at, x: 20, y: 10})),
-  ].filter(({at}) => isOnFloor(at) || pots.includes(at))
+    ...(home.bin ? [{at: home.bin, x: 14, y: 8}] : []),
+  ].filter(({at}) => isOnFloor(at) || pots.includes(at) || at === home.bin)
   // How far a point is inside something on the floor, as a share of its reach: under 1
   // is on it
   const within = (point: PointData, {at, x, y}: {at: PointData, x: number, y: number}) =>
@@ -507,6 +512,14 @@ const createGuests = (
     return diyaSpots.find(spot => taken.every(diya => distance(diya, spot) > 8))
   }
 
+  // Carrying what's burnt out over to the waste bin, and dropping it in
+  const throwAway = (guest: Guest, bin: PointData): Step[] => [
+    {do: "walk", to: besideSpot(guest, bin)},
+    {do: "act", action: "bend", for: 0.4, face: bin},
+    {do: "throwAway"},
+    {do: "act", action: "idle", for: random(0.5, 1.2)},
+  ]
+
   // Going over to a burnt-out firework to pick it up and take it away
   const clearUp = (guest: Guest): Step[] => [
     {do: "walk", to: besideSpot(guest, guest.clearing!)},
@@ -548,9 +561,9 @@ const createGuests = (
       guest.firework = {kind: "anar", spot: {x: nearest.x, y: nearest.y}, placed: nearest.firework}
       return lightUp(guest)
     }
-    // Something burnt out picked up goes inside
+    // Something burnt out picked up goes in the waste bin, or inside if there's none
     if (guest.figure.holding() === "spent") {
-      return goIn(guest)
+      return home.bin ? throwAway(guest, home.bin) : goIn(guest)
     }
     // A grown-up clears away what's burnt out on the porch, once it's been there a while
     const spent = !guest.child ? spentHere() : []
@@ -840,6 +853,9 @@ const createGuests = (
       guest.firework = undefined
       guest.figure.carrying()
       guest.nextFireworkAt = now + random(60, 120)
+      done = true
+    } else if (step.do === "throwAway") {
+      guest.figure.carrying()
       done = true
     } else if (step.do === "pickUp") {
       const {clearing} = guest

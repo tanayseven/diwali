@@ -177,6 +177,12 @@ const zoomDuration = 200
 // screen than this share of the way to its edge, and only ever climbing after it, never
 // dropping. Once it's gone, the camera stays where it was last seen for a while, to see
 // it burst, then eases back to where it was, over this long, in ms
+// A shake, as from a sutli bomb bursting: the view jolts about by up to this far, on
+// screen, in pixels, at a strength of 1, settling over this long, in ms, shuddering
+// this many times a second
+const shakePixels = 9
+const shakeFor = 550
+const shakeRate = 26
 const followEase = 5
 const followKeep = 0.45
 const followHold = 1.8
@@ -366,6 +372,28 @@ const createBackground = (app: Application) => {
     centre.y = clampAxis(centre.y, height / 2 / scale, 0, sceneHeight + belowBar)
   }
 
+  // How far the view's jolted aside by a shake now, on screen, and the shake, while it lasts
+  const shaken = {x: 0, y: 0}
+  let shaking: {strength: number, elapsed: number, phase: number} | undefined
+  app.ticker.add(() => {
+    if (!shaking) {
+      return
+    }
+    shaking.elapsed += app.ticker.deltaMS
+    const t = Math.min(1, shaking.elapsed / shakeFor)
+    // Strongest at first, dying away, as two shudders at angles to each other
+    const reach = shakePixels * shaking.strength * (1 - t) ** 2
+    const turn = shaking.elapsed / 1000 * shakeRate * Math.PI * 2
+    shaken.x = reach * Math.sin(turn + shaking.phase)
+    shaken.y = reach * 0.7 * Math.sin(turn * 1.3 + shaking.phase * 2)
+    if (t === 1) {
+      shaking = undefined
+      shaken.x = shaken.y = 0
+    }
+    const scale = scene.scale.x
+    scene.position.set(app.screen.width / 2 - centre.x * scale + shaken.x, app.screen.height / 2 - centre.y * scale + shaken.y)
+  })
+
   // The part of the scene on screen, in scene units, and a count of how often it's
   // changed, so whatever only animates what can be seen knows when to look again
   const view = {left: 0, top: 0, right: 0, bottom: 0}
@@ -376,7 +404,7 @@ const createBackground = (app: Application) => {
     clampView()
     const scale = coverScale(width, height) * zoom
     scene.scale.set(scale)
-    scene.position.set(width / 2 - centre.x * scale, height / 2 - centre.y * scale)
+    scene.position.set(width / 2 - centre.x * scale + shaken.x, height / 2 - centre.y * scale + shaken.y)
     // The sky and each skyline layer follow the camera across part of the way, so they
     // seem further off
     sky.x = drawnLeft + (centre.x - sceneWidth / 2) * (1 - skyDepth)
@@ -595,6 +623,13 @@ const createBackground = (app: Application) => {
       following = undefined
     },
     zoomStep,
+    // Shakes the view for a moment, as a big bang does, at a strength from 0 to 1, the
+    // stronger of it and any shake still going
+    shake(strength: number) {
+      if (strength > (shaking ? shaking.strength * (1 - shaking.elapsed / shakeFor) : 0)) {
+        shaking = {strength, elapsed: 0, phase: Math.random() * Math.PI * 2}
+      }
+    },
     // Follows something on the move with the camera, wherever it is in the scene, until
     // it's gone, as a rocket bursting is, then comes back to where it was before. Any pan
     // or zoom leaves it where it's got to
@@ -690,5 +725,5 @@ const createBackground = (app: Application) => {
 
 type Background = ReturnType<typeof createBackground>
 
-export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
+export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, isInside, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
 export type {Background, House}

@@ -1,5 +1,6 @@
 import {Application, Assets, Container, Graphics, Particle, ParticleContainer, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {report} from "./progress"
+import type {Bins} from "./bins"
 import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
 import {createBackground, sceneHeight, scenery} from "./background"
@@ -7,7 +8,7 @@ import {Item, createHud} from "./hud"
 import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {createMatchHand, createMatchstick, draggedFrom, Lightable, matchFrameUrls} from "./matchstick"
-import {mostOverlappedBy} from "./overlap"
+import {mostOverlappedBy, screenBox} from "./overlap"
 import {flashFade as fadeShare, flashPeak, reduceFlashing} from "./flashing"
 import {haptics, refusalShown} from "./feedback"
 import {happen} from "./happenings"
@@ -545,7 +546,7 @@ type Drag = {sprite: Sprite, firework: Placed, fromScene?: PointData, pressedAt?
 // once in one great blast. Expects fireworksAssets to have been loaded
 const createFireworks = (
   app: Application, background: Background, lighting: Lighting, audio: AudioControl, wind: Wind,
-  lightables: Lightable[],
+  lightables: Lightable[], bins?: Bins,
 ) => {
   // A firework's slot shows its unlit drawing, cropped to the area it's picked up by
   const itemFor = (shape: Shape, url: string): Item => ({
@@ -1053,7 +1054,14 @@ const createFireworks = (
     setOutline(current.sprite, "selected", false)
     current.sprite.alpha = 1
     const scene = background.toScene(at)
-    if (hudShown && bar.takesBack(at, finger, current.pressedAt)) {
+    const spent = current.firework.state === "spent"
+    const intoBin = spent && bins !== undefined && bins.isOver(screenBox(current.sprite))
+    bins?.setTargeted(false)
+    if (intoBin) {
+      // Burnt out, it's thrown away in the bin
+      removeFirework(current.firework)
+      haptics.done()
+    } else if (!spent && hudShown && bar.takesBack(at, finger, current.pressedAt)) {
       removeFirework(current.firework)
     } else if (background.isOnHomePorch(scene)) {
       placeFirework(current.firework, scene)
@@ -1064,8 +1072,13 @@ const createFireworks = (
       // and its slot says where it goes
       returnDrag(current)
       haptics.refused()
-      // Beside the firework, if it's gone back onto the porch with the bar hidden
-      showTooltipOf(slots[current.firework.kind].container, undefined, {hideAfter: refusalShown, near: current.firework.sprite})
+      if (spent && bins) {
+        // A burnt-out one goes in the bin, which says so
+        showTooltipOf(bins.home, undefined, {hideAfter: refusalShown})
+      } else {
+        // Beside the firework, if it's gone back onto the porch with the bar hidden
+        showTooltipOf(slots[current.firework.kind].container, undefined, {hideAfter: refusalShown, near: current.firework.sprite})
+      }
     }
     render()
   }
@@ -1094,9 +1107,13 @@ const createFireworks = (
     if (drag) {
       const at = touch.follow(finger, e.pointerType)
       drag.sprite.position.copyFrom(at)
-      setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
+      // A burnt-out one goes in the bin, not on the bar, which lights up while it's over it
+      const spent = drag.firework.state === "spent"
+      const overBin = spent && bins !== undefined && bins.isOver(screenBox(drag.sprite))
+      bins?.setTargeted(overBin)
+      setOverBar(!spent && hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
-      drag.sprite.alpha = overBar || background.isOnHomePorch(background.toScene(at)) ? 1 : 0.4
+      drag.sprite.alpha = overBar || overBin || background.isOnHomePorch(background.toScene(at)) ? 1 : 0.4
     } else {
       hand.move(finger, e)
     }
@@ -1496,6 +1513,11 @@ const createFireworks = (
     }
     sutli.brightness = flashPeak()
     sutli.lightAt = at
+    // A big enough bang to shake the view, unless flashing and the like are reduced, and
+    // less the further off screen it is
+    if (!reduceFlashing()) {
+      background.shake(1 - background.muffleOf(at))
+    }
     flash = 1
     flashAlpha = sutliFlashAlpha
     flashFade = sutliFade
