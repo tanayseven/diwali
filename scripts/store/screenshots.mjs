@@ -1,9 +1,10 @@
-// Takes the screenshots F-Droid shows on the app's page, in fastlane/, by playing the
+// Takes the game's screenshots, in web/screenshots/, by playing the
 // built game in headless Chromium on a landscape phone's screen: diyas lit on the porch,
 // fireworks going off, fairy lights hung on the house, a rangoli drawn on the floor, lit
 // kandils hung from the house, and the whole street, zoomed out, then, played again with
 // the families out on the porches, one celebrating by the diyas lit on its porch. The
-// home page shows them too.
+// website's home page shows them as they are, and scripts/store/captioned.mjs frames
+// them, with captions, for the stores.
 //
 //   npm run build && node scripts/store/screenshots.mjs [out-dir]
 //
@@ -14,7 +15,7 @@ import {chromium} from "playwright-core"
 import {preview} from "vite"
 
 const root = new URL("../../", import.meta.url).pathname
-const out = process.argv[2] ?? `${root}fastlane/metadata/android/en-US/images/phoneScreenshots`
+const out = process.argv[2] ?? `${root}web/screenshots`
 const port = 4174
 
 // A 20:9 phone held sideways, 1920 pixels wide
