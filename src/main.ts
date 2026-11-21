@@ -18,6 +18,9 @@ import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
+import {forgetHouse, savedHouse, showHousePicker} from "./housePicker"
+import {decorateNeighbours} from "./neighbours"
+import {houses as street} from "./background"
 import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
 import {createSettings, isSettingsOpen, textButton} from "./settings"
@@ -125,8 +128,18 @@ const main = async () => {
   await showSoundSplash()
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
+  // The player's own house on the street, to decorate, picked the first time, and after
+  // that, kept, until another's picked from the settings
+  const homeName = savedHouse() ?? await showHousePicker()
   // Beside the speaker, the language, named, to pick another, and the settings
   const settings = createSettings(audio, locale)
+  const house = textButton(LL.houses[homeName]())
+  house.addEventListener("click", () => {
+    // Picked again as the game starts again, with the house as it is then
+    forgetHouse()
+    window.location.reload()
+  })
+  settings.addRow(LL.settings.house(), house)
 
   // Without the background there's nowhere to put anything, so nothing more to show
   if (backgroundAssets.some(url => failed.has(url))) {
@@ -134,6 +147,8 @@ const main = async () => {
   }
   const loaded = (urls: string[]) => urls.every(url => !failed.has(url))
   const background = createBackground(app)
+  // Before anything's put in the scene, as only the player's house can be decorated
+  background.setHome(street.findIndex(({name}) => name === homeName))
   app.stage.addChild(background.container)
   screens.push(background)
   // It's Diwali night: the porch is dark, lit only by what's lit on it
@@ -169,19 +184,26 @@ const main = async () => {
   if (kandils) {
     controls.kandil = kandils
   }
-  if (loaded(fairyLightAssets)) {
-    controls.decorate = createHouseLights(app, background, lighting, wind)
+  const lights = loaded(fairyLightAssets) ? createHouseLights(app, background, lighting, wind) : undefined
+  if (lights) {
+    controls.decorate = lights
   }
-  controls.rangoli = createRangoli(app, background, lighting)
+  const rangoli = createRangoli(app, background, lighting)
+  controls.rangoli = rangoli
+  // Every other house on the street, decorated already by its family
+  decorateNeighbours(background, {lights, kandils, rangoli})
   // Each house's name, over its door
   createNameplates(background, lighting)
   // A family out on each house's porch to celebrate, unless asked not to be, as the
   // tests that look at what's on screen do. The main house's family is drawn to suit
-  // it, and each other house's made up for it, the same every time
+  // it, and each other house's made up for it, the same every time. The player's family
+  // leaves the decorating to them, lighting what they leave unlit and clearing up; the
+  // neighbours put out diyas and set off fireworks of their own
   if (new URLSearchParams(window.location.search).get("guests") !== "off") {
     background.houses.forEach(({name, porch, door, pots}, idx) => {
       const home = {floor: porch, door, pots}
-      createGuests(app, background, lighting, {diyas, fireworks, kandils}, home, name === "deepaNiwas" ? undefined : familyFor(idx + 1))
+      createGuests(app, background, lighting, {diyas, fireworks, kandils, rangoli}, home,
+        name === "deepaNiwas" ? undefined : familyFor(idx + 1), idx === background.home() ? "player" : "neighbour")
     })
   }
   // A "?" badge, and a faint outline, on whatever's placed and still to be finished,

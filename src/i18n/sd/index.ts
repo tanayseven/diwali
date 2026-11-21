@@ -75,6 +75,11 @@ const sd = {
 		later: "هاڻي نه",
 		never: "ٻيهر نه پڇو",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "پنهنجو گهر چونڊيو",
+		hint: "ان کي ڏياريءَ لاءِ سينگاريو. توهان جي پاڙيسرين پنهنجا گهر اڳ ۾ ئي سينگاري ڇڏيا آهن، ۽ سندن ڪٽنب ٻاهر جشن ملهائي رهيا آهن.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سيٽنگون",
@@ -86,6 +91,8 @@ const sd = {
 		language: "ٻولي",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "چمڪ گهٽ ڪريو",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "توهان جو گهر",
 	},
 	tooltip: {
 		hintButton: "اڳتي ڇا ڪجي",

@@ -1,6 +1,5 @@
 import {Application, Container, PointData, Sprite} from "pixi.js"
 import {fontFamily} from "./app"
-import {porchFloor} from "./background"
 import type {Background} from "./background"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
@@ -45,11 +44,11 @@ type Step = {
   doneWhen?: () => boolean
 }
 
-// Where something's shown on the porch, in the scene: the middle of the house's porch
-const porchMiddle = (): PointData => ({
-  x: porchFloor.reduce((sum, p) => sum + p.x, 0) / porchFloor.length,
-  y: porchFloor.reduce((sum, p) => sum + p.y, 0) / porchFloor.length,
-})
+// Where something's shown on the porch, in the scene: the middle of the player's porch
+const porchMiddleOf = (background: Background): PointData => {
+  const {porch} = background.houses[background.home()]
+  return {x: porch.reduce((sum, p) => sum + p.x, 0) / porch.length, y: porch.reduce((sum, p) => sum + p.y, 0) / porch.length}
+}
 
 let running: (() => void) | undefined
 const isTourRunning = () => running !== undefined
@@ -66,7 +65,7 @@ const runTour = (game: TourGame) => new Promise<void>(resolve => {
     {
       text: () => LL.tour.diya(),
       outlined: () => [game.slot("diyas", 0)],
-      demo: () => ({from: game.slot("diyas", 0), to: porchMiddle()}),
+      demo: () => ({from: game.slot("diyas", 0), to: porchMiddleOf(background)}),
       doneBy: "diyaPlaced",
     },
     {
@@ -83,7 +82,7 @@ const runTour = (game: TourGame) => new Promise<void>(resolve => {
     {
       text: () => LL.tour.firework(),
       outlined: () => [game.slot("fireworks", 0), game.slot("fireworks", 5)],
-      demo: () => ({from: game.slot("fireworks", 0), to: porchMiddle()}),
+      demo: () => ({from: game.slot("fireworks", 0), to: porchMiddleOf(background)}),
       doneBy: "fireworkLit",
     },
     {

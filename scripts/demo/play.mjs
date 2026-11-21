@@ -60,6 +60,9 @@ const context = await browser.newContext(phone)
 // Heard, but quietly, and without the guided first run, which it plays through itself
 await context.addInitScript(() => {
   localStorage.setItem("diwali-audio", JSON.stringify({volume: 0.3, muted: false}))
+  if (!localStorage.getItem("diwali-house")) {
+    localStorage.setItem("diwali-house", "deepaNiwas")
+  }
   if (!localStorage.getItem("diwali-introduced-tools")) {
     localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
   }

@@ -75,6 +75,11 @@ const te = {
 		later: "ఇప్పుడు కాదు",
 		never: "మళ్ళీ అడగవద్దు",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "మీ ఇల్లు ఎంచుకోండి",
+		hint: "దీపావళికి దాన్ని అలంకరించండి. మీ పొరుగువారు ఇప్పటికే తమ ఇళ్లను అలంకరించుకున్నారు, వారి కుటుంబాలు బయట సంబరాలు చేసుకుంటున్నాయి.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "సెట్టింగ్‌లు",
@@ -86,6 +91,8 @@ const te = {
 		language: "భాష",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "మెరుపును తగ్గించండి",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "మీ ఇల్లు",
 	},
 	tooltip: {
 		hintButton: "తర్వాత ఏం చేయాలి",

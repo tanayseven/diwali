@@ -23,8 +23,9 @@ const showSplash = (iconUrl: string, heading: string, message: string, hold: num
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: "16px",
-    padding: "24px",
+    gap: "min(16px, 3vh)",
+    // Clear of the credit footer along the bottom
+    padding: "24px 24px 72px",
     boxSizing: "border-box",
     background: "#000000",
     color: "#ffffff",
@@ -36,15 +37,15 @@ const showSplash = (iconUrl: string, heading: string, message: string, hold: num
 
   const icon = createCautionIcon(96, iconUrl)
   // Shrink the icon and heading on short landscape phones so everything still fits
-  icon.style.width = icon.style.height = "min(96px, 18vh)"
+  icon.style.width = icon.style.height = "min(96px, 14vh)"
 
   const title = document.createElement("p")
   title.textContent = heading
-  Object.assign(title.style, {margin: "0", fontSize: "min(80px, 16vh)", lineHeight: "1.1", color: "#ffd700"})
+  Object.assign(title.style, {margin: "0", fontSize: "min(80px, 13vh)", lineHeight: "1.1", color: "#ffd700"})
 
   const text = document.createElement("p")
   text.textContent = message
-  Object.assign(text.style, {margin: "0", fontSize: "22px", lineHeight: "1.4", maxWidth: "600px"})
+  Object.assign(text.style, {margin: "0", fontSize: "min(22px, 5vh)", lineHeight: "1.4", maxWidth: "600px"})
 
   overlay.append(icon, title, text)
   if (control) {
@@ -103,7 +104,7 @@ const reduceFlashingSwitch = () => {
     borderRadius: "24px",
     border: "2px solid #ffd700",
     color: "#ffd700",
-    fontSize: "22px",
+    fontSize: "min(22px, 5vh)",
     cursor: "pointer",
   })
   const input = document.createElement("input")

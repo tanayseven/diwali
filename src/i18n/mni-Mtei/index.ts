@@ -75,6 +75,11 @@ const mni = {
 		later: "ꯍꯧꯖꯤꯛ ꯅꯠꯇꯦ",
 		never: "ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯍꯪꯒꯅꯨ",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝ ꯈꯟꯕꯤꯌꯨ",
+		hint: "ꯗꯤꯋꯥꯂꯤꯒꯤꯗꯃꯛ ꯃꯗꯨ ꯁꯦꯃꯖꯤꯟꯕꯤꯌꯨ꯫ ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝꯂꯣꯟꯅꯕꯁꯤꯡꯅꯥ ꯃꯈꯣꯌꯒꯤ ꯌꯨꯝ ꯍꯥꯟꯅꯅꯥ ꯁꯦꯃꯖꯤꯟꯂꯦ, ꯑꯃꯁꯨꯡ ꯃꯈꯣꯌꯒꯤ ꯏꯃꯨꯡ ꯃꯅꯨꯡꯁꯤꯡ ꯃꯄꯥꯟꯗꯥ ꯀꯨꯝꯍꯩ ꯄꯥꯡꯊꯣꯛꯂꯤ꯫",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ꯁꯦꯇꯤꯡꯁ",
@@ -86,6 +91,8 @@ const mni = {
 		language: "ꯂꯣꯜ",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "ꯃꯤꯟꯖꯤꯟ-ꯃꯤꯟꯖꯤꯟ ꯇꯧꯕ ꯍꯟꯊꯍꯅꯕꯤꯌꯨ",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝ",
 	},
 	tooltip: {
 		hintButton: "ꯃꯊꯪꯗꯥ ꯀꯔꯤ ꯇꯧꯒꯗꯒꯦ",

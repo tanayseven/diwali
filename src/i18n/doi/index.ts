@@ -75,6 +75,11 @@ const doi = {
 		later: "हून नेईं",
 		never: "फ्ही नेईं पुच्छो",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "अपना घर चुनो",
+		hint: "इसगी दीवाली आस्तै सजाओ। तुंदे गुआंढियें अपने घर पैह्लें गै सजाई लैते न, ते उंदे टब्बर बाहर उत्सव मनाऽ करदे न।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",
@@ -86,6 +91,8 @@ const doi = {
 		language: "भाशा",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "चमक घट्ट करो",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "तुंदा घर",
 	},
 	tooltip: {
 		hintButton: "अग्गें केह् करना ऐ",

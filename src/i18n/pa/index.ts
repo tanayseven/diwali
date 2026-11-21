@@ -75,6 +75,11 @@ const pa = {
 		later: "ਹੁਣ ਨਹੀਂ",
 		never: "ਮੁੜ ਨਾ ਪੁੱਛੋ",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "ਆਪਣਾ ਘਰ ਚੁਣੋ",
+		hint: "ਇਸ ਨੂੰ ਦੀਵਾਲੀ ਲਈ ਸਜਾਓ। ਤੁਹਾਡੇ ਗੁਆਂਢੀ ਆਪਣੇ ਘਰ ਪਹਿਲਾਂ ਹੀ ਸਜਾ ਚੁੱਕੇ ਹਨ, ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਪਰਿਵਾਰ ਬਾਹਰ ਜਸ਼ਨ ਮਨਾ ਰਹੇ ਹਨ।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ਸੈਟਿੰਗਾਂ",
@@ -86,6 +91,8 @@ const pa = {
 		language: "ਭਾਸ਼ਾ",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "ਚਮਕ ਘਟਾਓ",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "ਤੁਹਾਡਾ ਘਰ",
 	},
 	tooltip: {
 		hintButton: "ਅੱਗੇ ਕੀ ਕਰਨਾ ਹੈ",

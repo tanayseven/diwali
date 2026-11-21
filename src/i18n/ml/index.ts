@@ -75,6 +75,11 @@ const ml = {
 		later: "ഇപ്പോൾ വേണ്ട",
 		never: "ഇനി ചോദിക്കേണ്ട",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "നിങ്ങളുടെ വീട് തിരഞ്ഞെടുക്കൂ",
+		hint: "ദീപാവലിക്കായി അത് അലങ്കരിക്കൂ. നിങ്ങളുടെ അയൽക്കാർ അവരുടെ വീടുകൾ നേരത്തേ അലങ്കരിച്ചുകഴിഞ്ഞു, അവരുടെ കുടുംബങ്ങൾ പുറത്ത് ആഘോഷിക്കുകയാണ്.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ക്രമീകരണങ്ങൾ",
@@ -86,6 +91,8 @@ const ml = {
 		language: "ഭാഷ",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "മിന്നൽ കുറയ്ക്കൂ",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "നിങ്ങളുടെ വീട്",
 	},
 	tooltip: {
 		hintButton: "അടുത്തതായി എന്ത് ചെയ്യണം",

@@ -481,6 +481,10 @@ type Flight = {
 type Placed = {
   kind: Kind
   sprite: Sprite
+  // A neighbour's, on their own porch, which the player can't pick up or light
+  fixed?: boolean
+  // When it was put down where it is, unlit, for the family to light it if it's left
+  placedAt?: number
   // Burning is the anar's fountain, or the laddi's crackers going off
   state: "unlit" | "fuse" | "burning" | "spent"
   // Time since its fuse was lit, in seconds
@@ -624,7 +628,7 @@ const createFireworks = (
     lines: firework.state === "spent" ? [tips.spent()] : [tips.unlit(), tips.move()],
   })
   // What to do next with a firework that hasn't been lit, for its hint's badge
-  const fireworkHint = (firework: Placed) => (): Tooltip | undefined => firework.state === "unlit"
+  const fireworkHint = (firework: Placed) => (): Tooltip | undefined => firework.state === "unlit" && !firework.fixed
     ? {title: names[firework.kind](), lines: [tips.next.lightFirework()]}
     : undefined
   // The part of a firework that's picked up, in its sprite's own coordinates, for the badge
@@ -832,7 +836,7 @@ const createFireworks = (
   // nearest if it touches more than one as much
   const touchedFirework = (box: Rectangle) => mostOverlappedBy(
     box,
-    placed.filter(firework => firework.state === "unlit").sort((a, b) => b.sprite.zIndex - a.sprite.zIndex),
+    placed.filter(firework => firework.state === "unlit" && !firework.fixed).sort((a, b) => b.sprite.zIndex - a.sprite.zIndex),
     firework => {
       const {area} = shapes[firework.kind]
       const from = background.decorations.toGlobal(onFirework(firework, {x: area.left, y: area.top}))
@@ -859,7 +863,7 @@ const createFireworks = (
   // the match is in hand, or another scene is open
   const makePickable = (firework: Placed) => {
     const burning = firework.state === "fuse" || firework.state === "burning"
-    firework.sprite.eventMode = interactive && !hand.isHeld() && !burning ? "static" : "none"
+    firework.sprite.eventMode = interactive && !hand.isHeld() && !burning && !firework.fixed ? "static" : "none"
   }
 
   const createFirework = (kind: Kind): Placed => {
@@ -903,6 +907,8 @@ const createFireworks = (
     sprite.position.copyFrom(at)
     sprite.zIndex = at.y
     firework.home = {x: at.x, y: at.y}
+    firework.fixed = !background.isOnHomePorch(at)
+    firework.placedAt = time
     background.decorations.addChild(sprite)
     glowLayer.addChild(firework.glow, firework.core)
     makePickable(firework)
@@ -984,9 +990,9 @@ const createFireworks = (
     pick(target) {
       setTarget(placed.find(firework => firework === target))
     },
-    anyReady: () => placed.some(firework => firework.state === "unlit"),
+    anyReady: () => placed.some(firework => firework.state === "unlit" && !firework.fixed),
     markReady(on) {
-      placed.forEach(firework => setOutline(firework.sprite, "ready", on && firework.state === "unlit"))
+      placed.forEach(firework => setOutline(firework.sprite, "ready", on && firework.state === "unlit" && !firework.fixed))
     },
   }
   lightables.push(fireworkLightable)
@@ -1049,7 +1055,7 @@ const createFireworks = (
     const scene = background.toScene(at)
     if (hudShown && bar.takesBack(at, finger, current.pressedAt)) {
       removeFirework(current.firework)
-    } else if (background.isOnPorchFloor(scene)) {
+    } else if (background.isOnHomePorch(scene)) {
       placeFirework(current.firework, scene)
       haptics.placed()
       report("fireworkPlaced")
@@ -1090,7 +1096,7 @@ const createFireworks = (
       drag.sprite.position.copyFrom(at)
       setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
-      drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
+      drag.sprite.alpha = overBar || background.isOnHomePorch(background.toScene(at)) ? 1 : 0.4
     } else {
       hand.move(finger, e)
     }
@@ -1567,7 +1573,7 @@ const createFireworks = (
       background.follow(() => rocket.flight && {x: rocket.flight.x, y: rocket.flight.y})
     }
     haptics.rocketLaunch()
-    happen("show", nozzle)
+    happen("rocket", nozzle)
     for (let idx = 0; idx < catchPuffs; idx++) {
       addSmoke(nozzle.x + random(-4, 4), nozzle.y - random(0, 8))
     }
@@ -1606,7 +1612,7 @@ const createFireworks = (
     flashFade = blastFade
     blastSounds[Math.floor(Math.random() * blastSounds.length)](...heardFrom(rocket.lightAt))
     haptics.rocketBurst()
-    happen("bang", rocket.lightAt)
+    happen("burst", rocket.lightAt)
     rocket.sound?.stop()
     rocket.sound = undefined
     flight.sprite.destroy()
@@ -1902,6 +1908,12 @@ const createFireworks = (
       placeFirework(firework, at)
       return firework
     },
+    // The player's fireworks left unlit on their porch at least so many seconds, where
+    // they are, for their family to come and light
+    waiting: (seconds: number) => placed.flatMap(firework => firework.state === "unlit" && !firework.fixed
+      && firework.placedAt !== undefined && time - firework.placedAt >= seconds && firework.sprite.parent === background.decorations
+      ? [{firework: firework as object, x: firework.sprite.x, y: firework.sprite.y}]
+      : []),
     // A guest lights the one they put down, if it's still where they put it and unlit,
     // and says whether they did
     lightForGuest(firework: object, at: PointData) {

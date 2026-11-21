@@ -6,7 +6,7 @@ import type {Lighting} from "./lighting"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
 import {report} from "./progress"
-import {createDesignPicker, Design, designLines} from "./rangoliDesigns"
+import {createDesignPicker, Design, designLines, randomDesign} from "./rangoliDesigns"
 import {addTooltip, hideTooltipFor, showTooltipOf, wasLongPressed} from "./tooltip"
 
 // How long Clear waits for a second tap, once it's asked, in ms
@@ -127,7 +127,9 @@ const createRangoli = (app: Application, background: Background, lighting: Light
   highlight.eventMode = "none"
   background.decorations.addChild(highlight)
   const floorOutlines = new Graphics()
-  floors.forEach(({porch}) => floorOutlines.poly(porch.flatMap(p => [p.x, p.y])).stroke({width: floorLine, color: highlightColour}))
+  // Only the player's porch, as it's the only one they can put a rangoli on
+  const homeFloor = floors[background.home()]
+  floorOutlines.poly(homeFloor.porch.flatMap(p => [p.x, p.y])).stroke({width: floorLine, color: highlightColour})
   const ghost = new Graphics()
   highlight.addChild(floorOutlines, ghost)
   highlight.visible = false
@@ -182,7 +184,15 @@ const createRangoli = (app: Application, background: Background, lighting: Light
     if (clearAsked !== undefined) {
       stopAsking()
       hideTooltipFor(clearSlot.container)
-      floors.forEach(({drawing}) => drawing && app.renderer.render({container: new Container(), target: drawing, clear: true}))
+      // Only the player's own, as the neighbours' are theirs
+      if (homeFloor.drawing) {
+        app.renderer.render({container: new Container(), target: homeFloor.drawing, clear: true})
+      }
+      for (let idx = laid.length - 1; idx >= 0; idx--) {
+        if (background.isOnHomePorch(laid[idx])) {
+          laid.splice(idx, 1)
+        }
+      }
       return
     }
     const questionMark = document.documentElement.dir === "rtl" ? "؟" : "?"
@@ -223,7 +233,7 @@ const createRangoli = (app: Application, background: Background, lighting: Light
   const showHighlight = () => {
     const pulse = 0.5 + 0.5 * Math.sin(elapsed / 1000 * pulseRate * Math.PI)
     const at = placing?.at ?? hovering
-    const onFloor = at !== undefined && background.isOnPorchFloor(at)
+    const onFloor = at !== undefined && background.isOnHomePorch(at)
     ghost.visible = active && at !== undefined
     if (ghost.visible) {
       ghost.position.copyFrom(at!)
@@ -260,8 +270,12 @@ const createRangoli = (app: Application, background: Background, lighting: Light
     drawStamps()
   }
 
+  // Where each design's been put down, by its middle, for the families on the porches to
+  // walk round rather than over
+  const laid: PointData[] = []
   // Puts a design down on the floor, centred on a point, lying flat
   const putDesign = (at: PointData, made: Design) => {
+    laid.push({x: at.x, y: at.y})
     designLines(made).forEach(({points, colour}) => powderAlong(
       points.map(point => ({x: at.x + point.x * designRadius, y: at.y + point.y * designRadius * floorTilt})),
       powders[colour as Powder],
@@ -274,7 +288,7 @@ const createRangoli = (app: Application, background: Background, lighting: Light
   let placing: {at: PointData, made: Design, pointerId: number} | undefined
 
   const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
-    if (!background.isOnPorchFloor(at)) {
+    if (!background.isOnHomePorch(at)) {
       return false
     }
     placing = {at, made: design, pointerId: e.pointerId}
@@ -292,7 +306,7 @@ const createRangoli = (app: Application, background: Background, lighting: Light
     }
   }
   const onPointerUp = (e?: PointerEvent) => {
-    if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId && background.isOnPorchFloor(placing.at)) {
+    if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId && background.isOnHomePorch(placing.at)) {
       putDesign(placing.at, placing.made)
       report("rangoliPlaced")
     }
@@ -339,6 +353,13 @@ const createRangoli = (app: Application, background: Background, lighting: Light
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
     pressHandler,
+    // The middle of each design put down, and how far one reaches across and down
+    placedAt: () => laid,
+    reach: {x: designRadius * 1.04, y: designRadius * floorTilt * 1.04},
+    // Puts a design down on a neighbour's porch, made up by a source of random numbers
+    putFixed(at: PointData, random: () => number) {
+      putDesign(at, randomDesign(Object.keys(powders), random))
+    },
     // Shows its bar while the Draw Rangoli tool is the one in use
     setHudShown(shown: boolean) {
       bar.setShown(shown)

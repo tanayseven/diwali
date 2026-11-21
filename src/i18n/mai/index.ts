@@ -75,6 +75,11 @@ const mai = {
 		later: "एखन नहि",
 		never: "फेर नहि पुछू",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "अपन घर चुनू",
+		hint: "एकरा दिवाली लेल सजाउ। अहाँक पड़ोसी अपन घर पहिनहि सजा लेने छथि, आ हुनक परिवार बाहर उत्सव मना रहल छथि।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",
@@ -86,6 +91,8 @@ const mai = {
 		language: "भाषा",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "चमक कम करू",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "अहाँक घर",
 	},
 	tooltip: {
 		hintButton: "आगाँ की करू",

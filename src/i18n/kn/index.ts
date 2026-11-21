@@ -75,6 +75,11 @@ const kn = {
 		later: "ಈಗ ಬೇಡ",
 		never: "ಮತ್ತೆ ಕೇಳಬೇಡಿ",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "ನಿಮ್ಮ ಮನೆಯನ್ನು ಆರಿಸಿ",
+		hint: "ದೀಪಾವಳಿಗೆ ಅದನ್ನು ಅಲಂಕರಿಸಿ. ನಿಮ್ಮ ನೆರೆಹೊರೆಯವರು ಈಗಾಗಲೇ ತಮ್ಮ ಮನೆಗಳನ್ನು ಅಲಂಕರಿಸಿದ್ದಾರೆ, ಮತ್ತು ಅವರ ಕುಟುಂಬಗಳು ಹೊರಗೆ ಹಬ್ಬ ಆಚರಿಸುತ್ತಿವೆ.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
@@ -86,6 +91,8 @@ const kn = {
 		language: "ಭಾಷೆ",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "ಮಿನುಗು ಕಡಿಮೆ ಮಾಡಿ",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "ನಿಮ್ಮ ಮನೆ",
 	},
 	tooltip: {
 		hintButton: "ಮುಂದೆ ಏನು ಮಾಡಬೇಕು",

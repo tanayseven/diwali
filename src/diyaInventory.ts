@@ -186,6 +186,8 @@ const createLiveDiyaTexture = (app: Application, url: string, isShown: () => boo
 
 type PlacedDiya = {
   sprite: Sprite
+  // A neighbour's, on their own porch, which the player can't pick up or turn
+  fixed?: boolean
   wick: boolean
   oil: boolean
   lit: boolean
@@ -246,6 +248,12 @@ const createDiyaInventory = (
   glowLayer.eventMode = "none"
   glowLayer.zIndex = lighting.aboveNight
   background.decorations.addChild(glowLayer)
+  // And those of diyas behind someone, with them cut out, so they stand in front of it
+  const shieldedLayer = new Container()
+  shieldedLayer.eventMode = "none"
+  shieldedLayer.zIndex = lighting.aboveNight
+  shieldedLayer.setMask({mask: lighting.people, inverse: true})
+  background.decorations.addChild(shieldedLayer)
   const placed: PlacedDiya[] = []
   let drag: Drag | undefined
   // Whether a dragged diya is over the bar, where letting go puts it back on the stack
@@ -355,6 +363,7 @@ const createDiyaInventory = (
     showDiya(diya)
     sprite.position.copyFrom(at)
     sprite.zIndex = at.y
+    diya.fixed = !background.isOnHomePorch(at)
     background.decorations.addChild(sprite)
     makePickable(diya)
     if (!placed.includes(diya)) {
@@ -579,7 +588,7 @@ const createDiyaInventory = (
   const pressListeners = new WeakMap<Sprite, (e: FederatedPointerEvent) => void>()
   const makePickable = (diya: PlacedDiya) => {
     const {sprite} = diya
-    sprite.eventMode = interactive && !diya.busy && !hand.isHeld() ? "static" : "none"
+    sprite.eventMode = interactive && !diya.busy && !hand.isHeld() && !diya.fixed ? "static" : "none"
     sprite.cursor = diya.lit ? "pointer" : "grab"
     // Only its own press listener's replaced, as its tooltip listens for a held finger too
     const press = (e: FederatedPointerEvent) => {
@@ -640,7 +649,7 @@ const createDiyaInventory = (
       if (hudShown && bar.takesBack(at, finger, current.pressedAt)) {
         placed.push(current.diya)
         returnDiya(current.diya)
-      } else if (background.isOnPorchFloor(scene)) {
+      } else if (background.isOnHomePorch(scene)) {
         placeDiya(current.diya, scene)
         haptics.placed()
         report("diyaPlaced")
@@ -699,7 +708,7 @@ const createDiyaInventory = (
     if (drag.kind === "diya") {
       setOverBar(hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
-      drag.sprite.alpha = overBar || background.isOnPorchFloor(background.toScene(at)) ? 1 : 0.4
+      drag.sprite.alpha = overBar || background.isOnHomePorch(background.toScene(at)) ? 1 : 0.4
     } else if (drag.kind === "wick") {
       setTarget(diyaAt(screenBox(drag.sprite), diya => !diya.wick))
     } else {
@@ -752,6 +761,12 @@ const createDiyaInventory = (
       diya.glow.position.copyFrom(at)
       diya.glow.alpha = 0.55 * flicker
       diya.glow.visible = background.inView(at.x, at.y, diyaGlowRadius)
+      // Behind someone, its glow's not over them, but still round them
+      const shielded = diya.glow.visible && lighting.isBehindSomeone(at, diya.sprite.y, diyaGlowRadius)
+      const layer = shielded ? shieldedLayer : glowLayer
+      if (diya.glow.parent !== layer) {
+        layer.addChild(diya.glow)
+      }
     })
   }
   app.ticker.add(shine)

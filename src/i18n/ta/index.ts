@@ -75,6 +75,11 @@ const ta = {
 		later: "இப்போது வேண்டாம்",
 		never: "மீண்டும் கேட்க வேண்டாம்",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "உங்கள் வீட்டைத் தேர்ந்தெடுங்கள்",
+		hint: "தீபாவளிக்காக அதை அலங்கரியுங்கள். உங்கள் அக்கம்பக்கத்தினர் ஏற்கெனவே தங்கள் வீடுகளை அலங்கரித்துவிட்டார்கள், அவர்களின் குடும்பங்கள் வெளியே கொண்டாடிக்கொண்டிருக்கிறார்கள்.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "அமைப்புகள்",
@@ -86,6 +91,8 @@ const ta = {
 		language: "மொழி",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "மின்னுவதைக் குறை",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "உங்கள் வீடு",
 	},
 	tooltip: {
 		hintButton: "அடுத்து என்ன செய்வது",

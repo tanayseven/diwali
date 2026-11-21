@@ -75,6 +75,11 @@ const ur = {
 		later: "ابھی نہیں",
 		never: "دوبارہ نہ پوچھیں",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "اپنا گھر چنیں",
+		hint: "اسے دیوالی کے لیے سجائیں۔ آپ کے پڑوسی اپنے گھر پہلے ہی سجا چکے ہیں، اور ان کے گھر والے باہر جشن منا رہے ہیں۔",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ترتیبات",
@@ -86,6 +91,8 @@ const ur = {
 		language: "زبان",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "چمک کم کریں",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "آپ کا گھر",
 	},
 	tooltip: {
 		hintButton: "آگے کیا کریں",

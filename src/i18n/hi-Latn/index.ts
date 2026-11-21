@@ -75,6 +75,11 @@ const hiLatn = {
 		later: "Abhi nahi",
 		never: "Phir mat poochho",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "Apna ghar chuno",
+		hint: "Ise Diwali ke liye sajao. Tumhare padosi apne ghar pehle hi saja chuke hain, aur unke parivaar bahar jashn mana rahe hain.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",
@@ -86,6 +91,8 @@ const hiLatn = {
 		language: "Bhasha",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "Chamak kam karein",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "Tumhara ghar",
 	},
 	tooltip: {
 		hintButton: "Aage kya karein",

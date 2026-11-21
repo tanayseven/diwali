@@ -75,6 +75,11 @@ const kok = {
 		later: "आतां न्हय",
 		never: "परत विचारूं नाकात",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "तुमचें घर वेंचात",
+		hint: "दिवाळेखातीर तें सजयात. तुमच्या शेजाऱ्यांनी आपलीं घरां आदींच सजयल्यांत, आनी तांचीं कुटुंबां भायर उत्सव मनयतात.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्ज",
@@ -86,6 +91,8 @@ const kok = {
 		language: "भास",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "चकचकाट उणो करात",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "तुमचें घर",
 	},
 	tooltip: {
 		hintButton: "फुडें कितें करचें",

@@ -84,6 +84,11 @@ const en = {
 		later: "Not now",
 		never: "Don't ask again",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "Pick your house",
+		hint: "Decorate it for Diwali. Your neighbours have decorated theirs already, and their families are out celebrating.",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",
@@ -95,6 +100,8 @@ const en = {
 		language: "Language",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "Reduce flashing",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "Your house",
 	},
 	// Shown on hovering over things in the inventory bar and in the scene
 	tooltip: {

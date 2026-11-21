@@ -75,6 +75,11 @@ const bn = {
 		later: "এখন নয়",
 		never: "আর জিজ্ঞেস করবেন না",
 	},
+	// Shown at the start, the first time, to pick the house to decorate
+	housePicker: {
+		heading: "আপনার বাড়ি বেছে নিন",
+		hint: "দীপাবলির জন্য এটি সাজান। আপনার প্রতিবেশীরা তাঁদের বাড়ি আগেই সাজিয়ে ফেলেছেন, আর তাঁদের পরিবার বাইরে উৎসবে মেতেছে।",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "সেটিংস",
@@ -86,6 +91,8 @@ const bn = {
 		language: "ভাষা",
 		// Also on the photosensitivity warning shown at the start
 		reduceFlashing: "ঝলকানি কমান",
+		// The house picked at the start; tapping it starts the game again, to pick another
+		house: "আপনার বাড়ি",
 	},
 	tooltip: {
 		hintButton: "এরপর কী করবেন",

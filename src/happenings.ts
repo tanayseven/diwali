@@ -2,9 +2,9 @@ import type {PointData} from "pixi.js"
 
 // What goes on in the scene that the guests on the porch notice, where in the scene it
 // is: a firework's fuse lit, one going off in a show of sparks, a bang, a kandil or a
-// diya lit by the player
+// diya lit by the player, a rocket leaving its bottle and one bursting high in the sky
 type Happening = {
-  kind: "fuse" | "show" | "bang" | "kandil" | "diya"
+  kind: "fuse" | "show" | "bang" | "kandil" | "diya" | "rocket" | "burst"
   at: PointData
 }
 
