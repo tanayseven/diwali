@@ -73,9 +73,9 @@ const en = {
 			addOil: "Next: drag the oil from the Diyas bar onto it",
 			lightDiya: "Next: drag the matchstick from the Diyas bar onto it and hold it there, or tap the matchstick, then this, to light it",
 			lightFirework: "Next: drag the matchstick from the Fireworks bar onto it and hold it there, or tap the matchstick, then this, to light it",
-			addPaper: "Next: drag a paper from the Craft Kandil bar onto it to wrap it",
-			addTails: "Next: drag some tails from the Craft Kandil bar onto it",
-			addBulb: "Next: drag the bulb from the Craft Kandil bar onto it to light it",
+			addPaper: "Next: drag a paper from the Craft Kandil bar onto it to wrap it, or tap it, then a paper",
+			addTails: "Next: drag some tails from the Craft Kandil bar onto it, or tap it, then some tails",
+			addBulb: "Next: drag the bulb from the Craft Kandil bar onto it to light it, or tap it, then the bulb",
 		},
 		diya: {
 			name: "Diya",

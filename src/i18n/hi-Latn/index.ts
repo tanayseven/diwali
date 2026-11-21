@@ -61,9 +61,9 @@ const hiLatn = {
 			addOil: "Aage: Diye bar se tel ispe drag karo",
 			lightDiya: "Aage: jalane ke liye Diye bar se maachis ki teeli ispe drag karke wahin pakad ke rakho, ya maachis ki teeli pe tap karo, phir ispe",
 			lightFirework: "Aage: jalane ke liye Patakhe bar se maachis ki teeli ispe drag karke wahin pakad ke rakho, ya maachis ki teeli pe tap karo, phir ispe",
-			addPaper: "Aage: lapetne ke liye Kandil banao bar se kaagaz ispe drag karo",
-			addTails: "Aage: Kandil banao bar se latkanein ispe drag karo",
-			addBulb: "Aage: jalaane ke liye Kandil banao bar se bulb ispe drag karo",
+			addPaper: "Aage: lapetne ke liye Kandil banao bar se kaagaz ispe drag karo, ya ispe tap karo, phir kaagaz pe",
+			addTails: "Aage: Kandil banao bar se latkanein ispe drag karo, ya ispe tap karo, phir latkanon pe",
+			addBulb: "Aage: jalaane ke liye Kandil banao bar se bulb ispe drag karo, ya ispe tap karo, phir bulb pe",
 		},
 		diya: {
 			name: "Diya",
