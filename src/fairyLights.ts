@@ -9,6 +9,7 @@ import {haptics, refusalShown} from "./feedback"
 import {setOutline} from "./outline"
 import {accelerate, airFriction, createParticleBody, hangingWorld, place, velocityOf} from "./physics"
 import {addTooltip, showTooltipOf} from "./tooltip"
+import {createTouchMarker} from "./touchMarker"
 import type {Wind} from "./wind"
 
 const colors = ["red", "orange", "yellow", "green", "blue", "white"] as const
@@ -65,6 +66,22 @@ const redrawPixels = 0.5
 const ropeDamping = 1.5
 const windPush = 2
 const windTilt = 0.35
+// While the tool's in use, a lit bulb of the colour picked is held where a string would
+// start, at the mouse, or once one's being hung, at its end, pulsing a little and lighting
+// up the house round it, so it's clear what's being hung, and where. It's bigger than a
+// hung one, with a glow this far round it and its light reaching this far, a bulb of a
+// mixed string showing each colour in turn, for this long, in ms
+const heldScale = bulbScale * 2.2
+const heldGlowRadius = 14
+const heldLightRadius = 55
+const heldStrength = 0.85
+const heldPulse = 0.15
+const mixedEach = 450
+// Where the glass is, below the bead, as a share of the drawing's height
+const glassY = 0.68
+// A string's ends catch on an eave this close to them, in screen pixels, so it hangs
+// along it
+const eaveSnap = 14
 
 // A string's slot is one colour, or every colour in turn
 type Choice = Color | "mixed"
@@ -111,10 +128,40 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   // Strings shine through the night, above it
   const stringLayer = new Container()
   stringLayer.zIndex = lighting.aboveNight
+  stringLayer.sortableChildren = true
   background.decorations.addChild(stringLayer)
+  // A hand holding the bulb a finger's hanging a string by, above and to the left of
+  // it, so the finger doesn't hide where it'll go
+  const touch = createTouchMarker()
+  const handLayer = new Container()
+  handLayer.sortableChildren = true
+  handLayer.eventMode = "none"
+  handLayer.addChild(touch.marker, touch.front)
+  container.addChild(handLayer)
+  // The bulb held, above the strings, with its glow and light
+  const held = new Container()
+  held.zIndex = 1
+  held.eventMode = "none"
+  held.visible = false
+  const heldGlow = new Sprite({texture: lighting.glowTexture, blendMode: "add"})
+  heldGlow.anchor.set(0.5)
+  const heldBulb = new Sprite(framesByColor.red[4])
+  heldBulb.anchor.set(beadAnchor.x, beadAnchor.y)
+  heldBulb.scale.set(heldScale)
+  const heldBloom = new Sprite({texture: framesByColor.red[4], blendMode: "add"})
+  heldBloom.anchor.set(beadAnchor.x, beadAnchor.y)
+  heldBloom.scale.set(heldScale * bloomScale)
+  held.addChild(heldGlow, heldBulb, heldBloom)
+  stringLayer.addChild(held)
+  const heldLight = lighting.addLight(lightColours.white)
+  // Whether the Decorate House tool's the one in use, with its bar shown or not, and
+  // where the mouse is over the scenery while it is, if it's there, and whether a string
+  // could start there
   const strings: LightString[] = []
   let chosen: Choice = "mixed"
   let hudShown = false
+  let active = false
+  let hovering: {at: PointData, onHouse: boolean} | undefined
   let elapsed = 0
   // Whether a string's been put up, moved or dimmed since the bulbs were last gone over
   let restrung = true
@@ -318,6 +365,49 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     return house >= 0 && background.houseAt(to) === house && Math.hypot(to.x - from.x, to.y - from.y) >= minLength
   }
 
+  // A point on the house moved onto the eave it's just by, if it's by one, so a string's
+  // end catches on it
+  const eaves = background.houses.flatMap(house => house.eaves)
+  const snap = (at: PointData): PointData => {
+    const near = eaveSnap / background.scale()
+    let best: number | undefined
+    for (const [left, right] of eaves) {
+      if (at.x >= left.x && at.x <= right.x && Math.abs(at.y - left.y) <= near
+        && (best === undefined || Math.abs(at.y - left.y) < Math.abs(at.y - best))) {
+        best = left.y
+      }
+    }
+    return best === undefined ? at : {x: at.x, y: best}
+  }
+
+  // The colour of the bulb held: the one picked, or for a mixed string, each in turn
+  const heldColour = (): Color => chosen === "mixed" ? colors[Math.floor(elapsed / mixedEach) % colors.length] : chosen
+
+  // Shows the bulb held, at the end of the string being hung, or where the mouse is,
+  // faded and dim where it can't be hung, lighting up the house round it
+  const showHeld = () => {
+    const shown = hanging ? {at: hanging.to, ok: canHang(hanging.from, hanging.to)}
+      : active && !moving && hovering ? {at: hovering.at, ok: hovering.onHouse} : undefined
+    held.visible = shown !== undefined
+    if (!shown) {
+      heldLight.off()
+      return
+    }
+    const colour = heldColour()
+    const frame = framesByColor[colour][4]
+    heldBulb.texture = heldBloom.texture = frame
+    heldGlow.tint = lightColours[colour]
+    heldLight.tint(lightColours[colour])
+    held.position.copyFrom(shown.at)
+    held.alpha = shown.ok ? 1 : 0.45
+    const glass = {x: shown.at.x, y: shown.at.y + (glassY - beadAnchor.y) * frame.height * heldScale}
+    heldGlow.y = glass.y - shown.at.y
+    const pulse = 1 - heldPulse + heldPulse * Math.sin(elapsed / 1000 * 5)
+    heldGlow.width = heldGlow.height = heldGlowRadius * 2 * pulse
+    heldGlow.alpha = shown.ok ? 0.9 : 0.35
+    heldLight.shine(glass, heldLightRadius * pulse, heldStrength * pulse * (shown.ok ? 1 : 0.35))
+  }
+
   // A string that can't be hung where it is shows faded
   const showValidity = (string: LightString) => {
     string.container.alpha = canHang(string.from, string.to) ? 1 : 0.4
@@ -339,10 +429,17 @@ const createHouseLights = (app: Application, background: Background, lighting: L
   }
 
   // With a colour picked, a press on the house starts a string there
-  const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
-    if (!background.isOnHouse(at) || moving || touchesDown.size > 1) {
+  const pressHandler = (pressed: PointData, e: FederatedPointerEvent) => {
+    if (moving || touchesDown.size > 1) {
       return false
     }
+    // A finger holds the bulb up and to its left, where it starts
+    const at = snap(e.pointerType === "touch" ? background.toScene(touch.follow(e.global, e.pointerType)) : pressed)
+    if (!background.isOnHouse(at)) {
+      touch.hide()
+      return false
+    }
+    hovering = undefined
     stringWith = e.pointerId
     hanging = createString(at, at, chosen)
     setOutline(hanging.container, "selected", true)
@@ -361,12 +458,12 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     if (e.pointerId !== stringWith) {
       return
     }
-    const at = background.toScene(toStage(e))
     if (hanging) {
-      hanging.to = at
+      hanging.to = snap(background.toScene(touch.follow(toStage(e), e.pointerType)))
       build(hanging)
       showValidity(hanging)
     } else if (moving) {
+      const at = background.toScene(toStage(e))
       const dx = at.x - moving.grabbedAt.x
       const dy = at.y - moving.grabbedAt.y
       moving.string.from = {x: moving.from.x + dx, y: moving.from.y + dy}
@@ -381,6 +478,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       return
     }
     stringWith = undefined
+    touch.hide()
     if (hanging) {
       const string = hanging
       hanging = undefined
@@ -427,6 +525,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       return
     }
     stringWith = undefined
+    touch.hide()
     if (hanging) {
       const string = hanging
       hanging = undefined
@@ -442,6 +541,25 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       build(string)
     }
   }
+  // Where the mouse is over the scenery, not over a button, the bar, or a string that's
+  // already hung, which it'd pick up
+  const onHover = (e: PointerEvent) => {
+    hovering = undefined
+    if (e.pointerType !== "mouse" || !active || hanging || moving || e.target !== app.canvas) {
+      return
+    }
+    const stage = toStage(e)
+    if (app.renderer.events.rootBoundary.hitTest(stage.x, stage.y)?.parent !== background.container) {
+      return
+    }
+    const at = snap(background.toScene(stage))
+    hovering = {at, onHouse: background.isOnHouse(at)}
+  }
+  const onLeave = () => {
+    hovering = undefined
+  }
+  window.addEventListener("pointermove", onHover)
+  app.canvas.addEventListener("pointerleave", onLeave)
   window.addEventListener("pointerdown", onPointerDown, true)
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
@@ -495,6 +613,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
     elapsed += app.ticker.deltaMS
     blow()
     twinkle()
+    showHeld()
   }
   app.ticker.add(tick)
 
@@ -512,7 +631,17 @@ const createHouseLights = (app: Application, background: Background, lighting: L
       bar.setShown(shown)
       bar.setInteractive(shown)
     },
+    // Whether it's the tool in use, bar shown or not, as only then is a bulb held
+    setActive(value: boolean) {
+      active = value
+      if (!active) {
+        hovering = undefined
+      }
+    },
     destroy() {
+      window.removeEventListener("pointermove", onHover)
+      app.canvas.removeEventListener("pointerleave", onLeave)
+      heldLight.destroy()
       window.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)

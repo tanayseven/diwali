@@ -1,6 +1,7 @@
 import {Application, Container, FederatedPointerEvent, Graphics, Point, PointData, RenderTexture, Sprite, Text, Texture} from "pixi.js"
 import {fontFamily, quality} from "./app"
 import {Background} from "./background"
+import type {Lighting} from "./lighting"
 import {createHud, hudFrame, slotSize} from "./hud"
 import {LL} from "./locale"
 import {setOutline} from "./outline"
@@ -42,6 +43,15 @@ const designBrushRadius = 1.3
 // The button that opens the designs, above the bar's left end, in CSS pixels
 const designsButtonSize = 48
 const designsButtonGap = 8
+// Before anything's put down, where it'd go is shown over the night: a ready-made design
+// as a faint copy of itself, wherever the mouse is, or where a finger's pressing, to be
+// slid about before it's let go, and the brush's size and colour round the mouse. Where
+// it could go, the porches' floors, is outlined while a design's picked, while the mouse
+// is off them, and for a moment when the tool's picked, pulsing this often a second
+const highlightColour = 0xffd23f
+const floorLine = 1.2
+const pulseRate = 3
+const showFloorsFor = 3000
 
 // A dab of powder: a dense middle that thins out to scattered grains at the edge
 const powderTexture = (size: number) => {
@@ -79,7 +89,7 @@ const solidTexture = (size: number) => {
 // The Draw Rangoli tool. Its bar has a slot for each colour of powder, an eraser and
 // one to clear the floor; with a colour or the eraser picked, dragging on the porch's
 // floor draws with it. The drawing stays on the floor, under anything placed on it
-const createRangoli = (app: Application, background: Background) => {
+const createRangoli = (app: Application, background: Background, lighting: Lighting) => {
   const container = new Container()
   const bar = createHud(app)
   container.addChild(bar.container)
@@ -129,6 +139,24 @@ const createRangoli = (app: Application, background: Background) => {
     })
     stamps.removeChildren().forEach(stamp => stamp.destroy())
   }
+  // Where things would go, over the night so they're clear
+  const highlight = new Container()
+  highlight.zIndex = lighting.aboveNight
+  highlight.eventMode = "none"
+  background.decorations.addChild(highlight)
+  const floorOutlines = new Graphics()
+  floors.forEach(({porch}) => floorOutlines.poly(porch.flatMap(p => [p.x, p.y])).stroke({width: floorLine, color: highlightColour}))
+  const ghost = new Graphics()
+  const brushRing = new Graphics()
+  highlight.addChild(floorOutlines, ghost, brushRing)
+  highlight.visible = false
+  // Whether it's the tool in use, bar shown or not, where the mouse is over the scenery,
+  // if it is, and until when the floors are outlined after the tool's picked
+  let active = false
+  let hovering: PointData | undefined
+  let showFloorsUntil = 0
+  let elapsed = 0
+
   let tool: Tool = "red"
   let last: PointData | undefined
   let drawingNow = false
@@ -204,6 +232,7 @@ const createRangoli = (app: Application, background: Background) => {
   const picker = createDesignPicker(powders, LL.tools.rangoli(), made => {
     design = made
     render()
+    drawGhost(made)
   })
   // A round button above the bar's left end, with a little rangoli on it, opening them
   const designsButton = document.createElement("button")
@@ -239,6 +268,51 @@ const createRangoli = (app: Application, background: Background) => {
       canvas.top + frame.y - frame.height / 2 - designsButtonSize - designsButtonGap}px)`
   }
 
+  // A faint copy of a design, its lines as they'd be laid, and the ellipse it fills
+  const drawGhost = (made: Design) => {
+    ghost.clear()
+    designLines(made).forEach(({points, colour}) => {
+      if (points.length < 2) {
+        return
+      }
+      ghost.moveTo(points[0].x * designRadius, points[0].y * designRadius * floorTilt)
+      points.slice(1).forEach(point => ghost.lineTo(point.x * designRadius, point.y * designRadius * floorTilt))
+      ghost.stroke({width: designBrushRadius * 2, color: powders[colour as Powder], cap: "round", join: "round"})
+    })
+    ghost.ellipse(0, 0, designRadius * 1.04, designRadius * floorTilt * 1.04).stroke({width: floorLine, color: highlightColour})
+  }
+
+  // Shows where what's picked would go: the design where the mouse is or the finger's
+  // pressing, bright on the floor and faint off it, or the brush round the mouse on the
+  // floor, and the floors outlined while there's a design to put down, the mouse is off
+  // them, or the tool's just been picked
+  const showHighlight = () => {
+    const pulse = 0.5 + 0.5 * Math.sin(elapsed / 1000 * pulseRate * Math.PI)
+    const at = placing?.at ?? hovering
+    const onFloor = at !== undefined && background.isOnPorchFloor(at)
+    ghost.visible = active && design !== undefined && at !== undefined
+    if (ghost.visible) {
+      ghost.position.copyFrom(at!)
+      ghost.alpha = onFloor ? 0.5 + 0.25 * pulse : 0.2
+    }
+    brushRing.visible = active && !design && hovering !== undefined && background.isOnPorchFloor(hovering)
+    if (brushRing.visible) {
+      brushRing.position.copyFrom(hovering!)
+    }
+    floorOutlines.visible = active && (design !== undefined || performance.now() < showFloorsUntil
+      || (at !== undefined && !onFloor))
+    floorOutlines.alpha = 0.3 + 0.4 * pulse
+    highlight.visible = ghost.visible || brushRing.visible || floorOutlines.visible
+  }
+
+  // The brush's ring, the size it draws, in its colour, or for the eraser, white
+  const drawBrushRing = () => {
+    const radius = tool === "eraser" ? eraserRadius : brushRadius
+    brushRing.clear()
+      .circle(0, 0, radius).fill({color: tool === "eraser" ? 0xffffff : powders[tool], alpha: 0.35})
+      .circle(0, 0, radius).stroke({width: 0.5, color: tool === "eraser" ? 0xffffff : powders[tool]})
+  }
+
   // What's picked is outlined as well as its box highlighted, or with a design picked,
   // its button
   const render = () => {
@@ -252,6 +326,7 @@ const createRangoli = (app: Application, background: Background) => {
     tool = next
     design = undefined
     render()
+    drawBrushRing()
   }
 
   // Lays stamps from the last point to this one, then draws them into the drawing
@@ -312,10 +387,9 @@ const createRangoli = (app: Application, background: Background) => {
     ))
   }
 
-  // A press on the floor with a design picked, to put it down there once it's a tap: let
-  // go without moving, and without another finger coming down, as for a pinch
-  let placing: {at: PointData, made: Design, pointerId: number, x: number, y: number} | undefined
-  const placeSlop = 10
+  // A press on the floor with a design picked, to put it down where it's let go, once
+  // it's been slid wherever it's to go, unless another finger comes down, as for a pinch
+  let placing: {at: PointData, made: Design, pointerId: number} | undefined
 
   // A press on the porch's floor starts drawing there, or puts the design down there
   const pressHandler = (at: PointData, e: FederatedPointerEvent) => {
@@ -323,7 +397,7 @@ const createRangoli = (app: Application, background: Background) => {
       return false
     }
     if (design) {
-      placing = {at, made: design, pointerId: e.pointerId, x: e.clientX, y: e.clientY}
+      placing = {at, made: design, pointerId: e.pointerId}
       return true
     }
     drawingNow = true
@@ -339,16 +413,15 @@ const createRangoli = (app: Application, background: Background) => {
     return point
   }
   const onPointerMove = (e: PointerEvent) => {
-    if (placing && e.pointerId === placing.pointerId
-      && Math.hypot(e.clientX - placing.x, e.clientY - placing.y) > placeSlop) {
-      placing = undefined
+    if (placing && e.pointerId === placing.pointerId) {
+      placing.at = background.toScene(toStage(e))
     }
     if (drawingNow && e.pointerId === drawingWith) {
       strokeTo(background.toScene(toStage(e)))
     }
   }
   const onPointerUp = (e?: PointerEvent) => {
-    if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId) {
+    if (placing && e?.type === "pointerup" && e.pointerId === placing.pointerId && background.isOnPorchFloor(placing.at)) {
       putDesign(placing.at, placing.made)
     }
     placing = undefined
@@ -366,12 +439,34 @@ const createRangoli = (app: Application, background: Background) => {
       onPointerUp()
     }
   }
+  // Where the mouse is over the scenery, and not a button or the bar
+  const onHover = (e: PointerEvent) => {
+    hovering = undefined
+    if (e.pointerType !== "mouse" || !active || e.target !== app.canvas) {
+      return
+    }
+    const stage = toStage(e)
+    if (drawingNow || app.renderer.events.rootBoundary.hitTest(stage.x, stage.y)?.parent === background.container) {
+      hovering = background.toScene(stage)
+    }
+  }
+  const onLeave = () => {
+    hovering = undefined
+  }
+  window.addEventListener("pointermove", onHover)
+  app.canvas.addEventListener("pointerleave", onLeave)
+  const tick = () => {
+    elapsed += app.ticker.deltaMS
+    showHighlight()
+  }
+  app.ticker.add(tick)
   window.addEventListener("pointerdown", onPointerDown, true)
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
 
   render()
+  drawBrushRing()
 
   placeDesignsButton()
 
@@ -394,7 +489,22 @@ const createRangoli = (app: Application, background: Background) => {
         picker.hide()
       }
     },
+    // Whether it's the tool in use, bar shown or not, and if it's just been picked, the
+    // floors it draws on are outlined for a moment
+    setActive(value: boolean) {
+      if (value && !active) {
+        showFloorsUntil = performance.now() + showFloorsFor
+      }
+      active = value
+      if (!active) {
+        hovering = undefined
+      }
+    },
     destroy() {
+      window.removeEventListener("pointermove", onHover)
+      app.canvas.removeEventListener("pointerleave", onLeave)
+      app.ticker.remove(tick)
+      highlight.destroy({children: true})
       window.removeEventListener("pointerdown", onPointerDown, true)
       designsButton.remove()
       picker.destroy()

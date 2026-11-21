@@ -514,6 +514,8 @@ type Placed = {
   nextRoamAt: number
   // A rocket once it's left its bottle, until it bursts
   flight?: Flight
+  // Whether the player lit it, rather than a guest, for the camera to follow it up
+  byPlayer?: boolean
 }
 
 // A firework being dragged, from its stack or picked up from the scene, and where to
@@ -931,6 +933,7 @@ const createFireworks = (
       haptics.lit()
     }
     happen("fuse", firework.sprite.position)
+    firework.byPlayer = !byGuest
     firework.state = "fuse"
     if (firework.kind === "anar") {
       firework.sprite.texture = Assets.get<Texture>(anarUrls.lit)
@@ -1555,6 +1558,10 @@ const createFireworks = (
     background.decorations.addChild(sprite)
     rocket.sprite.texture = Assets.get<Texture>(rocketUrls.bottle)
     rocket.sound = playRocketSound(...heardFrom(nozzle))
+    // One the player lit is followed up into the sky, to see it burst
+    if (rocket.byPlayer) {
+      background.follow(() => rocket.flight && {x: rocket.flight.x, y: rocket.flight.y})
+    }
     haptics.rocketLaunch()
     happen("show", nozzle)
     for (let idx = 0; idx < catchPuffs; idx++) {
