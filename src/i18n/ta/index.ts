@@ -53,6 +53,19 @@ const ta = {
 		unmute: "இசையை இயக்கு",
 		volume: "ஒலியளவு",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "பட்டையிலிருந்து ஓர் அகல் விளக்கை இழுத்து திண்ணையில் வையுங்கள்",
+		lightDiya: "இப்போது திரியையும் எண்ணெயையும் இதன் மேல் இழுங்கள், பிறகு தீக்குச்சியால் இதை ஏற்றுங்கள்",
+		pickFireworks: "இடப்பக்கத்திலிருந்து பட்டாசுகளைத் தேர்ந்தெடுங்கள்",
+		firework: "ஒரு புஸ்வாணத்தை இழுத்து திண்ணையில் வையுங்கள், பிறகு தீக்குச்சியால் அதைப் பற்றவையுங்கள்",
+		more: "இவற்றைக் கொண்டு வான விளக்கு செய்யுங்கள், விளக்குச் சரம் தொங்கவிடுங்கள், கோலம் போடுங்கள். தீபாவளி நல்வாழ்த்துகள்!",
+		skip: "தவிர்",
+		done: "முடிந்தது",
+		// In the settings, to go through it again
+		title: "வழிகாட்டி",
+		replay: "மீண்டும் காட்டு",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "அமைப்புகள்",

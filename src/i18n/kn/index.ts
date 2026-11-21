@@ -53,6 +53,19 @@ const kn = {
 		unmute: "ಸಂಗೀತ ಆನ್ ಮಾಡಿ",
 		volume: "ಧ್ವನಿ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "ಪಟ್ಟಿಯಿಂದ ಒಂದು ಹಣತೆಯನ್ನು ಎಳೆದು ಜಗುಲಿಯ ಮೇಲೆ ಇಡಿ",
+		lightDiya: "ಈಗ ಬತ್ತಿ ಮತ್ತು ಎಣ್ಣೆಯನ್ನು ಇದರ ಮೇಲೆ ಎಳೆಯಿರಿ, ನಂತರ ಬೆಂಕಿಕಡ್ಡಿಯಿಂದ ಇದನ್ನು ಹಚ್ಚಿ",
+		pickFireworks: "ಎಡಭಾಗದಿಂದ ಪಟಾಕಿಗಳನ್ನು ಆರಿಸಿ",
+		firework: "ಒಂದು ಹೂಕುಂಡವನ್ನು ಎಳೆದು ಜಗುಲಿಯ ಮೇಲೆ ಇಡಿ, ನಂತರ ಬೆಂಕಿಕಡ್ಡಿಯಿಂದ ಅದನ್ನು ಹಚ್ಚಿ",
+		more: "ಇವುಗಳಿಂದ ಆಕಾಶಬುಟ್ಟಿ ಮಾಡಿ, ದೀಪಗಳ ಸರ ತೂಗುಹಾಕಿ ಮತ್ತು ರಂಗೋಲಿ ಬಿಡಿಸಿ. ದೀಪಾವಳಿಯ ಶುಭಾಶಯಗಳು!",
+		skip: "ಬಿಟ್ಟುಬಿಡಿ",
+		done: "ಮುಗಿಯಿತು",
+		// In the settings, to go through it again
+		title: "ಮಾರ್ಗದರ್ಶನ",
+		replay: "ಮತ್ತೆ ತೋರಿಸಿ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",

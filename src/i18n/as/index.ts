@@ -53,6 +53,19 @@ const asm = {
 		unmute: "সংগীত চলাওক",
 		volume: "শব্দ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "বাৰডালৰ পৰা এটা চাকি টানি আনি বাৰান্দাত ৰাখক",
+		lightDiya: "এতিয়া শলিতা আৰু তেল ইয়াৰ ওপৰলৈ টানি আনক, তাৰ পিছত জুইশলাৰ কাঠিৰে ইয়াক জ্বলাওক",
+		pickFireworks: "বাওঁফালৰ পৰা আতচবাজী বাছি লওক",
+		firework: "এটা আনাৰ টানি আনি বাৰান্দাত ৰাখক, তাৰ পিছত জুইশলাৰ কাঠিৰে ইয়াক জ্বলাওক",
+		more: "এইবোৰেৰে আকাশবন্তি বনাওক, লাইটৰ মালা ওলোমাওক আৰু আলপনা আঁকক। শুভ দীপাৱলী!",
+		skip: "এৰি দিয়ক",
+		done: "হ'ল",
+		// In the settings, to go through it again
+		title: "নিৰ্দেশনা",
+		replay: "আকৌ দেখুৱাওক",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ছেটিংছ",

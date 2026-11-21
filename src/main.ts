@@ -20,7 +20,8 @@ import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
-import {createSettings, isSettingsOpen} from "./settings"
+import {createSettings, isSettingsOpen, textButton} from "./settings"
+import {runTour} from "./tour"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
@@ -53,6 +54,8 @@ type ToolControls = Layout & {
   pressHandler?: (at: PointData, e: FederatedPointerEvent) => boolean
   // What to take first from its bar, to show someone new to it
   firstSlot?: () => Container | undefined
+  // Any slot of its bar, by its place along it
+  slotAt?: (idx: number) => Container | undefined
   // Told whether it's the tool in use, whether its bar's shown or hidden
   setActive?: (active: boolean) => void
   // Shows, the first time it's used, how it's used, resolving with whether to go on to
@@ -122,7 +125,7 @@ const main = async () => {
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
   // Beside the speaker, the language, named, to pick another, and the settings
-  createSettings(audio, locale)
+  const settings = createSettings(audio, locale)
 
   // Without the background there's nowhere to put anything, so nothing more to show
   if (backgroundAssets.some(url => failed.has(url))) {
@@ -285,7 +288,7 @@ const main = async () => {
       return
     }
     rememberIntroduced("zoom")
-    showZoomTutorial(background, zoomControls.zoomIn, zoomControls.zoomOut).then(() => introduce(selected, false))
+    showZoomTutorial(background, zoomControls.zoomIn, zoomControls.zoomOut).then(firstRun)
   }
   // Turned sideways, once the window's landscape and the scene's been laid out for it, a
   // frame after the resize, so the camera's zoom it puts back after is the landscape one
@@ -301,10 +304,33 @@ const main = async () => {
     })
     waitFrames(2)
   }
+  // The first time, after how to zoom, a guided first run through lighting a diya and a
+  // firework, which covers what the diyas' and fireworks' first steps would show. It can
+  // be gone through again from the settings
+  const tour = () => {
+    rememberIntroduced("diyas")
+    rememberIntroduced("fireworks")
+    return runTour({
+      app,
+      background,
+      selected: () => selected,
+      select: tool => rail.select(tool),
+      railButton: tool => rail.buttonFor(tool),
+      slot: (tool, idx) => controls[tool]?.slotAt?.(idx),
+      lastDiya: () => diyas?.placedAt().at(-1),
+    }).then(() => rememberIntroduced("tour"))
+  }
+  const firstRun = () => introduced.has("tour") ? introduce(selected, false) : tour()
+  const replay = textButton(LL.tour.replay())
+  replay.addEventListener("click", () => {
+    settings.hide()
+    void tour()
+  })
+  settings.addRow(LL.tour.title(), replay)
   if (!introduced.has("zoom")) {
     showZoomTutorialOnceSeen()
   } else {
-    introduce(selected, false)
+    firstRun()
   }
 
   window.addEventListener("keydown", e => {

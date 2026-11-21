@@ -53,6 +53,19 @@ const ml = {
 		unmute: "സംഗീതം ഓണാക്കൂ",
 		volume: "ശബ്ദം",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "ബാറിൽ നിന്ന് ഒരു ചിരാത് വലിച്ച് ഉമ്മറത്ത് വയ്ക്കൂ",
+		lightDiya: "ഇനി തിരിയും എണ്ണയും ഇതിലേക്ക് വലിച്ചിടൂ, എന്നിട്ട് തീപ്പെട്ടിക്കൊള്ളി കൊണ്ട് ഇത് കത്തിക്കൂ",
+		pickFireworks: "ഇടതുവശത്തുനിന്ന് പടക്കങ്ങൾ തിരഞ്ഞെടുക്കൂ",
+		firework: "ഒരു പൂക്കുറ്റി വലിച്ച് ഉമ്മറത്ത് വയ്ക്കൂ, എന്നിട്ട് തീപ്പെട്ടിക്കൊള്ളി കൊണ്ട് അത് കത്തിക്കൂ",
+		more: "ഇവ കൊണ്ട് ആകാശവിളക്ക് ഉണ്ടാക്കൂ, വിളക്കുമാല തൂക്കൂ, രംഗോലി വരയ്ക്കൂ. ദീപാവലി ആശംസകൾ!",
+		skip: "ഒഴിവാക്കൂ",
+		done: "കഴിഞ്ഞു",
+		// In the settings, to go through it again
+		title: "പരിചയപ്പെടുത്തൽ",
+		replay: "വീണ്ടും കാണിക്കൂ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ക്രമീകരണങ്ങൾ",

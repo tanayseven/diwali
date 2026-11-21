@@ -53,6 +53,19 @@ const sd = {
 		unmute: "موسيقي هلايو",
 		volume: "آواز",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "پٽيءَ تان هڪ ڏيئو ڇڪي ورانڊي تي رکو",
+		lightDiya: "هاڻي وٽ ۽ تيل ان تي ڇڪيو، پوءِ ماچيس جي تيليءَ سان ان کي ٻاريو",
+		pickFireworks: "کاٻي پاسي کان ڦٽاڪا چونڊيو",
+		firework: "هڪ انار ڇڪي ورانڊي تي رکو، پوءِ ماچيس جي تيليءَ سان ان کي ٻاريو",
+		more: "انهن سان آڪاش قنديل ٺاهيو، سجاوٽي بتيون ٽنگيو ۽ رنگولي ٺاهيو. ڏياري مبارڪ!",
+		skip: "ڇڏيو",
+		done: "ٿي ويو",
+		// In the settings, to go through it again
+		title: "رهنمائي",
+		replay: "ٻيهر ڏيکاريو",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سيٽنگون",

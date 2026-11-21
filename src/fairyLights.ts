@@ -1,4 +1,5 @@
 import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Polygon, Rectangle, Sprite, Texture} from "pixi.js"
+import {report} from "./progress"
 import Matter from "matter-js"
 import {quality} from "./app"
 import type {Background} from "./background"
@@ -487,6 +488,7 @@ const createHouseLights = (app: Application, background: Background, lighting: L
         strings.push(string)
         makePickable(string)
         haptics.done()
+        report("lightsHung")
       } else {
         // Too short, or off the house, so it's not hung, and the colour's slot says how
         removeString(string)

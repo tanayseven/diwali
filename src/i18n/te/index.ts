@@ -53,6 +53,19 @@ const te = {
 		unmute: "సంగీతం ఆన్ చేయండి",
 		volume: "వాల్యూమ్",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "బార్ నుండి ఒక ప్రమిదను లాగి వరండాలో పెట్టండి",
+		lightDiya: "ఇప్పుడు వత్తి, నూనెలను దీని మీదకు లాగండి, తర్వాత అగ్గిపుల్లతో దీన్ని వెలిగించండి",
+		pickFireworks: "ఎడమ వైపు నుండి టపాసులను ఎంచుకోండి",
+		firework: "ఒక చిచ్చుబుడ్డిని లాగి వరండాలో పెట్టండి, తర్వాత అగ్గిపుల్లతో దాన్ని వెలిగించండి",
+		more: "వీటితో ఆకాశదీపాలు తయారు చేయండి, దీపాల తోరణాలు వేలాడదీయండి, ముగ్గులు వేయండి. దీపావళి శుభాకాంక్షలు!",
+		skip: "దాటవేయండి",
+		done: "పూర్తయింది",
+		// In the settings, to go through it again
+		title: "పరిచయం",
+		replay: "మళ్ళీ చూపించండి",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "సెట్టింగ్‌లు",

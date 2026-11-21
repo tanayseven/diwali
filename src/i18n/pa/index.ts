@@ -53,6 +53,19 @@ const pa = {
 		unmute: "ਸੰਗੀਤ ਚਾਲੂ ਕਰੋ",
 		volume: "ਆਵਾਜ਼",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "ਪੱਟੀ ਤੋਂ ਇੱਕ ਦੀਵਾ ਖਿੱਚ ਕੇ ਬਰਾਂਡੇ ਵਿੱਚ ਰੱਖੋ",
+		lightDiya: "ਹੁਣ ਬੱਤੀ ਅਤੇ ਤੇਲ ਇਸ ਉੱਤੇ ਖਿੱਚੋ, ਫਿਰ ਮਾਚਿਸ ਦੀ ਤੀਲੀ ਨਾਲ ਇਸਨੂੰ ਬਾਲੋ",
+		pickFireworks: "ਖੱਬੇ ਪਾਸਿਓਂ ਪਟਾਕੇ ਚੁਣੋ",
+		firework: "ਇੱਕ ਅਨਾਰ ਖਿੱਚ ਕੇ ਬਰਾਂਡੇ ਵਿੱਚ ਰੱਖੋ, ਫਿਰ ਮਾਚਿਸ ਦੀ ਤੀਲੀ ਨਾਲ ਇਸਨੂੰ ਚਲਾਓ",
+		more: "ਇਨ੍ਹਾਂ ਨਾਲ ਆਕਾਸ਼ ਕੰਦੀਲ ਬਣਾਓ, ਲਾਈਟਾਂ ਦੀ ਲੜੀ ਟੰਗੋ ਅਤੇ ਰੰਗੋਲੀ ਬਣਾਓ। ਦੀਵਾਲੀ ਦੀਆਂ ਵਧਾਈਆਂ!",
+		skip: "ਛੱਡੋ",
+		done: "ਹੋ ਗਿਆ",
+		// In the settings, to go through it again
+		title: "ਮਾਰਗਦਰਸ਼ਨ",
+		replay: "ਫਿਰ ਦਿਖਾਓ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ਸੈਟਿੰਗਾਂ",

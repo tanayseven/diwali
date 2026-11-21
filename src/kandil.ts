@@ -1,4 +1,5 @@
 import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Rectangle, Sprite, Text, Texture} from "pixi.js"
+import {report} from "./progress"
 import {fontFamily} from "./app"
 import Matter from "matter-js"
 import type {Background} from "./background"
@@ -653,6 +654,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
   const light = (kandil: Kandil) => {
     select(undefined)
     haptics.lit()
+    report("kandilLit")
     happen("kandil", kandil.container.position)
     kandil.lit = true
     kandil.light = lighting.addLight(lampColours[kandil.paper!])

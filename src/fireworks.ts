@@ -1,4 +1,5 @@
 import {Application, Assets, Container, Graphics, Particle, ParticleContainer, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {report} from "./progress"
 import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
 import {createBackground, sceneHeight, scenery} from "./background"
@@ -932,6 +933,7 @@ const createFireworks = (
   const light = (firework: Placed, byGuest = false) => {
     if (!byGuest) {
       haptics.lit()
+      report("fireworkLit")
     }
     happen("fuse", firework.sprite.position)
     firework.byPlayer = !byGuest
@@ -1050,6 +1052,7 @@ const createFireworks = (
     } else if (background.isOnPorchFloor(scene)) {
       placeFirework(current.firework, scene)
       haptics.placed()
+      report("fireworkPlaced")
     } else {
       // Fireworks only go on the porch's floor; let go anywhere else, it goes back,
       // and its slot says where it goes
@@ -1926,6 +1929,8 @@ const createFireworks = (
     },
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
+    // Any slot of its bar, by its place along it, for the guided first run to point to
+    slotAt: (idx: number) => bar.slotAt(idx),
     // Shows its bar, while the Fireworks tool is the one in use. The match is put away
     // with the bar
     setHudShown(shown: boolean) {

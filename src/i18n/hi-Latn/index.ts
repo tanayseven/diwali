@@ -53,6 +53,19 @@ const hiLatn = {
 		unmute: "Music chalu karo",
 		volume: "Volume",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "Bar se ek diya drag karke porch pe rakho",
+		lightDiya: "Ab baati aur tel ispe drag karo, phir maachis ki teeli se ise jalao",
+		pickFireworks: "Left se Patakhe chuno",
+		firework: "Ek anar drag karke porch pe rakho, phir maachis ki teeli se use jalao",
+		more: "Inse akash kandil banao, fairy lights lagao aur rangoli banao. Happy Diwali!",
+		skip: "Skip karo",
+		done: "Ho gaya",
+		// In the settings, to go through it again
+		title: "Walkthrough",
+		replay: "Phir se dikhao",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",

@@ -53,6 +53,19 @@ const bn = {
 		unmute: "গান চালু করুন",
 		volume: "আওয়াজ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "বার থেকে একটা প্রদীপ টেনে বারান্দায় রাখুন",
+		lightDiya: "এবার সলতে আর তেল এর ওপর টেনে আনুন, তারপর দেশলাই কাঠি দিয়ে এটা জ্বালান",
+		pickFireworks: "বাঁ দিক থেকে বাজি বেছে নিন",
+		firework: "একটা তুবড়ি টেনে বারান্দায় রাখুন, তারপর দেশলাই কাঠি দিয়ে সেটা জ্বালান",
+		more: "এগুলো দিয়ে আকাশপ্রদীপ বানান, টুনি বাল্ব ঝোলান আর আলপনা আঁকুন। শুভ দীপাবলি!",
+		skip: "এড়িয়ে যান",
+		done: "হয়ে গেছে",
+		// In the settings, to go through it again
+		title: "নির্দেশিকা",
+		replay: "আবার দেখান",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "সেটিংস",

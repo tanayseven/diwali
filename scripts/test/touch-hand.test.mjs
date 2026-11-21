@@ -11,6 +11,7 @@
 // bar. And that a ready-made rangoli design can be made and put
 // down, and slid to where it's to go before it's let go. And that the settings, from the
 // gear button, can turn the music off and reduce flashing, as the warning at the start can.
+// And that the guided first run waits for each step, and can be skipped.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -55,6 +56,10 @@ before(async () => {
   const context = await browser.newContext(phone)
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    // Without the guided first run, which has a test of its own, in a game of its own
+    if (!localStorage.getItem("diwali-introduced-tools")) {
+      localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
+    }
   }, muted)
   // Every vibration asked for, kept to look at, in place of vibrating
   await context.addInitScript(() => {
@@ -478,6 +483,39 @@ test("the gear opens the settings, where the music's turned off, which is rememb
   assert.equal(await page.evaluate(() => localStorage.getItem("diwali-reduce-flashing")), "0")
   await page.getByRole("button", {name: "Close"}).tap()
   await panel.waitFor({state: "hidden", timeout: 3000})
+})
+
+test("the guided first run waits for each step to be done, and Skip ends it", async () => {
+  // A first visit of its own, muted
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => localStorage.setItem("diwali-audio", JSON.stringify(settings)), muted)
+  const first = await context.newPage()
+  first.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    await first.goto(`http://localhost:${port}/?guests=off&start=porch`)
+    await first.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await first.getByText(text).waitFor({timeout: 60000})
+      await first.waitForTimeout(900)
+      await first.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    // After how to zoom
+    const card = first.getByRole("status")
+    await first.getByText("1 / 5").waitFor({timeout: 30000})
+    assert.match(await card.textContent(), /Drag a diya/)
+    // A diya put on the porch is the first step done
+    await first.mouse.move(slot(0).x, slot(0).y)
+    await first.mouse.down()
+    await first.mouse.move(porch.x, porch.y, {steps: 12})
+    await first.mouse.up()
+    await first.getByText("2 / 5").waitFor({timeout: 3000})
+    await first.getByRole("button", {name: "Skip"}).tap()
+    await card.waitFor({state: "hidden", timeout: 3000})
+    const introduced = await first.evaluate(() => JSON.parse(localStorage.getItem("diwali-introduced-tools")))
+    assert.ok(introduced.includes("tour"), "it's not shown again")
+  } finally {
+    await context.close()
+  }
 })
 
 // Last, as it starts the game again

@@ -53,6 +53,19 @@ const gu = {
 		unmute: "સંગીત ચાલુ કરો",
 		volume: "અવાજ",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "પટ્ટી પરથી એક કોડિયું ખેંચીને ઓસરીમાં મૂકો",
+		lightDiya: "હવે દિવેટ અને તેલ તેના પર ખેંચો, પછી દીવાસળીથી તેને પ્રગટાવો",
+		pickFireworks: "ડાબી બાજુથી ફટાકડા પસંદ કરો",
+		firework: "એક કોઠી ખેંચીને ઓસરીમાં મૂકો, પછી દીવાસળીથી તેને સળગાવો",
+		more: "આનાથી આકાશ કંદીલ બનાવો, સિરીઝ લાઇટ લટકાવો અને રંગોળી પૂરો. દિવાળીની શુભકામનાઓ!",
+		skip: "છોડો",
+		done: "થઈ ગયું",
+		// In the settings, to go through it again
+		title: "માર્ગદર્શન",
+		replay: "ફરી બતાવો",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "સેટિંગ્સ",

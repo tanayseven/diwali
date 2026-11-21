@@ -32,9 +32,10 @@ const page = await browser.newPage({
 })
 page.on("pageerror", error => console.error("Page error:", error.message))
 // As someone who's used every tool before and been shown how to zoom, so no tool's
-// first step, nor how to zoom, nor how to make a kandil, is shown over the scene
+// first step, nor how to zoom, nor the guided first run, nor how to make a kandil, is
+// shown over the scene
 await page.addInitScript(() => {
-  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
+  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "tour", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
 })
 
 const drag = async (from, to, {hold = 0, steps = 12} = {}) => {

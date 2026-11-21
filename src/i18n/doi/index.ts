@@ -53,6 +53,19 @@ const doi = {
 		unmute: "संगीत चालू करो",
 		volume: "अवाज़",
 	},
+	// A guided first run, a step at a time, shown on the first visit and from the settings
+	tour: {
+		diya: "पट्टी थमां इक दीया खिच्चियै बरांडे च रक्खो",
+		lightDiya: "हून बत्ती ते तेल इस उप्पर खिच्चो, फी माचिस दी तीली कन्नै इसगी बालो",
+		pickFireworks: "खब्बे पासे थमां पटाखे चुनो",
+		firework: "इक अनार खिच्चियै बरांडे च रक्खो, फी माचिस दी तीली कन्नै उसगी बालो",
+		more: "इंदे कन्नै आकाश कंदील बनाओ, झालर टंगो ते रंगोली बनाओ। दीवाली दियां बधाइयां!",
+		skip: "छोड़ो",
+		done: "होई गेआ",
+		// In the settings, to go through it again
+		title: "मार्गदर्शन",
+		replay: "फ्ही दस्सो",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",
