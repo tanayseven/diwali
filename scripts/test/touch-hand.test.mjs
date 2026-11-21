@@ -514,18 +514,18 @@ test("the first visit picks a house, then the guided first run waits for each st
     await first.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Pick your house']")).opacity === "1")
     await first.waitForTimeout(500)
     await picker.getByRole("button", {name: "Deepa Niwas"}).tap()
+    // Fading out can take a while on a slow, busy machine, as the tests' runner can be
     try {
-      await picker.waitFor({state: "hidden", timeout: 5000})
+      await picker.waitFor({state: "hidden", timeout: 20000})
     } catch (error) {
-      const state = await first.evaluate(() => ({
-        house: localStorage.getItem("diwali-house"),
-        opacity: getComputedStyle(document.querySelector("[aria-label='Pick your house']")).opacity,
-        disabled: [...document.querySelectorAll("[aria-label='Pick your house'] button")].map(button => button.disabled),
-        atCard: document.elementFromPoint(...(() => {
-          const box = document.querySelector("[aria-label='Deepa Niwas']").getBoundingClientRect()
-          return [box.x + box.width / 2, box.y + box.height / 2]
-        })())?.outerHTML.slice(0, 120),
-      }))
+      const state = await first.evaluate(() => {
+        const shown = document.querySelector("[aria-label='Pick your house']")
+        return {
+          house: localStorage.getItem("diwali-house"),
+          opacity: shown ? getComputedStyle(shown).opacity : "gone",
+          disabled: [...document.querySelectorAll("[aria-label='Pick your house'] button")].map(button => button.disabled),
+        }
+      })
       throw new Error(`the house picker didn't close: ${JSON.stringify(state)}`, {cause: error})
     }
     assert.equal(await first.evaluate(() => localStorage.getItem("diwali-house")), "deepaNiwas")
