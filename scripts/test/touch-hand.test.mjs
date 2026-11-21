@@ -218,9 +218,10 @@ test("a string of fairy lights hung by a finger is held up by a hand, and hung",
   await page.touchscreen.tap(52, rail.decorate)
   await page.waitForTimeout(800)
   await page.evaluate(() => window.vibrations.length = 0)
-  // Across the front of the house, above the porch, held up and to the left of the finger
-  const from = {x: porch.x - 120, y: 150}
-  const to = {x: porch.x + 120, y: 140}
+  // Across the front of the house, above the porch, held up and to the left of the finger,
+  // right of the kandil the tests before put down, so the finger doesn't pick that up
+  const from = {x: porch.x + 40, y: 145}
+  const to = {x: porch.x + 260, y: 135}
   await touchDown(from, to)
   const holding = await handPixels(to)
   await touchUp()
