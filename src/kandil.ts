@@ -877,6 +877,20 @@ const createKandils = (app: Application, background: Background, lighting: Light
   // nearest the middle of the screen, then red paper onto it, and it all fades away. Any
   // press or key ends it. Resolves with whether it was shown to the end
   let endDemo: (() => void) | undefined
+  const onHouseInView = (middle: PointData, margin: number) => {
+    const {view} = background
+    const height = view.bottom - view.top
+    for (const down of [0.2, 0.3, 0.15, 0.4]) {
+      for (const across of [0, -0.1, 0.1, -0.2, 0.2, -0.3, 0.3]) {
+        const at = {x: middle.x + across * (view.right - view.left), y: view.top + down * height}
+        if (at.x > view.left + margin && at.x < view.right - margin && background.isOnHouse(at)
+          && background.inView(at.x, at.y + baseY * kandilScale)) {
+          return {eave: {x: at.x, y: background.eaveAbove(at) ?? at.y}, at}
+        }
+      }
+    }
+    return undefined
+  }
   const demonstrate = () => new Promise<boolean>(resolve => {
     const {view} = background
     const middle = {x: (view.left + view.right) / 2, y: (view.top + view.bottom) / 2}
@@ -887,8 +901,12 @@ const createKandils = (app: Application, background: Background, lighting: Light
       return x >= left.x && x <= right.x && background.inView(at.x, at.y) && background.isOnHouse(at)
         && background.inView(at.x, at.y + baseY * kandilScale) ? [{eave: {x, y: left.y}, at}] : []
     }).sort((a, b) => Math.hypot(a.at.x - middle.x, a.at.y - middle.y) - Math.hypot(b.at.x - middle.x, b.at.y - middle.y))[0]
+      // Or, zoomed in with no eave on screen, from the house high up near the middle, by
+      // a string up to the eave above it, as it would be if it were let go there
+      ?? onHouseInView(middle, margin)
     if (!hangHere || frames.count === 0 || endDemo) {
-      resolve(false)
+      // Nothing shown, so what to take first is shown instead
+      resolve(true)
       return
     }
     const scale = background.scale() * kandilScale

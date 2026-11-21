@@ -55,8 +55,9 @@ type ToolControls = Layout & {
   firstSlot?: () => Container | undefined
   // Told whether it's the tool in use, whether its bar's shown or hidden
   setActive?: (active: boolean) => void
-  // Shows, the first time it's used, how it's used, resolving with whether it was shown
-  // to the end rather than cut short
+  // Shows, the first time it's used, how it's used, resolving with whether to go on to
+  // show what to take first: when it was shown to the end, or couldn't be shown at all,
+  // rather than cut short by getting on with it
   demonstrate?: () => Promise<boolean>
 }
 
