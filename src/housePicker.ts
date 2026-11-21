@@ -123,13 +123,13 @@ const showHousePicker = () => new Promise<HouseName>(resolve => {
     grid.appendChild(card)
     return card
   })
-  // Taps only count once it's faded in
-  let readyAt = Infinity
+  // Taps only count once it's had time to fade in, timed from now, not from when it's
+  // first drawn, which on a busy device can be a good while later
+  const readyAt = performance.now() + fadeDuration
   overlay.append(heading, hint, grid)
   document.body.appendChild(overlay)
   requestAnimationFrame(() => requestAnimationFrame(() => {
     overlay.style.opacity = "1"
-    readyAt = performance.now() + fadeDuration
     cards[houses.findIndex(({name}) => name === "deepaNiwas")]?.focus()
   }))
 })

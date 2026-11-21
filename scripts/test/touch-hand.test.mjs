@@ -511,9 +511,23 @@ test("the first visit picks a house, then the guided first run waits for each st
     await picker.waitFor({timeout: 10000})
     assert.equal(await picker.getByRole("button").count(), 6)
     // Once it's faded in, as taps before then are taken to be meant for the screen before
-    await first.waitForTimeout(800)
+    await first.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Pick your house']")).opacity === "1")
+    await first.waitForTimeout(500)
     await picker.getByRole("button", {name: "Deepa Niwas"}).tap()
-    await picker.waitFor({state: "hidden", timeout: 5000})
+    try {
+      await picker.waitFor({state: "hidden", timeout: 5000})
+    } catch (error) {
+      const state = await first.evaluate(() => ({
+        house: localStorage.getItem("diwali-house"),
+        opacity: getComputedStyle(document.querySelector("[aria-label='Pick your house']")).opacity,
+        disabled: [...document.querySelectorAll("[aria-label='Pick your house'] button")].map(button => button.disabled),
+        atCard: document.elementFromPoint(...(() => {
+          const box = document.querySelector("[aria-label='Deepa Niwas']").getBoundingClientRect()
+          return [box.x + box.width / 2, box.y + box.height / 2]
+        })())?.outerHTML.slice(0, 120),
+      }))
+      throw new Error(`the house picker didn't close: ${JSON.stringify(state)}`, {cause: error})
+    }
     assert.equal(await first.evaluate(() => localStorage.getItem("diwali-house")), "deepaNiwas")
     // After how to zoom
     const card = first.getByRole("status")
