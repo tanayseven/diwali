@@ -36,21 +36,38 @@ const maxPan = 0.8
 // screen this wide. Anything off screen is heard from as far as that side goes
 const stereoPan = (x: number, width: number) => Math.max(-1, Math.min(1, 2 * x / width - 1)) * maxPan
 
-// The volume and mute setting are remembered between visits. Storage can be
-// unavailable (private windows, blocked site data), so it's only a convenience
-const loadSettings = (): {volume: number, muted: boolean} => {
+// The settings: the volume, and whether everything's muted, from the speaker button, and
+// from the settings panel, whether the music plays at all, and how loud the music and the
+// sound effects each are, as shares of the volume
+type Settings = {volume: number, muted: boolean, musicOn: boolean, music: number, effects: number}
+
+// The settings are remembered between visits. Storage can be unavailable (private
+// windows, blocked site data), so it's only a convenience. Those saved before the music
+// and effects could be set apart have only the volume and mute
+const loadSettings = (): Settings => {
+  const settings: Settings = {volume: defaultVolume, muted: false, musicOn: true, music: 1, effects: 1}
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null")
     if (typeof saved?.volume === "number" && typeof saved?.muted === "boolean") {
-      return saved
+      settings.volume = saved.volume
+      settings.muted = saved.muted
+      if (typeof saved.musicOn === "boolean") {
+        settings.musicOn = saved.musicOn
+      }
+      if (typeof saved.music === "number") {
+        settings.music = saved.music
+      }
+      if (typeof saved.effects === "number") {
+        settings.effects = saved.effects
+      }
     }
   } catch {
     // Fall through to the defaults
   }
-  return {volume: defaultVolume, muted: false}
+  return settings
 }
 
-const saveSettings = (settings: {volume: number, muted: boolean}) => {
+const saveSettings = (settings: Settings) => {
   try {
     localStorage.setItem(storageKey, JSON.stringify(settings))
   } catch {
@@ -115,11 +132,11 @@ const createAudioControl = () => {
   }
   const renderEffectsVolume = () => {
     if (mixer) {
-      mixer.master.gain.value = settings.muted ? 0 : settings.volume
+      mixer.master.gain.value = settings.muted ? 0 : settings.volume * settings.effects
     }
   }
 
-  const renderMusicVolume = () => players.forEach(player => player.volume = settings.volume * duck)
+  const renderMusicVolume = () => players.forEach(player => player.volume = settings.volume * settings.music * duck)
 
   // Eases the music's level towards the target a frame at a time
   const fadeDuck = (last: number) => {
@@ -164,7 +181,7 @@ const createAudioControl = () => {
   }))
 
   const play = () => {
-    if (settings.muted || document.hidden) {
+    if (settings.muted || !settings.musicOn || document.hidden) {
       return
     }
     // Browsers refuse to play before the person has interacted with the page
@@ -453,7 +470,47 @@ const createAudioControl = () => {
   render()
   setSliderOpen(false)
 
-  return {ready, firstTrack: tracks[0], createEffect}
+  // Whatever's changed in the settings panel, kept and heard straight away
+  const changed = () => {
+    saveSettings(settings)
+    render()
+  }
+  return {
+    ready,
+    firstTrack: tracks[0],
+    createEffect,
+    // For the settings panel: the music, on or off, and how loud, and the sound effects'
+    // loudness, each from 0 to 1, as a share of the speaker's volume, and the next track
+    musicOn: () => settings.musicOn,
+    setMusicOn(on: boolean) {
+      settings.musicOn = on
+      changed()
+      if (on) {
+        play()
+      } else {
+        pause()
+      }
+    },
+    musicLevel: () => settings.music,
+    setMusicLevel(level: number) {
+      settings.music = level
+      changed()
+    },
+    effectsLevel: () => settings.effects,
+    setEffectsLevel(level: number) {
+      settings.effects = level
+      changed()
+    },
+    nextTrack() {
+      pause()
+      current = (current + 1) % players.length
+      players[current].currentTime = 0
+      play()
+    },
+  }
 }
 
+type AudioControl = ReturnType<typeof createAudioControl>
+
 export {createAudioControl, stereoPan}
+export type {AudioControl}

@@ -53,6 +53,16 @@ const gu = {
 		unmute: "સંગીત ચાલુ કરો",
 		volume: "અવાજ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "સેટિંગ્સ",
+		close: "બંધ કરો",
+		music: "સંગીત",
+		musicVolume: "સંગીતનો અવાજ",
+		effects: "સાઉન્ડ ઇફેક્ટ્સ",
+		nextTrack: "આગલું ગીત",
+		language: "ભાષા",
+	},
 	tooltip: {
 		hintButton: "હવે શું કરવું",
 		next: {

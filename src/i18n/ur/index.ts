@@ -53,6 +53,16 @@ const ur = {
 		unmute: "موسیقی چلائیں",
 		volume: "آواز",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ترتیبات",
+		close: "بند کریں",
+		music: "موسیقی",
+		musicVolume: "موسیقی کی آواز",
+		effects: "صوتی اثرات",
+		nextTrack: "اگلا گانا",
+		language: "زبان",
+	},
 	tooltip: {
 		hintButton: "آگے کیا کریں",
 		next: {

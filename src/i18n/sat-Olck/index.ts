@@ -53,6 +53,16 @@ const sat = {
 		unmute: "ᱥᱮᱨᱮᱧ ᱮᱦᱚᱵ ᱢᱮ",
 		volume: "ᱟᱲᱟᱝ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ᱥᱮᱴᱤᱝᱥ",
+		close: "ᱵᱚᱸᱫᱽ ᱢᱮ",
+		music: "ᱥᱮᱨᱮᱧ",
+		musicVolume: "ᱥᱮᱨᱮᱧ ᱟᱲᱟᱝ",
+		effects: "ᱥᱟᱰᱮ ᱤᱯᱷᱮᱠᱴ",
+		nextTrack: "ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢ ᱥᱮᱨᱮᱧ",
+		language: "ᱯᱟᱹᱨᱥᱤ",
+	},
 	tooltip: {
 		hintButton: "ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢ ᱪᱮᱫ ᱠᱟᱹᱢᱤ",
 		next: {

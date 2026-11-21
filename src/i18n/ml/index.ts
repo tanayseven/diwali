@@ -53,6 +53,16 @@ const ml = {
 		unmute: "സംഗീതം ഓണാക്കൂ",
 		volume: "ശബ്ദം",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ക്രമീകരണങ്ങൾ",
+		close: "അടയ്ക്കൂ",
+		music: "സംഗീതം",
+		musicVolume: "സംഗീതത്തിന്റെ ശബ്ദം",
+		effects: "ശബ്ദ ഇഫക്റ്റുകൾ",
+		nextTrack: "അടുത്ത പാട്ട്",
+		language: "ഭാഷ",
+	},
 	tooltip: {
 		hintButton: "അടുത്തതായി എന്ത് ചെയ്യണം",
 		next: {

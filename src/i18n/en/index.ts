@@ -62,6 +62,16 @@ const en = {
 		unmute: "Unmute music",
 		volume: "Volume",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "Settings",
+		close: "Close",
+		music: "Music",
+		musicVolume: "Music volume",
+		effects: "Sound effects",
+		nextTrack: "Next track",
+		language: "Language",
+	},
 	// Shown on hovering over things in the inventory bar and in the scene
 	tooltip: {
 		// The "?" badge on something placed that's still to be finished, read out by screen readers

@@ -53,6 +53,16 @@ const kn = {
 		unmute: "ಸಂಗೀತ ಆನ್ ಮಾಡಿ",
 		volume: "ಧ್ವನಿ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+		close: "ಮುಚ್ಚಿ",
+		music: "ಸಂಗೀತ",
+		musicVolume: "ಸಂಗೀತದ ಧ್ವನಿ",
+		effects: "ಧ್ವನಿ ಪರಿಣಾಮಗಳು",
+		nextTrack: "ಮುಂದಿನ ಹಾಡು",
+		language: "ಭಾಷೆ",
+	},
 	tooltip: {
 		hintButton: "ಮುಂದೆ ಏನು ಮಾಡಬೇಕು",
 		next: {

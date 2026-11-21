@@ -53,6 +53,16 @@ const ks = {
 		unmute: "موسیقی چالو کٔرِو",
 		volume: "آواز",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "سیٹِنگز",
+		close: "بنٛد کٔرِو",
+		music: "موسیقی",
+		musicVolume: "موسیقی ہٕنز آواز",
+		effects: "صوتی اثرات",
+		nextTrack: "یِنہٕ وول گیوٚن",
+		language: "زبان",
+	},
 	tooltip: {
 		hintButton: "پتہٕ کیا کرُن",
 		next: {

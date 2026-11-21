@@ -15,12 +15,12 @@ import {createLoader, loadAssets} from "./loader"
 import {createNameplates} from "./nameplates"
 import type {Lightable} from "./matchstick"
 import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
-import {createLanguageButton} from "./languageButton"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
+import {createSettings, isSettingsOpen} from "./settings"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
@@ -121,8 +121,8 @@ const main = async () => {
   await showSoundSplash()
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
-  // Beside the speaker, to pick another language
-  createLanguageButton(locale)
+  // Beside the speaker, the language, named, to pick another, and the settings
+  createSettings(audio, locale)
 
   // Without the background there's nowhere to put anything, so nothing more to show
   if (backgroundAssets.some(url => failed.has(url))) {
@@ -309,8 +309,8 @@ const main = async () => {
 
   window.addEventListener("keydown", e => {
     // Don't let the keyboard drive anything while it's hidden behind the warning
-    // or the language picker
-    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown() || isLanguagePickerOpen()) {
+    // or the language picker or settings
+    if (e.ctrlKey || e.metaKey || e.altKey || portraitWarning.isShown() || isLanguagePickerOpen() || isSettingsOpen()) {
       return
     }
     if (e.key === "+" || e.key === "=") {
