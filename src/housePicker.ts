@@ -108,6 +108,10 @@ const showHousePicker = () => new Promise<HouseName>(resolve => {
     card.addEventListener("focus", () => lightUp(true))
     card.addEventListener("blur", () => lightUp(false))
     card.addEventListener("click", () => {
+      // Not a tap meant for the screen before, to skip it, landing here as it fades in
+      if (performance.now() < readyAt) {
+        return
+      }
       saveHouse(name)
       cards.forEach(other => other.disabled = true)
       overlay.style.opacity = "0"
@@ -119,10 +123,13 @@ const showHousePicker = () => new Promise<HouseName>(resolve => {
     grid.appendChild(card)
     return card
   })
+  // Taps only count once it's faded in
+  let readyAt = Infinity
   overlay.append(heading, hint, grid)
   document.body.appendChild(overlay)
   requestAnimationFrame(() => requestAnimationFrame(() => {
     overlay.style.opacity = "1"
+    readyAt = performance.now() + fadeDuration
     cards[houses.findIndex(({name}) => name === "deepaNiwas")]?.focus()
   }))
 })

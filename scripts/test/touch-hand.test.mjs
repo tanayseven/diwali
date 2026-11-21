@@ -510,8 +510,10 @@ test("the first visit picks a house, then the guided first run waits for each st
     const picker = first.getByRole("dialog", {name: "Pick your house"})
     await picker.waitFor({timeout: 10000})
     assert.equal(await picker.getByRole("button").count(), 6)
+    // Once it's faded in, as taps before then are taken to be meant for the screen before
+    await first.waitForTimeout(800)
     await picker.getByRole("button", {name: "Deepa Niwas"}).tap()
-    await picker.waitFor({state: "hidden", timeout: 3000})
+    await picker.waitFor({state: "hidden", timeout: 5000})
     assert.equal(await first.evaluate(() => localStorage.getItem("diwali-house")), "deepaNiwas")
     // After how to zoom
     const card = first.getByRole("status")
