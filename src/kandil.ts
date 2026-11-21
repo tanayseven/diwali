@@ -1,7 +1,8 @@
-import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, FederatedPointerEvent, Graphics, Point, PointData, Rectangle, Sprite, Text, Texture} from "pixi.js"
+import {fontFamily} from "./app"
 import Matter from "matter-js"
 import type {Background} from "./background"
-import {Item, createHud, cropped} from "./hud"
+import {Item, createHud, cropped, highlight, slotSize} from "./hud"
 import {Light, Lighting} from "./lighting"
 import {LL} from "./locale"
 import {draggedFrom} from "./matchstick"
@@ -11,7 +12,7 @@ import {addHint} from "./hints"
 import {haptics, refusalShown} from "./feedback"
 import {happen} from "./happenings"
 import {setOutline} from "./outline"
-import {addTooltip, showTooltipOf, Tooltip} from "./tooltip"
+import {addTooltip, showTooltipOf, Tooltip, wasLongPressed} from "./tooltip"
 import {createTouchMarker} from "./touchMarker"
 import type {Wind} from "./wind"
 
@@ -75,6 +76,33 @@ const windPush = 0.85
 // A press on a placed one only picks it up once it's dragged this far, on screen
 const pickUpSlop = 6
 
+// Making one is shown step by step. The bar's slots are grouped under numbered badges,
+// 1 the frame, 2 the paper, 3 the tails and 4 the bulb, above the bar, a step's slots
+// faded while no kandil needs it and its badge pulsing while one does
+const stepBadgeRadius = 14
+const stepLift = 8
+const fadedStep = 0.4
+// Paper, tails or the bulb dragged this close to a kandil that'd take them, on screen,
+// go onto it, a dotted line showing which, though they don't touch it
+const magnetPixels = 60
+// A kandil can be tapped to pick it, then a slot tapped to give it what's in it; a tap
+// is a press that moves less than this, on screen
+const tapMove = 12
+// After each step, what a kandil needs next floats up above it, for this long, in ms,
+// rising this far, on screen
+const labelFor = 2600
+const labelRise = 26
+// While a frame's dragged, where it can go is outlined: the eaves it can hang from, the
+// one it would brighter, and the porches' floors
+const spotLine = 1.4
+const hangLine = 3
+// The first time the tool's picked, a hand shows how: a frame dragged up to hang from an
+// eave, then paper onto it, each over this long, with a pause between, in ms
+const demoFadeIn = 400
+const demoMove = 1100
+const demoPause = 600
+const demoFadeOut = 500
+
 type Kandil = {
   container: Container
   tailsSprite: Sprite
@@ -122,6 +150,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
   const touch = createTouchMarker()
   dragLayer.sortableChildren = true
   dragLayer.addChild(touch.marker, touch.front)
+
   // Lit ones shine through the night; unlit ones stand among the diyas on the porch,
   // nearer ones in front, or hang in the dark
   const litLayer = new Container()
@@ -155,6 +184,8 @@ const createKandils = (app: Application, background: Background, lighting: Light
   let overBar = false
   let hudShown = false
   let time = 0
+  // The kandil picked by a tap, to give what's tapped in the bar next
+  let selected: Kandil | undefined
 
   const frames: Item = {url: frameUrl, crop: bodyCrop, count: 5}
   const frameSlot = bar.addItem(0, frames)
@@ -162,6 +193,33 @@ const createKandils = (app: Application, background: Background, lighting: Light
   const tailsSlots = tailColours.map((tails, idx) =>
     bar.addItem(1 + papers.length + idx, {url: tailsUrl(tails), crop: tailsCrop}))
   const bulbSlot = bar.addItem(1 + papers.length + tailColours.length, {url: bulbUrl, crop: bulbCrop})
+
+  // Each step's slots, under a bracket with its number above the bar
+  const stepSlots = [[frameSlot], paperSlots, tailsSlots, [bulbSlot]]
+  const stepBadges = stepSlots.map((slots, idx) => {
+    const xs = slots.map(slot => slot.container.x)
+    const left = Math.min(...xs) - slotSize / 2 + 6
+    const right = Math.max(...xs) + slotSize / 2 - 6
+    const y = slots[0].container.y - slotSize / 2 - 12 - stepLift - stepBadgeRadius
+    const middle = (left + right) / 2
+    const bracket = new Graphics()
+      .moveTo(left, y + stepBadgeRadius).lineTo(left, y).lineTo(right, y).lineTo(right, y + stepBadgeRadius)
+      .stroke({width: 2, color: 0xffffff, alpha: 0.5})
+    const badge = new Container()
+    badge.position.set(middle, y)
+    const circle = new Graphics().circle(0, 0, stepBadgeRadius).fill(0xffffff).stroke({width: 2, color: 0x000000})
+    const number = new Text({text: String(idx + 1), style: {fontFamily, fontSize: 18, fill: 0x000000}})
+    number.anchor.set(0.5)
+    number.roundPixels = true
+    badge.addChild(circle, number)
+    const group = new Container()
+    group.eventMode = "none"
+    group.addChild(bracket, badge)
+    bar.container.addChild(group)
+    return {badge, circle}
+  })
+  // Which step a kandil's on: 1 for paper, 2 for tails, 3 for the bulb, or none once lit
+  const stepOf = (kandil: Kandil) => !kandil.paper ? 1 : !kandil.tails ? 2 : !kandil.lit ? 3 : undefined
 
   const tips = LL.tooltip.kandil
   const paperNames: Record<Paper, () => string> = {
@@ -314,6 +372,118 @@ const createKandils = (app: Application, background: Background, lighting: Light
     }
   }
 
+  // Picks a kandil, by a tap or as it's made, to give what's tapped in the bar next,
+  // outlined, or none. A lit one has nothing more to take
+  const select = (kandil?: Kandil) => {
+    const next = kandil && !kandil.lit ? kandil : undefined
+    if (selected === next) {
+      return
+    }
+    if (selected && !selected.container.destroyed) {
+      setOutline(selected.container, "ready", false)
+    }
+    selected = next
+    if (selected) {
+      setOutline(selected.container, "ready", true)
+    }
+  }
+
+  // What a kandil needs next, floating up above it for a moment
+  const labelLayer = new Container()
+  labelLayer.eventMode = "none"
+  container.addChild(labelLayer)
+  const labels = new Map<Kandil, {text: Text, age: number}>()
+  const showNext = (kandil: Kandil) => {
+    const said = kandil.lit ? tips.lit() : !kandil.paper ? tips.needsPaper() : !kandil.tails ? tips.needsTails() : tips.ready()
+    labels.get(kandil)?.text.destroy()
+    const text = new Text({text: said, style: {
+      fontFamily, fontSize: 20, fill: highlight, stroke: {color: 0x000000, width: 5}, align: "center",
+    }})
+    text.anchor.set(0.5, 1)
+    labelLayer.addChild(text)
+    labels.set(kandil, {text, age: 0})
+  }
+  const moveLabels = (dt: number) => labels.forEach((label, kandil) => {
+    label.age += dt * 1000
+    if (label.age >= labelFor || kandil.container.destroyed || !kandil.container.parent) {
+      label.text.destroy()
+      labels.delete(kandil)
+      return
+    }
+    const top = screenBox(kandil.container, bodyArea)
+    const t = label.age / labelFor
+    label.text.position.set(top.x + top.width / 2, top.top - 6 - labelRise * t)
+    label.text.alpha = Math.min(1, (1 - t) / 0.3)
+  })
+
+  // Where a frame can go, while one's dragged: every eave, and every porch floor, over
+  // the night, and the eave it'd hang from as it is, brighter
+  const spots = new Graphics()
+  const eaves = background.houses.flatMap(house => house.eaves)
+  eaves.forEach(([left, right]) => spots.moveTo(left.x, left.y).lineTo(right.x, right.y))
+  spots.stroke({width: spotLine, color: highlight})
+  background.houses.forEach(({porch}) => spots.poly(porch.flatMap(p => [p.x, p.y])).stroke({width: spotLine, color: highlight}))
+  const hangingFrom = new Graphics()
+  const spotLayer = new Container()
+  spotLayer.zIndex = lighting.aboveNight
+  spotLayer.eventMode = "none"
+  spotLayer.visible = false
+  spotLayer.addChild(spots, hangingFrom)
+  background.decorations.addChild(spotLayer)
+  const showSpots = (place: Kandil["place"] | undefined) => {
+    spotLayer.visible = true
+    hangingFrom.clear()
+    if (place?.on === "house") {
+      const eave = eaves.find(([left, right]) => left.y === place.tiedAt.y && place.tiedAt.x >= left.x && place.tiedAt.x <= right.x)
+      if (eave) {
+        hangingFrom.moveTo(eave[0].x, eave[0].y).lineTo(eave[1].x, eave[1].y).stroke({width: hangLine, color: 0xffffff})
+      }
+    }
+  }
+  const hideSpots = () => {
+    spotLayer.visible = false
+    hangingFrom.clear()
+  }
+
+  // A dotted line from paper, tails or the bulb to the kandil they'd go onto
+  const tether = new Graphics()
+  tether.eventMode = "none"
+
+  // The kandil that could take something, near a box on screen though not touching it,
+  // the nearest within reach
+  const kandilNear = (box: Rectangle, wants: (kandil: Kandil) => boolean) => {
+    const middle = {x: box.x + box.width / 2, y: box.y + box.height / 2}
+    let best: {kandil: Kandil, distance: number} | undefined
+    for (const kandil of placed.filter(wants)) {
+      const body = screenBox(kandil.container, bodyArea)
+      const dx = Math.max(body.left - middle.x, 0, middle.x - body.right)
+      const dy = Math.max(body.top - middle.y, 0, middle.y - body.bottom)
+      const distance = Math.hypot(dx, dy)
+      if (distance <= magnetPixels && distance < (best?.distance ?? Infinity)) {
+        best = {kandil, distance}
+      }
+    }
+    return best?.kandil
+  }
+  const drawTether = (from: PointData, to?: Kandil) => {
+    tether.clear()
+    if (!to) {
+      return
+    }
+    const body = screenBox(to.container, bodyArea)
+    const end = {x: body.x + body.width / 2, y: body.y + body.height / 2}
+    const length = Math.hypot(end.x - from.x, end.y - from.y)
+    for (let along = 0; along < length; along += 10) {
+      const a = along / length
+      const b = Math.min(1, (along + 5) / length)
+      tether.moveTo(from.x + (end.x - from.x) * a, from.y + (end.y - from.y) * a)
+        .lineTo(from.x + (end.x - from.x) * b, from.y + (end.y - from.y) * b)
+    }
+    tether.stroke({width: 2, color: highlight})
+  }
+
+  dragLayer.addChild(tether)
+
   // Puts a kandil in its place in the scene: standing on the porch among the diyas, or
   // hung with its string up to the eave. Just hung, it swings
   const putKandil = (kandil: Kandil, place: Kandil["place"], swing: boolean) => {
@@ -364,6 +534,9 @@ const createKandils = (app: Application, background: Background, lighting: Light
 
   // Back on the stack, its frame's used again; its paper, tails and bulb aren't
   const returnKandil = (kandil: Kandil) => {
+    if (selected === kandil) {
+      select(undefined)
+    }
     const index = placed.indexOf(kandil)
     if (index >= 0) {
       placed.splice(index, 1)
@@ -454,6 +627,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     if (drag.kind === "kandil") {
       const place = placeAt(at, finger)
       setOverBar(backOnBar(at, finger))
+      showSpots(place)
       drag.sprite.alpha = place || overBar ? 1 : 0.4
       if (place?.on === "house") {
         drawString(dragString, place.tiedAt, {x: place.tiedAt.x, y: place.tiedAt.y + place.length})
@@ -461,7 +635,11 @@ const createKandils = (app: Application, background: Background, lighting: Light
         dragString.visible = false
       }
     } else {
-      setTarget(kandilAt(screenBox(drag.sprite), takes[drag.kind]))
+      const box = screenBox(drag.sprite)
+      const touching = kandilAt(box, takes[drag.kind])
+      setTarget(touching ?? kandilNear(box, takes[drag.kind]))
+      // Only when it's pulled onto one it isn't touching
+      drawTether(at, touching ? undefined : target)
     }
   }
 
@@ -473,6 +651,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
   }
 
   const light = (kandil: Kandil) => {
+    select(undefined)
     haptics.lit()
     happen("kandil", kandil.container.position)
     kandil.lit = true
@@ -482,6 +661,9 @@ const createKandils = (app: Application, background: Background, lighting: Light
   }
 
   const pickUp = (kandil: Kandil, finger: PointData, pointerType: string) => {
+    if (selected === kandil) {
+      select(undefined)
+    }
     placed.splice(placed.indexOf(kandil), 1)
     unhang(kandil)
     startDrag(finger, pointerType, {kind: "kandil", sprite: kandil.container, kandil, from: kandil.place}, background.scale() * kandilScale)
@@ -493,6 +675,12 @@ const createKandils = (app: Application, background: Background, lighting: Light
     haptics.refused()
     showTooltipOf(slot.container, undefined, {hideAfter: refusalShown, near})
   }
+  // Or, for something let go on, or tapped in the bar for, a kandil that isn't ready for
+  // it, that kandil's own tooltip, saying what it needs
+  const refuseFor = (kandil: Kandil) => {
+    haptics.refused()
+    showTooltipOf(kandil.container, undefined, {hideAfter: refusalShown})
+  }
 
   // Let go of by a pointer at a point, of a type
   const endDrag = (finger: PointData, pointerType: string) => {
@@ -503,9 +691,15 @@ const createKandils = (app: Application, background: Background, lighting: Light
     touch.hide()
     const current = drag
     const into = target
+    // Where it was let go, before it's gone, and whether it was only tapped in the bar
+    const box = screenBox(current.sprite)
+    const tapped = current.kind !== "kandil" && current.pressedAt !== undefined
+      && Math.hypot(finger.x - current.pressedAt.x, finger.y - current.pressedAt.y) < tapMove
     drag = undefined
     setTarget(undefined)
     setOverBar(false)
+    hideSpots()
+    tether.clear()
     dragString.visible = false
     setOutline(current.sprite, "selected", false)
     if (current.kind === "kandil") {
@@ -514,6 +708,11 @@ const createKandils = (app: Application, background: Background, lighting: Light
       if (place) {
         putKandil(current.kandil, place, true)
         haptics.placed()
+        // Picked, to give it what's tapped next, and what it needs said above it
+        select(current.kandil)
+        if (!current.kandil.lit) {
+          showNext(current.kandil)
+        }
       } else if (current.from && !toBar) {
         // Back where it was if it can't go where it was let go
         putKandil(current.kandil, current.from, false)
@@ -527,17 +726,33 @@ const createKandils = (app: Application, background: Background, lighting: Light
       }
     } else {
       current.sprite.destroy()
-      if (into && current.kind === "paper") {
-        into.paper = current.paper
-        showKandil(into)
+      // Tapped in the bar with a kandil picked, it goes onto that one, if it's ready for it
+      const onto = into ?? (tapped && selected && takes[current.kind](selected) ? selected : undefined)
+      if (onto && current.kind === "paper") {
+        onto.paper = current.paper
+        showKandil(onto)
         haptics.done()
-      } else if (into && current.kind === "tails") {
-        into.tails = current.tails
-        showKandil(into)
+        select(onto)
+        showNext(onto)
+      } else if (onto && current.kind === "tails") {
+        onto.tails = current.tails
+        showKandil(onto)
         haptics.done()
-      } else if (into) {
-        light(into)
+        select(onto)
+        showNext(onto)
+      } else if (onto) {
+        light(onto)
+        showNext(onto)
+      } else if (tapped && selected) {
+        refuseFor(selected)
       } else if (!backOnBar(at, finger, current)) {
+        // Let go on a kandil that isn't ready for it, that kandil says what it needs
+        const onKandil = kandilAt(box, () => true) ?? kandilNear(box, () => true)
+        if (onKandil) {
+          refuseFor(onKandil)
+          render()
+          return
+        }
         // Not touching a kandil ready for it, as one still to be wrapped in paper for
         // tails, and its slot says what it goes on
         refuse(current.kind === "paper" ? paperSlots[papers.indexOf(current.paper)]
@@ -566,9 +781,31 @@ const createKandils = (app: Application, background: Background, lighting: Light
     }
   }
   const onPointerUp = (e: PointerEvent) => {
+    // A tap on a kandil, not a drag nor held to read its tooltip, picks it, or unpicks it
+    if (pressed && e.type === "pointerup" && !wasLongPressed(pressed.kandil.container)) {
+      const {kandil} = pressed
+      select(selected === kandil ? undefined : kandil)
+      if (selected) {
+        showNext(selected)
+      }
+    }
     pressed = undefined
     endDrag(toStage(e), e.pointerType)
   }
+  // A press anywhere but on a kandil or the bar unpicks the one picked
+  const onAnyPress = (e: PointerEvent) => {
+    if (!selected || e.target !== app.canvas) {
+      return
+    }
+    const at = toStage(e)
+    for (let hit: Container | null = app.renderer.events.rootBoundary.hitTest(at.x, at.y); hit; hit = hit.parent) {
+      if (hit === bar.container || placed.some(kandil => kandil.container === hit)) {
+        return
+      }
+    }
+    select(undefined)
+  }
+  window.addEventListener("pointerdown", onAnyPress, true)
   window.addEventListener("pointermove", onPointerMove)
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
@@ -584,9 +821,33 @@ const createKandils = (app: Application, background: Background, lighting: Light
   // Hung ones are drawn turned the way their strings hang, from where they're tied, and
   // lit ones light up what's round their bulbs. Ones off screen don't, as their light
   // can't reach the screen from there
+  // The steps' badges pulse for what's needed next, by the kandil picked, or any, or
+  // the frame if there are none, and the steps no kandil needs are faded
+  const guide = () => {
+    const needed = new Set<number>()
+    ;(selected ? [selected] : placed).forEach(kandil => {
+      const step = stepOf(kandil)
+      if (step !== undefined) {
+        needed.add(step)
+      }
+    })
+    const pulse = 0.5 + 0.5 * Math.sin(time * 5)
+    stepBadges.forEach(({badge, circle}, idx) => {
+      const usable = idx === 0 || needed.has(idx)
+      const next = needed.has(idx) || (idx === 0 && needed.size === 0)
+      stepSlots[idx].forEach(slot => slot.container.alpha = usable ? 1 : fadedStep)
+      badge.scale.set(next ? 1 + 0.15 * pulse : 1)
+      circle.tint = next ? highlight : 0xffffff
+      badge.alpha = usable ? 1 : fadedStep
+    })
+    spots.alpha = 0.45 + 0.4 * pulse
+  }
+
   const tick = () => {
     const dt = Math.min(0.1, app.ticker.deltaMS / 1000)
     time += dt
+    guide()
+    moveLabels(dt)
     placed.forEach(kandil => {
       const {container: sprite, place, light, pendulum, phase} = kandil
       if (place.on === "house" && pendulum) {
@@ -612,6 +873,98 @@ const createKandils = (app: Application, background: Background, lighting: Light
   }
   app.ticker.add(tick)
 
+  // Shows how a kandil's made: a hand drags a frame from the bar up to hang from the eave
+  // nearest the middle of the screen, then red paper onto it, and it all fades away. Any
+  // press or key ends it. Resolves with whether it was shown to the end
+  let endDemo: (() => void) | undefined
+  const demonstrate = () => new Promise<boolean>(resolve => {
+    const {view} = background
+    const middle = {x: (view.left + view.right) / 2, y: (view.top + view.bottom) / 2}
+    const margin = (view.right - view.left) * 0.1
+    const hangHere = eaves.flatMap(([left, right]) => {
+      const x = Math.min(Math.min(right.x, view.right - margin), Math.max(Math.max(left.x, view.left + margin), middle.x))
+      const at = {x, y: left.y + 4}
+      return x >= left.x && x <= right.x && background.inView(at.x, at.y) && background.isOnHouse(at)
+        && background.inView(at.x, at.y + baseY * kandilScale) ? [{eave: {x, y: left.y}, at}] : []
+    }).sort((a, b) => Math.hypot(a.at.x - middle.x, a.at.y - middle.y) - Math.hypot(b.at.x - middle.x, b.at.y - middle.y))[0]
+    if (!hangHere || frames.count === 0 || endDemo) {
+      resolve(false)
+      return
+    }
+    const scale = background.scale() * kandilScale
+    const layer = new Container()
+    layer.eventMode = "none"
+    layer.sortableChildren = true
+    const hand = createTouchMarker()
+    const frame = new Sprite(texture(frameUrl))
+    frame.anchor.set(0.5, 0)
+    frame.scale.set(scale)
+    const paper = new Sprite(cropped(paperUrl("red"), bodyCrop))
+    paper.anchor.set(0.5)
+    paper.scale.set(scale)
+    paper.visible = false
+    const string = new Graphics()
+    layer.addChild(string, frame, paper, hand.marker, hand.front)
+    container.addChild(layer)
+    const top = background.decorations.toGlobal(hangHere.at)
+    const tied = background.decorations.toGlobal(hangHere.eave)
+    const body = {x: top.x, y: top.y + (bodyCrop.y + bodyCrop.height / 2) * scale}
+    const slotAt = (slot: {container: Container}) => slot.container.getGlobalPosition()
+    // Where the hand holds what it's dragging: on the slot, then eased to where it goes
+    const ease = (t: number) => t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2
+    const along = (from: PointData, to: PointData, t: number) => ({x: from.x + (to.x - from.x) * ease(t), y: from.y + (to.y - from.y) * ease(t)})
+    const hold = (sprite: Sprite, at: PointData) => {
+      sprite.position.copyFrom(at)
+      hand.follow({x: at.x + 64, y: at.y + 64}, "touch")
+    }
+    const frameFrom = slotAt(frameSlot)
+    const paperFrom = slotAt(paperSlots[0])
+    const phases = [demoFadeIn, demoMove, demoPause, demoFadeIn, demoMove, demoPause, demoFadeOut]
+    const total = phases.reduce((sum, length) => sum + length, 0)
+    let elapsed = 0
+    const finish = (completed: boolean) => {
+      app.ticker.remove(step)
+      window.removeEventListener("pointerdown", cancel, true)
+      window.removeEventListener("keydown", cancel, true)
+      layer.destroy({children: true})
+      endDemo = undefined
+      resolve(completed)
+    }
+    const cancel = () => finish(false)
+    endDemo = cancel
+    function step() {
+      elapsed += app.ticker.deltaMS
+      if (elapsed >= total) {
+        finish(true)
+        return
+      }
+      let t = elapsed
+      const phase = phases.findIndex(length => (t -= length) < 0)
+      const within = (t + phases[phase]) / phases[phase]
+      layer.alpha = phase === 6 ? 1 - within : 1
+      if (phase <= 1) {
+        // The frame, faded in on its slot, dragged up to hang
+        frame.alpha = phase === 0 ? within : 1
+        hold(frame, phase === 0 ? frameFrom : along(frameFrom, top, within))
+        string.clear()
+      } else if (phase === 2) {
+        hold(frame, top)
+        hand.hide()
+        string.clear().moveTo(tied.x, tied.y).lineTo(top.x, top.y).stroke({width: 1.5, color: stringColour})
+      } else if (phase <= 4) {
+        paper.visible = true
+        paper.alpha = phase === 3 ? within : 1
+        hold(paper, phase === 3 ? paperFrom : along(paperFrom, body, within))
+      } else {
+        hand.hide()
+        paper.position.copyFrom(body)
+      }
+    }
+    window.addEventListener("pointerdown", cancel, true)
+    window.addEventListener("keydown", cancel, true)
+    app.ticker.add(step)
+  })
+
   render()
 
   return {
@@ -623,6 +976,15 @@ const createKandils = (app: Application, background: Background, lighting: Light
     litAt: () => placed.filter(kandil => kandil.lit).map(({container}) => ({x: container.x, y: container.y})),
     // What to take first from its bar, to show someone new to it
     firstSlot: () => bar.slotAt(0),
+    demonstrate,
+    // Whether it's the tool in use; when it isn't, no kandil's left picked, and the
+    // showing of how to make one ends
+    setActive(active: boolean) {
+      if (!active) {
+        select(undefined)
+        endDemo?.()
+      }
+    },
     // Shows its bar, while the Craft Kandil tool is the one in use
     setHudShown(shown: boolean) {
       hudShown = shown
@@ -630,6 +992,9 @@ const createKandils = (app: Application, background: Background, lighting: Light
       bar.setInteractive(shown)
     },
     destroy() {
+      endDemo?.()
+      window.removeEventListener("pointerdown", onAnyPress, true)
+      spotLayer.destroy({children: true})
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       window.removeEventListener("pointercancel", onPointerUp)

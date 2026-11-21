@@ -7,7 +7,8 @@
 // that's put down, and a double one, and where it goes shown, for something let go
 // where it can't go. And that a finger held on a rail button shows its tool's name, as
 // there's no hovering on a touch screen. And that a string of fairy lights hung by a
-// finger is held up by a hand. And that a ready-made rangoli design can be made and put
+// finger is held up by a hand. And that a kandil just made takes what's tapped in its
+// bar. And that a ready-made rangoli design can be made and put
 // down, and slid to where it's to go before it's let go.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
@@ -191,6 +192,17 @@ test("a kandil's frame dragged by a finger is held by a hand", async () => {
   await touchUp()
   assert.ok(holding > shown, `the hand holds the frame (${holding.toFixed(3)} of the square)`)
   assert.ok(await handPixels(at) < notShown, "the hand's gone once the frame's let go")
+})
+
+test("a kandil just made takes paper tapped in the bar, and says so when it can't take more", async () => {
+  await page.evaluate(() => window.vibrations.length = 0)
+  // The frame just put down is picked, so a tap on a paper wraps it
+  await page.touchscreen.tap(slot(1).x, slot(1).y)
+  await page.waitForTimeout(400)
+  // Already wrapped, a second paper isn't taken, and that's felt
+  await page.touchscreen.tap(slot(2).x, slot(2).y)
+  await page.waitForTimeout(400)
+  assert.deepEqual(await page.evaluate(() => window.vibrations), [20, [25, 60, 25]])
 })
 
 test("a string of fairy lights hung by a finger is held up by a hand, and hung", async () => {

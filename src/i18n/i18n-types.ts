@@ -208,15 +208,15 @@ type RootTranslation = {
 			 */
 			lightFirework: string
 			/**
-			 * N​e​x​t​:​ ​d​r​a​g​ ​a​ ​p​a​p​e​r​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​t​o​ ​w​r​a​p​ ​i​t
+			 * N​e​x​t​:​ ​d​r​a​g​ ​a​ ​p​a​p​e​r​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​t​o​ ​w​r​a​p​ ​i​t​,​ ​o​r​ ​t​a​p​ ​i​t​,​ ​t​h​e​n​ ​a​ ​p​a​p​e​r
 			 */
 			addPaper: string
 			/**
-			 * N​e​x​t​:​ ​d​r​a​g​ ​s​o​m​e​ ​t​a​i​l​s​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t
+			 * N​e​x​t​:​ ​d​r​a​g​ ​s​o​m​e​ ​t​a​i​l​s​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​,​ ​o​r​ ​t​a​p​ ​i​t​,​ ​t​h​e​n​ ​s​o​m​e​ ​t​a​i​l​s
 			 */
 			addTails: string
 			/**
-			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​b​u​l​b​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​t​o​ ​l​i​g​h​t​ ​i​t
+			 * N​e​x​t​:​ ​d​r​a​g​ ​t​h​e​ ​b​u​l​b​ ​f​r​o​m​ ​t​h​e​ ​C​r​a​f​t​ ​K​a​n​d​i​l​ ​b​a​r​ ​o​n​t​o​ ​i​t​ ​t​o​ ​l​i​g​h​t​ ​i​t​,​ ​o​r​ ​t​a​p​ ​i​t​,​ ​t​h​e​n​ ​t​h​e​ ​b​u​l​b
 			 */
 			addBulb: string
 		}
@@ -715,15 +715,15 @@ export type TranslationFunctions = {
 			 */
 			lightFirework: () => LocalizedString
 			/**
-			 * Next: drag a paper from the Craft Kandil bar onto it to wrap it
+			 * Next: drag a paper from the Craft Kandil bar onto it to wrap it, or tap it, then a paper
 			 */
 			addPaper: () => LocalizedString
 			/**
-			 * Next: drag some tails from the Craft Kandil bar onto it
+			 * Next: drag some tails from the Craft Kandil bar onto it, or tap it, then some tails
 			 */
 			addTails: () => LocalizedString
 			/**
-			 * Next: drag the bulb from the Craft Kandil bar onto it to light it
+			 * Next: drag the bulb from the Craft Kandil bar onto it to light it, or tap it, then the bulb
 			 */
 			addBulb: () => LocalizedString
 		}

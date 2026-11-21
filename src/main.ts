@@ -55,6 +55,9 @@ type ToolControls = Layout & {
   firstSlot?: () => Container | undefined
   // Told whether it's the tool in use, whether its bar's shown or hidden
   setActive?: (active: boolean) => void
+  // Shows, the first time it's used, how it's used, resolving with whether it was shown
+  // to the end rather than cut short
+  demonstrate?: () => Promise<boolean>
 }
 
 // The tools whose first step has been shown, kept on the device so each is only shown
@@ -73,6 +76,8 @@ const introduceEvery = 250
 const introduceFor = 5000
 // How long the name of a tool picked from the rail shows beside it
 const toolNameShown = 1500
+// How long after a tool's picked the first time to show how it's used, once its bar's in
+const demonstrateAfter = 700
 
 const main = async () => {
   const app = await createApp()
@@ -199,7 +204,25 @@ const main = async () => {
   let introducing = 0
   const introduce = (tool: Tool, picked: boolean) => {
     const slot = controls[tool]?.firstSlot?.()
-    if (slot && !introduced.has(tool)) {
+    const demonstrate = controls[tool]?.demonstrate
+    if (slot && demonstrate && !introduced.has(`${tool}-shown`)) {
+      // Shown how first, once its bar's slid in, then what to take first, unless it was
+      // cut short by getting on with it
+      const attempt = ++introducing
+      setTimeout(() => {
+        if (attempt !== introducing || selected !== tool || !hudToggle.isShown()) {
+          return
+        }
+        rememberIntroduced(`${tool}-shown`)
+        demonstrate().then(completed => {
+          if (completed && attempt === introducing) {
+            introduce(tool, false)
+          } else {
+            rememberIntroduced(tool)
+          }
+        })
+      }, demonstrateAfter)
+    } else if (slot && !introduced.has(tool)) {
       const startedAt = performance.now()
       // Only the latest try goes on, so picking the tool again doesn't leave two
       const attempt = ++introducing
