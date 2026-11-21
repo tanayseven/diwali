@@ -181,6 +181,36 @@ type RootTranslation = {
 		 */
 		volume: string
 	}
+	settings: {
+		/**
+		 * S​e​t​t​i​n​g​s
+		 */
+		open: string
+		/**
+		 * C​l​o​s​e
+		 */
+		close: string
+		/**
+		 * M​u​s​i​c
+		 */
+		music: string
+		/**
+		 * M​u​s​i​c​ ​v​o​l​u​m​e
+		 */
+		musicVolume: string
+		/**
+		 * S​o​u​n​d​ ​e​f​f​e​c​t​s
+		 */
+		effects: string
+		/**
+		 * N​e​x​t​ ​t​r​a​c​k
+		 */
+		nextTrack: string
+		/**
+		 * L​a​n​g​u​a​g​e
+		 */
+		language: string
+	}
 	tooltip: {
 		/**
 		 * W​h​a​t​ ​t​o​ ​d​o​ ​n​e​x​t
@@ -687,6 +717,36 @@ export type TranslationFunctions = {
 		 * Volume
 		 */
 		volume: () => LocalizedString
+	}
+	settings: {
+		/**
+		 * Settings
+		 */
+		open: () => LocalizedString
+		/**
+		 * Close
+		 */
+		close: () => LocalizedString
+		/**
+		 * Music
+		 */
+		music: () => LocalizedString
+		/**
+		 * Music volume
+		 */
+		musicVolume: () => LocalizedString
+		/**
+		 * Sound effects
+		 */
+		effects: () => LocalizedString
+		/**
+		 * Next track
+		 */
+		nextTrack: () => LocalizedString
+		/**
+		 * Language
+		 */
+		language: () => LocalizedString
 	}
 	tooltip: {
 		/**

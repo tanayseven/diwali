@@ -53,6 +53,16 @@ const doi = {
 		unmute: "संगीत चालू करो",
 		volume: "अवाज़",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "सेटिंग्स",
+		close: "बंद करो",
+		music: "संगीत",
+		musicVolume: "संगीत दी अवाज़",
+		effects: "साउंड इफेक्ट",
+		nextTrack: "अगला गाना",
+		language: "भाशा",
+	},
 	tooltip: {
 		hintButton: "अग्गें केह् करना ऐ",
 		next: {

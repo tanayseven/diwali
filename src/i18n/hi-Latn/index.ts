@@ -53,6 +53,16 @@ const hiLatn = {
 		unmute: "Music chalu karo",
 		volume: "Volume",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "Settings",
+		close: "Band karo",
+		music: "Music",
+		musicVolume: "Music volume",
+		effects: "Sound effects",
+		nextTrack: "Agla gaana",
+		language: "Bhasha",
+	},
 	tooltip: {
 		hintButton: "Aage kya karein",
 		next: {

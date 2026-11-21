@@ -53,6 +53,16 @@ const te = {
 		unmute: "సంగీతం ఆన్ చేయండి",
 		volume: "వాల్యూమ్",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "సెట్టింగ్‌లు",
+		close: "మూసివేయండి",
+		music: "సంగీతం",
+		musicVolume: "సంగీతం వాల్యూమ్",
+		effects: "సౌండ్ ఎఫెక్ట్‌లు",
+		nextTrack: "తదుపరి పాట",
+		language: "భాష",
+	},
 	tooltip: {
 		hintButton: "తర్వాత ఏం చేయాలి",
 		next: {

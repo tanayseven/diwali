@@ -53,6 +53,16 @@ const ta = {
 		unmute: "இசையை இயக்கு",
 		volume: "ஒலியளவு",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "அமைப்புகள்",
+		close: "மூடு",
+		music: "இசை",
+		musicVolume: "இசை ஒலியளவு",
+		effects: "ஒலி விளைவுகள்",
+		nextTrack: "அடுத்த பாடல்",
+		language: "மொழி",
+	},
 	tooltip: {
 		hintButton: "அடுத்து என்ன செய்வது",
 		next: {

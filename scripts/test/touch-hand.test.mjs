@@ -9,7 +9,8 @@
 // there's no hovering on a touch screen. And that a string of fairy lights hung by a
 // finger is held up by a hand. And that a kandil just made takes what's tapped in its
 // bar. And that a ready-made rangoli design can be made and put
-// down, and slid to where it's to go before it's let go.
+// down, and slid to where it's to go before it's let go. And that the settings, from the
+// gear button, can turn the music off.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -461,6 +462,17 @@ test("a ready-made rangoli design is slid by a finger to where it's let go", asy
   await touchUp()
   const after = await bluePixels(clip)
   assert.ok(after > before + 0.02, `the design's blue ring is on the floor where it was let go (${before.toFixed(3)} to ${after.toFixed(3)} of it blue)`)
+})
+
+test("the gear opens the settings, where the music's turned off, which is remembered", async () => {
+  await page.getByRole("button", {name: "Settings"}).tap()
+  const panel = page.getByRole("dialog", {name: "Settings"})
+  await panel.waitFor({timeout: 3000})
+  await page.getByRole("switch", {name: "Music"}).tap()
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("diwali-audio")))
+  assert.equal(saved.musicOn, false)
+  await page.getByRole("button", {name: "Close"}).tap()
+  await panel.waitFor({state: "hidden", timeout: 3000})
 })
 
 // Last, as it starts the game again

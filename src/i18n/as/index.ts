@@ -53,6 +53,16 @@ const asm = {
 		unmute: "সংগীত চলাওক",
 		volume: "শব্দ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ছেটিংছ",
+		close: "বন্ধ কৰক",
+		music: "সংগীত",
+		musicVolume: "সংগীতৰ শব্দ",
+		effects: "ধ্বনি প্ৰভাৱ",
+		nextTrack: "পিছৰ গীত",
+		language: "ভাষা",
+	},
 	tooltip: {
 		hintButton: "ইয়াৰ পিছত কি কৰিব",
 		next: {

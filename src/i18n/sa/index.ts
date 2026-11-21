@@ -53,6 +53,16 @@ const sa = {
 		unmute: "सङ्गीतं चालयतु",
 		volume: "ध्वनिः",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "विन्यासाः",
+		close: "पिदधातु",
+		music: "सङ्गीतम्",
+		musicVolume: "सङ्गीतस्य ध्वनिः",
+		effects: "ध्वनिप्रभावाः",
+		nextTrack: "अग्रिमं गीतम्",
+		language: "भाषा",
+	},
 	tooltip: {
 		hintButton: "अग्रे किं करणीयम्",
 		next: {

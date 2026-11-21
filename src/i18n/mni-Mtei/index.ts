@@ -53,6 +53,16 @@ const mni = {
 		unmute: "ꯏꯁꯩ ꯍꯧꯗꯣꯛꯄꯤꯌꯨ",
 		volume: "ꯈꯣꯟꯖꯦꯜ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ꯁꯦꯇꯤꯡꯁ",
+		close: "ꯊꯤꯡꯕꯤꯌꯨ",
+		music: "ꯏꯁꯩ",
+		musicVolume: "ꯏꯁꯩꯒꯤ ꯈꯣꯟꯖꯦꯜ",
+		effects: "ꯈꯣꯟꯖꯦꯜ ꯏꯐꯦꯛꯇ",
+		nextTrack: "ꯃꯊꯪꯒꯤ ꯏꯁꯩ",
+		language: "ꯂꯣꯜ",
+	},
 	tooltip: {
 		hintButton: "ꯃꯊꯪꯗꯥ ꯀꯔꯤ ꯇꯧꯒꯗꯒꯦ",
 		next: {

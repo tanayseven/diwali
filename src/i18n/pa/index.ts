@@ -53,6 +53,16 @@ const pa = {
 		unmute: "ਸੰਗੀਤ ਚਾਲੂ ਕਰੋ",
 		volume: "ਆਵਾਜ਼",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ਸੈਟਿੰਗਾਂ",
+		close: "ਬੰਦ ਕਰੋ",
+		music: "ਸੰਗੀਤ",
+		musicVolume: "ਸੰਗੀਤ ਦੀ ਆਵਾਜ਼",
+		effects: "ਸਾਊਂਡ ਇਫੈਕਟ",
+		nextTrack: "ਅਗਲਾ ਗੀਤ",
+		language: "ਭਾਸ਼ਾ",
+	},
 	tooltip: {
 		hintButton: "ਅੱਗੇ ਕੀ ਕਰਨਾ ਹੈ",
 		next: {

@@ -53,6 +53,16 @@ const mai = {
 		unmute: "संगीत चालू करू",
 		volume: "आवाज",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "सेटिंग्स",
+		close: "बंद करू",
+		music: "संगीत",
+		musicVolume: "संगीतक आवाज",
+		effects: "ध्वनि प्रभाव",
+		nextTrack: "अगिला गीत",
+		language: "भाषा",
+	},
 	tooltip: {
 		hintButton: "आगाँ की करू",
 		next: {

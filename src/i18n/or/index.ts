@@ -53,6 +53,16 @@ const or = {
 		unmute: "ସଙ୍ଗୀତ ଚାଲୁ କରନ୍ତୁ",
 		volume: "ଶବ୍ଦ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "ସେଟିଂସ୍",
+		close: "ବନ୍ଦ କରନ୍ତୁ",
+		music: "ସଙ୍ଗୀତ",
+		musicVolume: "ସଙ୍ଗୀତର ଶବ୍ଦ",
+		effects: "ସାଉଣ୍ଡ ଇଫେକ୍ଟ",
+		nextTrack: "ପରବର୍ତ୍ତୀ ଗୀତ",
+		language: "ଭାଷା",
+	},
 	tooltip: {
 		hintButton: "ଏହା ପରେ କ'ଣ କରିବେ",
 		next: {

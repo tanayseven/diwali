@@ -53,6 +53,16 @@ const kok = {
 		unmute: "संगीत सुरू करात",
 		volume: "आवाज",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "सेटिंग्ज",
+		close: "बंद करात",
+		music: "संगीत",
+		musicVolume: "संगीताचो आवाज",
+		effects: "ध्वनी परिणाम",
+		nextTrack: "फुडलें गीत",
+		language: "भास",
+	},
 	tooltip: {
 		hintButton: "फुडें कितें करचें",
 		next: {

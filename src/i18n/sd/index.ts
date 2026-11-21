@@ -53,6 +53,16 @@ const sd = {
 		unmute: "موسيقي هلايو",
 		volume: "آواز",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "سيٽنگون",
+		close: "بند ڪريو",
+		music: "موسيقي",
+		musicVolume: "موسيقيءَ جو آواز",
+		effects: "آواز جا اثر",
+		nextTrack: "ايندڙ گيت",
+		language: "ٻولي",
+	},
 	tooltip: {
 		hintButton: "اڳتي ڇا ڪجي",
 		next: {

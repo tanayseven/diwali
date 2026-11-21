@@ -53,6 +53,16 @@ const bn = {
 		unmute: "গান চালু করুন",
 		volume: "আওয়াজ",
 	},
+	// The settings panel, opened with the gear button in the top right corner
+	settings: {
+		open: "সেটিংস",
+		close: "বন্ধ করুন",
+		music: "গান",
+		musicVolume: "গানের আওয়াজ",
+		effects: "সাউন্ড এফেক্ট",
+		nextTrack: "পরের গান",
+		language: "ভাষা",
+	},
 	tooltip: {
 		hintButton: "এরপর কী করবেন",
 		next: {
