@@ -6,8 +6,9 @@
 // a tap on a placed firework doesn't move it. And what's felt: a buzz for something
 // that's put down, and a double one, and where it goes shown, for something let go
 // where it can't go. And that a finger held on a rail button shows its tool's name, as
-// there's no hovering on a touch screen. And that a ready-made rangoli design can be
-// made and put down.
+// there's no hovering on a touch screen. And that a string of fairy lights hung by a
+// finger is held up by a hand. And that a ready-made rangoli design can be made and put
+// down, and slid to where it's to go before it's let go.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -29,7 +30,7 @@ const port = 4175
 // A Pixel 7 held sideways, at the size the positions below are for
 const screen = {width: 844, height: 390}
 const phone = {...devices["Pixel 7 landscape"], viewport: screen, screen}
-const rail = {diyas: 43, fireworks: 110, kandil: 177}
+const rail = {diyas: 43, fireworks: 110, kandil: 177, decorate: 244, rangoli: 311}
 const slot = index => ({x: 125 + 66 * index, y: 300})
 const porch = {x: 450, y: 225}
 
@@ -190,6 +191,21 @@ test("a kandil's frame dragged by a finger is held by a hand", async () => {
   await touchUp()
   assert.ok(holding > shown, `the hand holds the frame (${holding.toFixed(3)} of the square)`)
   assert.ok(await handPixels(at) < notShown, "the hand's gone once the frame's let go")
+})
+
+test("a string of fairy lights hung by a finger is held up by a hand, and hung", async () => {
+  await page.touchscreen.tap(52, rail.decorate)
+  await page.waitForTimeout(800)
+  await page.evaluate(() => window.vibrations.length = 0)
+  // Across the front of the house, above the porch, held up and to the left of the finger
+  const from = {x: porch.x - 120, y: 150}
+  const to = {x: porch.x + 120, y: 140}
+  await touchDown(from, to)
+  const holding = await handPixels(to)
+  await touchUp()
+  assert.ok(holding > shown, `the hand holds the string's end (${holding.toFixed(3)} of the square)`)
+  assert.ok(await handPixels(to) < notShown, "the hand's gone once the string's hung")
+  assert.deepEqual(await page.evaluate(() => window.vibrations), [20], "hung, it's felt")
 })
 
 // Something dragged from a bar with the mouse, let go at a point
@@ -419,6 +435,18 @@ test("a ready-made rangoli design, mixed in its panel, is put down where the flo
   await page.waitForTimeout(500)
   const after = await bluePixels(clip)
   assert.ok(after > before + 0.02, `the design's blue ring is on the floor there (${before.toFixed(3)} to ${after.toFixed(3)} of it blue)`)
+})
+
+test("a ready-made rangoli design is slid by a finger to where it's let go", async () => {
+  // From a bare patch of floor, between what the tests before put down, to the right
+  const from = {x: porch.x - 60, y: porch.y + 15}
+  const to = {x: porch.x + 50, y: porch.y + 15}
+  const clip = {x: to.x - 50, y: to.y - 25, width: 100, height: 50}
+  const before = await bluePixels(clip)
+  await touchDown(from, to)
+  await touchUp()
+  const after = await bluePixels(clip)
+  assert.ok(after > before + 0.02, `the design's blue ring is on the floor where it was let go (${before.toFixed(3)} to ${after.toFixed(3)} of it blue)`)
 })
 
 // Last, as it starts the game again

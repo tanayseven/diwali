@@ -172,6 +172,15 @@ const closestView = {width: 180, height: 80}
 // How much each press of a zoom button or key zooms by, and how long it takes
 const zoomStep = 1.5
 const zoomDuration = 200
+// Following something on the move, like a rocket the player's lit: the camera eases
+// towards it by this share a second, never letting it get further from the middle of the
+// screen than this share of the way to its edge, and only ever climbing after it, never
+// dropping. Once it's gone, the camera stays where it was last seen for a while, to see
+// it burst, then eases back to where it was, over this long, in ms
+const followEase = 5
+const followKeep = 0.45
+const followHold = 1.8
+const followReturn = 1100
 
 const coverScale = (width: number, height: number) => Math.max(width / sceneWidth, height / sceneHeight)
 const fitScale = (view: {width: number, height: number}, width: number, height: number) =>
@@ -327,6 +336,12 @@ const createBackground = (app: Application) => {
   let zoomAnimation: {from: number, to: number, about: PointData, elapsed: number} | undefined
   let panFrom: Point | undefined
   let onPress: PressHandler | undefined
+  // What the camera's following, where it was last seen, how long it's been gone, and
+  // where the camera was before, to go back to, or once it's going back, from where
+  let following: {
+    target: () => PointData | undefined, last: PointData, gone: number, from: PointData,
+    returning?: {start: PointData, elapsed: number},
+  } | undefined
 
   const maxZoom = () => {
     const {width, height} = app.screen
@@ -396,6 +411,44 @@ const createBackground = (app: Application) => {
 
   const screenCentre = () => ({x: app.screen.width / 2, y: app.screen.height / 2})
 
+  const smootherStep = (t: number) => t * t * t * (t * (t * 6 - 15) + 10)
+  app.ticker.add(() => {
+    if (!following) {
+      return
+    }
+    const dt = Math.min(0.1, app.ticker.deltaMS / 1000)
+    const at = following.target()
+    if (at) {
+      following.last = {x: at.x, y: at.y}
+      following.gone = 0
+    } else {
+      following.gone += dt
+    }
+    if (following.gone < followHold) {
+      const {last, from} = following
+      const halfWidth = app.screen.width / 2 / scene.scale.x
+      const halfHeight = app.screen.height / 2 / scene.scale.y
+      const ease = 1 - Math.exp(-followEase * dt)
+      const goal = {x: last.x, y: Math.min(from.y, last.y)}
+      centre.x += (goal.x - centre.x) * ease
+      centre.y += (goal.y - centre.y) * ease
+      centre.x = Math.min(last.x + halfWidth * followKeep, Math.max(last.x - halfWidth * followKeep, centre.x))
+      centre.y = Math.min(centre.y, last.y + halfHeight * followKeep)
+      layout()
+      return
+    }
+    following.returning ??= {start: {...centre}, elapsed: 0}
+    const {returning, from} = following
+    returning.elapsed += app.ticker.deltaMS
+    const t = smootherStep(Math.min(1, returning.elapsed / followReturn))
+    centre.x = returning.start.x + (from.x - returning.start.x) * t
+    centre.y = returning.start.y + (from.y - returning.start.y) * t
+    layout()
+    if (t === 1) {
+      following = undefined
+    }
+  })
+
   app.ticker.add(() => {
     if (!zoomAnimation) {
       return
@@ -429,6 +482,7 @@ const createBackground = (app: Application) => {
     }
     panFrom = e.global.clone()
     panSurface.cursor = "grabbing"
+    following = undefined
   })
   const onPointerDown = (e: PointerEvent) => {
     if (e.pointerType !== "touch" || e.target !== app.canvas) {
@@ -439,6 +493,7 @@ const createBackground = (app: Application) => {
       // A second finger turns a pan into a pinch
       panFrom = undefined
       zoomAnimation = undefined
+      following = undefined
       pinch = pinchFrom()
     }
   }
@@ -474,6 +529,7 @@ const createBackground = (app: Application) => {
     }
     e.preventDefault()
     zoomAnimation = undefined
+    following = undefined
     // Trackpad pinches arrive as the wheel with Ctrl held, as does Ctrl and a mouse wheel
     if (e.ctrlKey) {
       zoomTo(zoom * Math.exp(-e.deltaY * 0.01), toStage(e))
@@ -533,8 +589,19 @@ const createBackground = (app: Application) => {
       const from = zoomAnimation?.to ?? zoom
       const to = Math.min(maxZoom(), Math.max(1, from * factor))
       zoomAnimation = {from: zoom, to, about, elapsed: 0}
+      following = undefined
     },
     zoomStep,
+    // Follows something on the move with the camera, wherever it is in the scene, until
+    // it's gone, as a rocket bursting is, then comes back to where it was before. Any pan
+    // or zoom leaves it where it's got to
+    follow(target: () => PointData | undefined) {
+      const at = target()
+      if (!at) {
+        return
+      }
+      following = {target, last: {x: at.x, y: at.y}, gone: 0, from: following?.from ?? {...centre}}
+    },
     canZoomIn: () => zoom < maxZoom() - 1e-3,
     canZoomOut: () => zoom > 1 + 1e-3,
     // Lets a tool claim presses on the scenery, e.g. to draw, instead of them panning it

@@ -53,6 +53,8 @@ type ToolControls = Layout & {
   pressHandler?: (at: PointData, e: FederatedPointerEvent) => boolean
   // What to take first from its bar, to show someone new to it
   firstSlot?: () => Container | undefined
+  // Told whether it's the tool in use, whether its bar's shown or hidden
+  setActive?: (active: boolean) => void
 }
 
 // The tools whose first step has been shown, kept on the device so each is only shown
@@ -160,7 +162,7 @@ const main = async () => {
   if (loaded(fairyLightAssets)) {
     controls.decorate = createHouseLights(app, background, lighting, wind)
   }
-  controls.rangoli = createRangoli(app, background)
+  controls.rangoli = createRangoli(app, background, lighting)
   // Each house's name, over its door
   createNameplates(background, lighting)
   // A family out on each house's porch to celebrate, unless asked not to be, as the
@@ -184,6 +186,7 @@ const main = async () => {
   const select = (tool: Tool, picked = true, introducing = true) => {
     selected = tool
     showBars()
+    Object.entries(controls).forEach(([name, control]) => control.setActive?.(name === tool))
     // The tool still draws or hangs things with whatever was last picked from its bar
     background.setPressHandler(controls[tool]?.pressHandler)
     if (introducing) {

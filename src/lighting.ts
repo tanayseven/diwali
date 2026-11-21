@@ -141,6 +141,10 @@ const createLighting = (app: Application, background: Background) => {
         off() {
           light.visible = false
         },
+        // Changes the colour it lights things up in
+        tint(colour: number) {
+          light.tint = colour
+        },
         destroy() {
           light.destroy()
         },
