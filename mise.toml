@@ -73,8 +73,8 @@ run = [
 ]
 
 [tasks."generate:screenshots"]
-description = "Take the screenshots F-Droid shows, in fastlane/, by playing the built game"
-run = ["npm run build", "node scripts/store/screenshots.mjs"]
+description = "Take the game's screenshots, in web/screenshots/, by playing the built game, and frame them with captions for the stores, in fastlane/"
+run = ["npm run build", "node scripts/store/screenshots.mjs", "node scripts/store/captioned.mjs"]
 
 [tasks.generate]
 description = "Regenerate the translations, the icons and the store's screenshots"
