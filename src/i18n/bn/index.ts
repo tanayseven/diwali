@@ -66,6 +66,15 @@ const bn = {
 		title: "নির্দেশিকা",
 		replay: "আবার দেখান",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "অ্যাপটিকে রেটিং দিন",
+		rate: "রেটিং দিন",
+		ask: "দীপাবলি উৎসব ভালো লাগছে? রেটিং দিন, যাতে অন্যরাও এটা খুঁজে পান",
+		later: "এখন নয়",
+		never: "আর জিজ্ঞেস করবেন না",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "সেটিংস",

@@ -66,6 +66,15 @@ const ta = {
 		title: "வழிகாட்டி",
 		replay: "மீண்டும் காட்டு",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ஆப்பை மதிப்பிடு",
+		rate: "மதிப்பிடு",
+		ask: "தீபாவளி கொண்டாட்டம் பிடித்திருக்கிறதா? மதிப்பிடுங்கள், மற்றவர்களும் இதைக் கண்டறியட்டும்",
+		later: "இப்போது வேண்டாம்",
+		never: "மீண்டும் கேட்க வேண்டாம்",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "அமைப்புகள்",

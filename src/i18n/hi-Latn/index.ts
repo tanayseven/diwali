@@ -66,6 +66,15 @@ const hiLatn = {
 		title: "Walkthrough",
 		replay: "Phir se dikhao",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "App ko rate karo",
+		rate: "Rate karo",
+		ask: "Diwali Celebration pasand aa raha hai? Rate karo, taaki doosre bhi ise dhoondh sakein",
+		later: "Abhi nahi",
+		never: "Phir mat poochho",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",

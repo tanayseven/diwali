@@ -11,7 +11,8 @@
 // bar. And that a ready-made rangoli design can be made and put
 // down, and slid to where it's to go before it's let go. And that the settings, from the
 // gear button, can turn the music off and reduce flashing, as the warning at the start can.
-// And that the guided first run waits for each step, and can be skipped.
+// And that the guided first run waits for each step, and can be skipped. And that, in the
+// Android app, it's offered to rate it, gently.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -513,6 +514,55 @@ test("the guided first run waits for each step to be done, and Skip ends it", as
     await card.waitFor({state: "hidden", timeout: 3000})
     const introduced = await first.evaluate(() => JSON.parse(localStorage.getItem("diwali-introduced-tools")))
     assert.ok(introduced.includes("tour"), "it's not shown again")
+  } finally {
+    await context.close()
+  }
+})
+
+test("in the Android app, a kandil lit in a later session is followed, after a pause, by an offer to rate it", async () => {
+  // A second session of its own, with every tool already seen, as the Android app's,
+  // which ?rating stands in for here
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(
+      ["zoom", "tour", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
+    if (!localStorage.getItem("diwali-rating")) {
+      localStorage.setItem("diwali-rating", JSON.stringify({sessions: 1, askFrom: 2, never: false}))
+    }
+  }, muted)
+  const app = await context.newPage()
+  app.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    await app.goto(`http://localhost:${port}/?guests=off&start=porch&rating`)
+    await app.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await app.getByText(text).waitFor({timeout: 60000})
+      await app.waitForTimeout(900)
+      await app.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    await app.waitForTimeout(1500)
+    // Rated any time from the settings
+    await app.getByRole("button", {name: "Settings"}).tap()
+    await app.getByRole("button", {name: "Rate", exact: true}).waitFor({timeout: 3000})
+    await app.getByRole("button", {name: "Close"}).tap()
+    // A kandil hung from the house, given paper, tails and the bulb by tapping them
+    await app.touchscreen.tap(52, rail.kandil)
+    await app.waitForTimeout(800)
+    await app.mouse.move(slot(0).x, slot(0).y)
+    await app.mouse.down()
+    await app.mouse.move(330, 110, {steps: 12})
+    await app.mouse.up()
+    for (const idx of [1, 5, 9]) {
+      await app.waitForTimeout(300)
+      await app.mouse.click(slot(idx).x, slot(idx).y)
+    }
+    const asked = app.getByRole("dialog", {name: "Rate the app"})
+    await asked.waitFor({timeout: 15000})
+    await app.getByRole("button", {name: "Not now"}).tap()
+    await asked.waitFor({state: "hidden", timeout: 3000})
+    const saved = await app.evaluate(() => JSON.parse(localStorage.getItem("diwali-rating")))
+    assert.deepEqual(saved, {sessions: 2, askFrom: 5, never: false}, "asked again three sessions on")
   } finally {
     await context.close()
   }

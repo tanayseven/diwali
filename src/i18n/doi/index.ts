@@ -66,6 +66,15 @@ const doi = {
 		title: "मार्गदर्शन",
 		replay: "फ्ही दस्सो",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ऐप गी रेटिंग देओ",
+		rate: "रेटिंग देओ",
+		ask: "दीवाली उत्सव पसंद आवा करदा ऐ? रेटिंग देओ, तां जे होर लोक बी इसगी लब्भी सकन",
+		later: "हून नेईं",
+		never: "फ्ही नेईं पुच्छो",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

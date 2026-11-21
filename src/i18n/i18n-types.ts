@@ -219,6 +219,28 @@ type RootTranslation = {
 		 */
 		replay: string
 	}
+	rating: {
+		/**
+		 * R​a​t​e​ ​t​h​e​ ​a​p​p
+		 */
+		title: string
+		/**
+		 * R​a​t​e
+		 */
+		rate: string
+		/**
+		 * E​n​j​o​y​i​n​g​ ​D​i​w​a​l​i​ ​C​e​l​e​b​r​a​t​i​o​n​?​ ​R​a​t​e​ ​i​t​,​ ​s​o​ ​o​t​h​e​r​s​ ​c​a​n​ ​f​i​n​d​ ​i​t​ ​t​o​o
+		 */
+		ask: string
+		/**
+		 * N​o​t​ ​n​o​w
+		 */
+		later: string
+		/**
+		 * D​o​n​'​t​ ​a​s​k​ ​a​g​a​i​n
+		 */
+		never: string
+	}
 	settings: {
 		/**
 		 * S​e​t​t​i​n​g​s
@@ -797,6 +819,28 @@ export type TranslationFunctions = {
 		 * Show again
 		 */
 		replay: () => LocalizedString
+	}
+	rating: {
+		/**
+		 * Rate the app
+		 */
+		title: () => LocalizedString
+		/**
+		 * Rate
+		 */
+		rate: () => LocalizedString
+		/**
+		 * Enjoying Diwali Celebration? Rate it, so others can find it too
+		 */
+		ask: () => LocalizedString
+		/**
+		 * Not now
+		 */
+		later: () => LocalizedString
+		/**
+		 * Don't ask again
+		 */
+		never: () => LocalizedString
 	}
 	settings: {
 		/**

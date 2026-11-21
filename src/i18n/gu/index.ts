@@ -66,6 +66,15 @@ const gu = {
 		title: "માર્ગદર્શન",
 		replay: "ફરી બતાવો",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "એપને રેટિંગ આપો",
+		rate: "રેટિંગ આપો",
+		ask: "દિવાળી ઉત્સવ ગમે છે? રેટિંગ આપો, જેથી બીજા લોકો પણ તેને શોધી શકે",
+		later: "હમણાં નહીં",
+		never: "ફરી ન પૂછશો",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "સેટિંગ્સ",

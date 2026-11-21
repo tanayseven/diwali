@@ -66,6 +66,15 @@ const hi = {
 		title: "मार्गदर्शन",
 		replay: "फिर से दिखाएँ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ऐप को रेटिंग दें",
+		rate: "रेटिंग दें",
+		ask: "दिवाली उत्सव पसंद आ रहा है? रेटिंग दें, ताकि दूसरे भी इसे ढूँढ सकें",
+		later: "अभी नहीं",
+		never: "फिर न पूछें",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

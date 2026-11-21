@@ -66,6 +66,15 @@ const asm = {
 		title: "নিৰ্দেশনা",
 		replay: "আকৌ দেখুৱাওক",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "এপটোক ৰেটিং দিয়ক",
+		rate: "ৰেটিং দিয়ক",
+		ask: "দীপাৱলী উৎসৱ ভাল লাগিছে নে? ৰেটিং দিয়ক, যাতে আনেও ইয়াক বিচাৰি পায়",
+		later: "এতিয়া নহয়",
+		never: "আকৌ নুসুধিব",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ছেটিংছ",

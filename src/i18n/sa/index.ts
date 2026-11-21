@@ -66,6 +66,15 @@ const sa = {
 		title: "मार्गदर्शनम्",
 		replay: "पुनः दर्शयतु",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "अनुप्रयोगं मूल्याङ्कयतु",
+		rate: "मूल्याङ्कयतु",
+		ask: "दीपावल्युत्सवः रोचते वा? मूल्याङ्कयतु, येन अन्ये अपि एनं प्राप्नुयुः",
+		later: "इदानीं न",
+		never: "पुनः न पृच्छतु",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "विन्यासाः",
