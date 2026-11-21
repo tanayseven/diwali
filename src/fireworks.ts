@@ -1513,6 +1513,11 @@ const createFireworks = (
     }
     sutli.brightness = flashPeak()
     sutli.lightAt = at
+    // A big enough bang to shake the view, unless flashing and the like are reduced, and
+    // less the further off screen it is
+    if (!reduceFlashing()) {
+      background.shake(1 - background.muffleOf(at))
+    }
     flash = 1
     flashAlpha = sutliFlashAlpha
     flashFade = sutliFade
