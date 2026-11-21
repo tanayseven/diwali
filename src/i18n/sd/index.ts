@@ -62,6 +62,8 @@ const sd = {
 		effects: "آواز جا اثر",
 		nextTrack: "ايندڙ گيت",
 		language: "ٻولي",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "چمڪ گهٽ ڪريو",
 	},
 	tooltip: {
 		hintButton: "اڳتي ڇا ڪجي",

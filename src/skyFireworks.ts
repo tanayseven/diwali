@@ -1,3 +1,4 @@
+import {skyFlash} from "./flashing"
 import {Application, Particle, ParticleContainer, PointData, Rectangle, Sprite} from "pixi.js"
 import {quality} from "./app"
 import type {createAudioControl} from "./audioControl"
@@ -330,7 +331,7 @@ const createSkyFireworks = async (
     for (let idx = flashes.length - 1; idx >= 0; idx--) {
       const flash = flashes[idx]
       flash.age += app.ticker.deltaMS / 1000
-      flash.sprite.alpha = flashAlpha * Math.max(0, 1 - flash.age / flashDuration)
+      flash.sprite.alpha = flashAlpha * skyFlash() * Math.max(0, 1 - flash.age / flashDuration)
       if (flash.age >= flashDuration) {
         flash.sprite.destroy()
         flashes.splice(idx, 1)

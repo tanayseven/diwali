@@ -10,7 +10,7 @@
 // finger is held up by a hand. And that a kandil just made takes what's tapped in its
 // bar. And that a ready-made rangoli design can be made and put
 // down, and slid to where it's to go before it's let go. And that the settings, from the
-// gear button, can turn the music off.
+// gear button, can turn the music off and reduce flashing, as the warning at the start can.
 // The game's muted from the moment it starts, so nothing's heard while it runs.
 //
 //   npm run test:e2e
@@ -471,6 +471,11 @@ test("the gear opens the settings, where the music's turned off, which is rememb
   await page.getByRole("switch", {name: "Music"}).tap()
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("diwali-audio")))
   assert.equal(saved.musicOn, false)
+  // And flashing reduced, then back as it was
+  await page.getByRole("switch", {name: "Reduce flashing"}).tap()
+  assert.equal(await page.evaluate(() => localStorage.getItem("diwali-reduce-flashing")), "1")
+  await page.getByRole("switch", {name: "Reduce flashing"}).tap()
+  assert.equal(await page.evaluate(() => localStorage.getItem("diwali-reduce-flashing")), "0")
   await page.getByRole("button", {name: "Close"}).tap()
   await panel.waitFor({state: "hidden", timeout: 3000})
 })
@@ -478,8 +483,14 @@ test("the gear opens the settings, where the music's turned off, which is rememb
 // Last, as it starts the game again
 test("the language picked is used again next time, and the globe button picks another, which it starts again in", async () => {
   await page.reload()
-  // Straight to the warning, in English, with no picker
+  // Straight to the warning, in English, with no picker, and a switch on it to reduce
+  // flashing, which doesn't skip it
   await page.getByText("flashing and twinkling lights", {exact: false}).waitFor({timeout: 60000})
+  await page.waitForTimeout(900)
+  await page.getByRole("switch", {name: "Reduce flashing"}).tap()
+  await page.waitForTimeout(300)
+  assert.ok(await page.getByText("flashing and twinkling lights", {exact: false}).isVisible(), "the warning's still shown")
+  assert.equal(await page.evaluate(() => localStorage.getItem("diwali-reduce-flashing")), "1")
   assert.equal(await page.getByRole("dialog", {name: "Choose a language"}).count(), 0)
   for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
     await page.getByText(text).waitFor({timeout: 60000})

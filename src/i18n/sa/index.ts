@@ -62,6 +62,8 @@ const sa = {
 		effects: "ध्वनिप्रभावाः",
 		nextTrack: "अग्रिमं गीतम्",
 		language: "भाषा",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "स्फुरणं न्यूनीकरोतु",
 	},
 	tooltip: {
 		hintButton: "अग्रे किं करणीयम्",

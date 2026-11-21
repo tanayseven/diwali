@@ -62,6 +62,8 @@ const pa = {
 		effects: "ਸਾਊਂਡ ਇਫੈਕਟ",
 		nextTrack: "ਅਗਲਾ ਗੀਤ",
 		language: "ਭਾਸ਼ਾ",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ਚਮਕ ਘਟਾਓ",
 	},
 	tooltip: {
 		hintButton: "ਅੱਗੇ ਕੀ ਕਰਨਾ ਹੈ",

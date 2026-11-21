@@ -62,6 +62,8 @@ const bn = {
 		effects: "সাউন্ড এফেক্ট",
 		nextTrack: "পরের গান",
 		language: "ভাষা",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ঝলকানি কমান",
 	},
 	tooltip: {
 		hintButton: "এরপর কী করবেন",

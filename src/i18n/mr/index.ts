@@ -62,6 +62,8 @@ const mr = {
 		effects: "ध्वनी परिणाम",
 		nextTrack: "पुढचे गाणे",
 		language: "भाषा",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "चमक कमी करा",
 	},
 	tooltip: {
 		hintButton: "पुढे काय करायचे",

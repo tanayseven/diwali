@@ -62,6 +62,8 @@ const sat = {
 		effects: "ᱥᱟᱰᱮ ᱤᱯᱷᱮᱠᱴ",
 		nextTrack: "ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢ ᱥᱮᱨᱮᱧ",
 		language: "ᱯᱟᱹᱨᱥᱤ",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ᱡᱷᱤᱞᱢᱤᱞ ᱠᱚᱢ ᱢᱮ",
 	},
 	tooltip: {
 		hintButton: "ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢ ᱪᱮᱫ ᱠᱟᱹᱢᱤ",

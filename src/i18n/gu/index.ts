@@ -62,6 +62,8 @@ const gu = {
 		effects: "સાઉન્ડ ઇફેક્ટ્સ",
 		nextTrack: "આગલું ગીત",
 		language: "ભાષા",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ઝબકારા ઓછા કરો",
 	},
 	tooltip: {
 		hintButton: "હવે શું કરવું",

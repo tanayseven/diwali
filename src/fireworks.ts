@@ -7,6 +7,7 @@ import {Light, Lighting, radialTexture} from "./lighting"
 import {LL} from "./locale"
 import {createMatchHand, createMatchstick, draggedFrom, Lightable, matchFrameUrls} from "./matchstick"
 import {mostOverlappedBy} from "./overlap"
+import {flashFade as fadeShare, flashPeak, reduceFlashing} from "./flashing"
 import {haptics, refusalShown} from "./feedback"
 import {happen} from "./happenings"
 import {createShownParticles} from "./shownParticles"
@@ -1209,7 +1210,7 @@ const createFireworks = (
     for (let idx = 0; idx < blastPuffs; idx++) {
       addSmoke(at.x + random(-4, 4), at.y - random(0, 8))
     }
-    laddi.brightness = 1
+    laddi.brightness = Math.max(laddi.brightness, flashPeak())
     laddi.lightAt = at
     flash = 1
     flashAlpha = screenFlashAlpha
@@ -1271,7 +1272,7 @@ const createFireworks = (
     smoulder(laddi, onFirework(laddi, laddiBlasts[laddiBlasts.length - 1]), dt)
 
     // Each blast flashes and lights the porch for a moment; the fuse barely glows
-    laddi.brightness *= Math.exp(-blastFade * dt)
+    laddi.brightness *= Math.exp(-blastFade * fadeShare() * dt)
     const {brightness, light, glow, core} = laddi
     const shining = brightness > 0.01 || fuseAt !== undefined
     glow.visible = shining
@@ -1484,7 +1485,7 @@ const createFireworks = (
     for (let idx = 0; idx < sutliPuffs; idx++) {
       addSmoke(at.x + random(-14, 14), at.y - random(0, 30))
     }
-    sutli.brightness = 1
+    sutli.brightness = flashPeak()
     sutli.lightAt = at
     flash = 1
     flashAlpha = sutliFlashAlpha
@@ -1521,7 +1522,7 @@ const createFireworks = (
     smoulder(sutli, onFirework(sutli, {x: 60, y: 86}), dt)
 
     // The blast lights the porch and dies away; the fuse barely glows
-    sutli.brightness *= Math.exp(-sutliFade * dt)
+    sutli.brightness *= Math.exp(-sutliFade * fadeShare() * dt)
     const {brightness, light, glow, core} = sutli
     const shining = brightness > 0.01 || fuseAt !== undefined
     glow.visible = shining
@@ -1595,7 +1596,7 @@ const createFireworks = (
     for (let idx = 0; idx < rocketBurstPuffs; idx++) {
       addSmoke(flight.x + random(-10, 10), flight.y + random(-10, 10))
     }
-    rocket.brightness = 1
+    rocket.brightness = flashPeak()
     rocket.lightAt = {x: flight.x, y: flight.y}
     flash = 1
     flashAlpha = screenFlashAlpha
@@ -1678,7 +1679,7 @@ const createFireworks = (
     const target = fuseAt ? 0.1 : flying ? (rocket.flight!.thrustLeft > 0 ? 0.7 : 0.25) : 0
     rocket.brightness = flying || fuseAt
       ? lerp(rocket.brightness, target, clamp(dt * 12))
-      : rocket.brightness * Math.exp(-rocketFade * dt)
+      : rocket.brightness * Math.exp(-rocketFade * fadeShare() * dt)
     const {brightness, light, glow, core} = rocket
     const shining = brightness > 0.01
     glow.visible = shining
@@ -1727,7 +1728,8 @@ const createFireworks = (
     // The screen's flash dies away as quickly as a blast's light, and only shows while
     // the scene does
     flash *= Math.exp(-flashFade * dt)
-    screenFlash.alpha = flashAlpha * flash
+    // Not at all while flashing's reduced
+    screenFlash.alpha = reduceFlashing() ? 0 : flashAlpha * flash
     screenFlash.visible = screenFlash.alpha > 0.002
 
     for (let idx = sparks.length - 1; idx >= 0; idx--) {

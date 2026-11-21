@@ -62,6 +62,8 @@ const ml = {
 		effects: "ശബ്ദ ഇഫക്റ്റുകൾ",
 		nextTrack: "അടുത്ത പാട്ട്",
 		language: "ഭാഷ",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "മിന്നൽ കുറയ്ക്കൂ",
 	},
 	tooltip: {
 		hintButton: "അടുത്തതായി എന്ത് ചെയ്യണം",
