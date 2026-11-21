@@ -439,9 +439,10 @@ test("a diya put down on the porch by a finger is felt", async () => {
 })
 
 test("a ready-made rangoli design, mixed in its panel, is put down where the floor's tapped", async () => {
-  await page.touchscreen.tap(52, 311)
+  await page.touchscreen.tap(52, rail.rangoli)
   await page.waitForTimeout(800)
-  await page.getByRole("button", {name: "Draw Rangoli"}).tap()
+  // Its bar's first slot, which shows the design picked, opens the panel
+  await page.touchscreen.tap(slot(0).x, slot(0).y)
   const panel = page.getByRole("dialog", {name: "Draw Rangoli"})
   await panel.waitFor({timeout: 3000})
   await page.getByRole("button", {name: "centre star"}).tap()

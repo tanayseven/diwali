@@ -5,7 +5,7 @@ type Progress =
   | "diyaPlaced" | "diyaLit"
   | "fireworkPlaced" | "fireworkLit"
   | "kandilLit" | "lightsHung"
-  | "rangoliDrawn" | "rangoliPlaced"
+  | "rangoliPlaced"
 
 const listeners = new Set<(done: Progress) => void>()
 

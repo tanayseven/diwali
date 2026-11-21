@@ -582,49 +582,9 @@ type RootTranslation = {
 		}
 		rangoli: {
 			/**
-			 * R​e​d​ ​p​o​w​d​e​r
+			 * T​a​p​ ​t​o​ ​m​a​k​e​ ​y​o​u​r​ ​o​w​n​ ​d​e​s​i​g​n​,​ ​t​h​e​n​ ​t​a​p​ ​t​h​e​ ​p​o​r​c​h​ ​f​l​o​o​r​ ​t​o​ ​p​u​t​ ​i​t​ ​d​o​w​n
 			 */
-			red: string
-			/**
-			 * O​r​a​n​g​e​ ​p​o​w​d​e​r
-			 */
-			orange: string
-			/**
-			 * Y​e​l​l​o​w​ ​p​o​w​d​e​r
-			 */
-			yellow: string
-			/**
-			 * G​r​e​e​n​ ​p​o​w​d​e​r
-			 */
-			green: string
-			/**
-			 * B​l​u​e​ ​p​o​w​d​e​r
-			 */
-			blue: string
-			/**
-			 * P​u​r​p​l​e​ ​p​o​w​d​e​r
-			 */
-			purple: string
-			/**
-			 * P​i​n​k​ ​p​o​w​d​e​r
-			 */
-			pink: string
-			/**
-			 * W​h​i​t​e​ ​p​o​w​d​e​r
-			 */
-			white: string
-			/**
-			 * P​i​c​k​,​ ​t​h​e​n​ ​d​r​a​w​ ​o​n​ ​t​h​e​ ​p​o​r​c​h​ ​f​l​o​o​r
-			 */
-			hint: string
-			/**
-			 * E​r​a​s​e​r
-			 */
-			eraser: string
-			/**
-			 * P​i​c​k​,​ ​t​h​e​n​ ​r​u​b​ ​o​u​t​ ​p​a​r​t​s​ ​o​f​ ​t​h​e​ ​r​a​n​g​o​l​i
-			 */
-			eraserHint: string
+			design: string
 			/**
 			 * C​l​e​a​r
 			 */
@@ -1183,49 +1143,9 @@ export type TranslationFunctions = {
 		}
 		rangoli: {
 			/**
-			 * Red powder
+			 * Tap to make your own design, then tap the porch floor to put it down
 			 */
-			red: () => LocalizedString
-			/**
-			 * Orange powder
-			 */
-			orange: () => LocalizedString
-			/**
-			 * Yellow powder
-			 */
-			yellow: () => LocalizedString
-			/**
-			 * Green powder
-			 */
-			green: () => LocalizedString
-			/**
-			 * Blue powder
-			 */
-			blue: () => LocalizedString
-			/**
-			 * Purple powder
-			 */
-			purple: () => LocalizedString
-			/**
-			 * Pink powder
-			 */
-			pink: () => LocalizedString
-			/**
-			 * White powder
-			 */
-			white: () => LocalizedString
-			/**
-			 * Pick, then draw on the porch floor
-			 */
-			hint: () => LocalizedString
-			/**
-			 * Eraser
-			 */
-			eraser: () => LocalizedString
-			/**
-			 * Pick, then rub out parts of the rangoli
-			 */
-			eraserHint: () => LocalizedString
+			design: () => LocalizedString
 			/**
 			 * Clear
 			 */
