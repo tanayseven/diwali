@@ -66,6 +66,15 @@ const kok = {
 		title: "मार्गदर्शन",
 		replay: "परत दाखयात",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ॲपाक रेटिंग दियात",
+		rate: "रेटिंग दियात",
+		ask: "दिवाळी उत्सव आवडटा? रेटिंग दियात, जाका लागून हेरांकय तो मेळटलो",
+		later: "आतां न्हय",
+		never: "परत विचारूं नाकात",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्ज",

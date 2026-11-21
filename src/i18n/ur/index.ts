@@ -66,6 +66,15 @@ const ur = {
 		title: "رہنمائی",
 		replay: "دوبارہ دکھائیں",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ایپ کو ریٹنگ دیں",
+		rate: "ریٹنگ دیں",
+		ask: "دیوالی کا جشن پسند آ رہا ہے؟ ریٹنگ دیں، تاکہ دوسرے بھی اسے ڈھونڈ سکیں",
+		later: "ابھی نہیں",
+		never: "دوبارہ نہ پوچھیں",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ترتیبات",

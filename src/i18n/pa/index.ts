@@ -66,6 +66,15 @@ const pa = {
 		title: "ਮਾਰਗਦਰਸ਼ਨ",
 		replay: "ਫਿਰ ਦਿਖਾਓ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ਐਪ ਨੂੰ ਰੇਟਿੰਗ ਦਿਓ",
+		rate: "ਰੇਟਿੰਗ ਦਿਓ",
+		ask: "ਦੀਵਾਲੀ ਦਾ ਜਸ਼ਨ ਪਸੰਦ ਆ ਰਿਹਾ ਹੈ? ਰੇਟਿੰਗ ਦਿਓ, ਤਾਂ ਜੋ ਹੋਰ ਲੋਕ ਵੀ ਇਸਨੂੰ ਲੱਭ ਸਕਣ",
+		later: "ਹੁਣ ਨਹੀਂ",
+		never: "ਮੁੜ ਨਾ ਪੁੱਛੋ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ਸੈਟਿੰਗਾਂ",

@@ -66,6 +66,15 @@ const or = {
 		title: "ମାର୍ଗଦର୍ଶନ",
 		replay: "ପୁଣି ଦେଖାନ୍ତୁ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ଆପ୍‌କୁ ରେଟିଂ ଦିଅନ୍ତୁ",
+		rate: "ରେଟିଂ ଦିଅନ୍ତୁ",
+		ask: "ଦୀପାବଳି ଉତ୍ସବ ଭଲ ଲାଗୁଛି କି? ରେଟିଂ ଦିଅନ୍ତୁ, ଯାହାଫଳରେ ଅନ୍ୟମାନେ ମଧ୍ୟ ଏହାକୁ ଖୋଜି ପାଇବେ",
+		later: "ଏବେ ନୁହେଁ",
+		never: "ଆଉ ପଚାରନ୍ତୁ ନାହିଁ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ସେଟିଂସ୍",

@@ -66,6 +66,15 @@ const ml = {
 		title: "പരിചയപ്പെടുത്തൽ",
 		replay: "വീണ്ടും കാണിക്കൂ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ആപ്പ് റേറ്റ് ചെയ്യൂ",
+		rate: "റേറ്റ് ചെയ്യൂ",
+		ask: "ദീപാവലി ആഘോഷം ഇഷ്ടമായോ? റേറ്റ് ചെയ്യൂ, മറ്റുള്ളവർക്കും ഇത് കണ്ടെത്താനാകട്ടെ",
+		later: "ഇപ്പോൾ വേണ്ട",
+		never: "ഇനി ചോദിക്കേണ്ട",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ക്രമീകരണങ്ങൾ",

@@ -66,6 +66,15 @@ const mni = {
 		title: "ꯂꯝꯖꯤꯡꯕꯤ",
 		replay: "ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯎꯠꯄꯤꯌꯨ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ꯑꯦꯞ ꯑꯁꯤꯗꯥ ꯔꯦꯇꯤꯡ ꯄꯤꯕꯤꯌꯨ",
+		rate: "ꯔꯦꯇꯤꯡ ꯄꯤꯕꯤꯌꯨ",
+		ask: "ꯗꯤꯋꯥꯂꯤ ꯀꯨꯝꯍꯩ ꯅꯨꯡꯉꯥꯏꯔꯤꯕꯔꯥ? ꯔꯦꯇꯤꯡ ꯄꯤꯕꯤꯌꯨ, ꯑꯇꯣꯞꯄꯁꯤꯡꯅꯁꯨ ꯃꯁꯤ ꯐꯪꯅꯕꯥ",
+		later: "ꯍꯧꯖꯤꯛ ꯅꯠꯇꯦ",
+		never: "ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯍꯪꯒꯅꯨ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ꯁꯦꯇꯤꯡꯁ",

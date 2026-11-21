@@ -66,6 +66,15 @@ const ks = {
 		title: "رہنُمٲیی",
 		replay: "دوبارٕ ہٲوِو",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ایپس دِیِو ریٹِنگ",
+		rate: "ریٹِنگ دِیِو",
+		ask: "دیوالی ہُند جشن چھُ پسنٛد یِوان؟ ریٹِنگ دِیِو، تاکہ باقی تہِ ہیکن یہِ ژھٲنڈِتھ",
+		later: "وۄنۍ نہٕ",
+		never: "دوبارٕ مہٕ پرٛژھِو",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سیٹِنگز",

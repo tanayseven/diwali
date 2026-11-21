@@ -66,6 +66,15 @@ const mai = {
 		title: "मार्गदर्शन",
 		replay: "फेरसँ देखाउ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ऐपकेँ रेटिंग दिअ",
+		rate: "रेटिंग दिअ",
+		ask: "दिवाली उत्सव नीक लागि रहल अछि? रेटिंग दिअ, जाहिसँ आनो लोक एकरा ताकि सकथि",
+		later: "एखन नहि",
+		never: "फेर नहि पुछू",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

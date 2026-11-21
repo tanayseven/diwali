@@ -66,6 +66,15 @@ const sd = {
 		title: "رهنمائي",
 		replay: "ٻيهر ڏيکاريو",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ايپ کي ريٽنگ ڏيو",
+		rate: "ريٽنگ ڏيو",
+		ask: "ڏياري جو جشن پسند آيو؟ ريٽنگ ڏيو، ته جيئن ٻيا به ان کي ڳولي سگهن",
+		later: "هاڻي نه",
+		never: "ٻيهر نه پڇو",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سيٽنگون",

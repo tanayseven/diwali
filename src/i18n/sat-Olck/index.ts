@@ -66,6 +66,15 @@ const sat = {
 		title: "ᱦᱚᱨ ᱫᱮᱠᱷᱟᱣ",
 		replay: "ᱫᱩᱦᱲᱟᱹᱣ ᱩᱫᱩᱜ ᱢᱮ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ᱮᱯ ᱨᱮᱴᱤᱝ ᱮᱢ ᱢᱮ",
+		rate: "ᱨᱮᱴᱤᱝ ᱮᱢ ᱢᱮ",
+		ask: "ᱫᱤᱣᱟᱞᱤ ᱯᱚᱨᱚᱵ ᱫᱚ ᱱᱟᱯᱟᱭ ᱧᱮᱞ ᱠᱟᱱᱟ ᱥᱮ? ᱨᱮᱴᱤᱝ ᱮᱢ ᱢᱮ, ᱡᱮᱢᱚᱱ ᱮᱴᱟᱜ ᱦᱚᱲ ᱦᱚᱸ ᱱᱚᱶᱟ ᱧᱟᱢ ᱫᱟᱲᱮᱭᱟᱜ ᱟ",
+		later: "ᱱᱤᱛᱚᱜ ᱫᱚ ᱵᱟᱝ",
+		never: "ᱫᱩᱦᱲᱟᱹᱣ ᱟᱞᱚᱢ ᱠᱩᱞᱤᱭᱤᱧ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ᱥᱮᱴᱤᱝᱥ",

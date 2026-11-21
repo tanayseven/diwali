@@ -75,6 +75,15 @@ const en = {
 		title: "Walkthrough",
 		replay: "Show again",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "Rate the app",
+		rate: "Rate",
+		ask: "Enjoying Diwali Celebration? Rate it, so others can find it too",
+		later: "Not now",
+		never: "Don't ask again",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",

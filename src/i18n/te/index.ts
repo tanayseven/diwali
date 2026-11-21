@@ -66,6 +66,15 @@ const te = {
 		title: "పరిచయం",
 		replay: "మళ్ళీ చూపించండి",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "యాప్‌కు రేటింగ్ ఇవ్వండి",
+		rate: "రేటింగ్ ఇవ్వండి",
+		ask: "దీపావళి సంబరాలు నచ్చాయా? రేటింగ్ ఇవ్వండి, ఇతరులకు కూడా ఇది దొరుకుతుంది",
+		later: "ఇప్పుడు కాదు",
+		never: "మళ్ళీ అడగవద్దు",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "సెట్టింగ్‌లు",

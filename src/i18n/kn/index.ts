@@ -66,6 +66,15 @@ const kn = {
 		title: "ಮಾರ್ಗದರ್ಶನ",
 		replay: "ಮತ್ತೆ ತೋರಿಸಿ",
 	},
+	// Rating the app in its store, in the Android app only: a row in the settings, and now
+	// and then, after something's been made, a card asking
+	rating: {
+		title: "ಆ್ಯಪ್‌ಗೆ ರೇಟಿಂಗ್ ನೀಡಿ",
+		rate: "ರೇಟಿಂಗ್ ನೀಡಿ",
+		ask: "ದೀಪಾವಳಿ ಸಂಭ್ರಮ ಇಷ್ಟವಾಯಿತೇ? ರೇಟಿಂಗ್ ನೀಡಿ, ಇತರರೂ ಇದನ್ನು ಕಂಡುಕೊಳ್ಳುವಂತೆ",
+		later: "ಈಗ ಬೇಡ",
+		never: "ಮತ್ತೆ ಕೇಳಬೇಡಿ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",

@@ -22,6 +22,7 @@ import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
 import {createSettings, isSettingsOpen, textButton} from "./settings"
 import {runTour} from "./tour"
+import {createRating} from "./rating"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
 import {createSkyline} from "./skyline"
@@ -327,6 +328,8 @@ const main = async () => {
     void tour()
   })
   settings.addRow(LL.tour.title(), replay)
+  // In the Android app, rating it in its store, from the settings, and now and then asked
+  createRating(settings)
   if (!introduced.has("zoom")) {
     showZoomTutorialOnceSeen()
   } else {
