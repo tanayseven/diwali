@@ -85,6 +85,9 @@ const designLines = (design: Design) => layers.flatMap(layer =>
 // right, for each layer, its shapes to pick from and the colours of powder to draw it
 // in. A tick puts it down, wherever the floor's tapped next; a cross closes it.
 // Everything in it is drawn, not written, so it needs no translation
+// How long after it's shown a click on the scene round it is still the tap that opened it
+const openingTap = 500
+
 const createDesignPicker = (
   colours: Record<string, number>,
   label: string,
@@ -267,8 +270,12 @@ const createDesignPicker = (
   }
   close.addEventListener("click", hide)
   // A press on the dimmed scene round it closes it too
+  // A tap on the dimmed scene round it closes it, but not the one that opened it: on a
+  // touch screen the browser follows a tap with a click where it was, which lands on the
+  // scene round it once it's shown
+  let shownAt = 0
   overlay.addEventListener("click", e => {
-    if (e.target === overlay) {
+    if (e.target === overlay && performance.now() - shownAt > openingTap) {
       hide()
     }
   })
@@ -287,9 +294,12 @@ const createDesignPicker = (
       rowParts.forEach(({thumbs}) => thumbs.forEach(({canvas}) => fit(canvas, thumbSize)))
       render()
       overlay.style.display = "flex"
+      shownAt = performance.now()
     },
     hide,
     isShown: () => overlay.style.display !== "none",
+    // The design as it's been made so far, or as it starts out
+    current: () => design,
     destroy() {
       overlay.remove()
     },

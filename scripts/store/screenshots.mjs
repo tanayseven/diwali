@@ -1,6 +1,6 @@
 // Takes the game's screenshots, in web/screenshots/, by playing the
 // built game in headless Chromium on a landscape phone's screen: diyas lit on the porch,
-// fireworks going off, fairy lights hung on the house, a rangoli drawn on the floor, lit
+// fireworks going off, fairy lights hung on the house, a rangoli design on the floor, lit
 // kandils hung from the house, and the whole street, zoomed out, then, played again with
 // the families out on the porches, one celebrating by the diyas lit on its porch. The
 // website's home page shows them as they are, and scripts/store/captioned.mjs frames
@@ -58,6 +58,9 @@ const pickTool = async y => {
 let shots = 0
 const shoot = async () => {
   await page.mouse.move(screen.width - 5, screen.height / 2)
+  // And off the screen, as far as the game can tell, so nothing that follows the mouse,
+  // like a design about to be put down or a bulb about to be hung, is in the shot
+  await page.evaluate(() => document.querySelector("canvas").dispatchEvent(new PointerEvent("pointerleave", {pointerType: "mouse"})))
   await page.waitForTimeout(400)
   shots += 1
   await page.screenshot({path: `${out}/${shots}.png`})
@@ -127,20 +130,18 @@ await drag({x: 440, y: 70}, {x: 660, y: 60}, {steps: 20})
 await page.waitForTimeout(1500)
 await shoot()
 
-// A rangoli drawn on the floor: rings of petals round a centre
+// A rangoli on the floor, made in its panel: a star in the middle of a ring of petals and
+// a scalloped border, put down in the middle of the porch
 await pickTool(rail.rangoli)
-const centre = {x: 420, y: 232}
-const ring = async (colour, radius, petals, squash = 0.45) => {
-  await page.mouse.click(slot(colour).x, slot(colour).y)
-  for (let i = 0; i < petals; i++) {
-    const angle = (i / petals) * Math.PI * 2
-    const tip = {x: centre.x + Math.cos(angle) * radius, y: centre.y + Math.sin(angle) * radius * squash}
-    await drag(centre, tip, {steps: 10})
-  }
+await page.mouse.click(slot(0).x, slot(0).y)
+const panel = page.getByRole("dialog", {name: "Draw Rangoli"})
+await panel.waitFor()
+for (const choice of ["centre star", "centre yellow", "ring petals", "ring red", "border scallops", "border orange"]) {
+  await page.getByRole("button", {name: choice}).click()
 }
-await ring(0, 62, 12)
-await ring(1, 40, 8)
-await ring(2, 18, 6)
+await page.getByRole("button", {name: "✓"}).click()
+await panel.waitFor({state: "hidden"})
+await page.mouse.click(420, 232)
 await shoot()
 
 // Kandils hung from the house, each made by tapping a paper, tails and the bulb, as one

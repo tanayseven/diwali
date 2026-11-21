@@ -22,7 +22,7 @@ const captions = [
   {title: "Light diyas on your porch", line: "Fill each with a wick and oil, and light it with a match"},
   {title: "Set off Diwali fireworks", line: "Anars, chakris, laddis, sutli bombs and rockets"},
   {title: "Hang twinkling fairy lights", line: "Strings that sway in the evening breeze"},
-  {title: "Draw a rangoli", line: "In coloured powder, by hand or from ready-made designs"},
+  {title: "Lay a rangoli", line: "Make your own design and put it down in coloured powder"},
   {title: "Craft akash kandils", line: "Paper, tails and a bulb, step by step"},
   {title: "Light up a whole street", line: "Six houses, with fireworks over the city"},
   {title: "Celebrate with the family", line: "They light diyas and set off fireworks too"},
