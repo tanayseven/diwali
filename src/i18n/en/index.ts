@@ -194,7 +194,12 @@ const en = {
 		noneLeft: "None left",
 		move: "Drag to move it, or onto the bar to put it back",
 		unlit: "Light it with the matchstick",
-		spent: "Burnt out. Drag onto the bar to clear it away",
+		spent: "Burnt out. Drag it into the waste bin on the porch to clear it away",
+		// The waste bin on the porch, for burnt-out fireworks
+		bin: {
+			name: "Waste bin",
+			hint: "Drag burnt-out fireworks here to clear them away",
+		},
 		lights: {
 			name: "Fairy lights",
 			red: "Red fairy lights",

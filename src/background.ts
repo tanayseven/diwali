@@ -690,5 +690,5 @@ const createBackground = (app: Application) => {
 
 type Background = ReturnType<typeof createBackground>
 
-export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
+export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, isInside, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
 export type {Background, House}

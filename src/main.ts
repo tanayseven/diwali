@@ -20,6 +20,7 @@ import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {forgetHouse, savedHouse, showHousePicker} from "./housePicker"
 import {decorateNeighbours} from "./neighbours"
+import {createBins} from "./bins"
 import {houses as street} from "./background"
 import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
@@ -175,7 +176,9 @@ const main = async () => {
     diyas.setInteractive(true)
     controls.diyas = diyas
   }
-  const fireworks = loaded(fireworksAssets) ? createFireworks(app, background, lighting, audio, wind, lightables) : undefined
+  // A waste bin on each porch, for what's burnt out
+  const bins = createBins(background)
+  const fireworks = loaded(fireworksAssets) ? createFireworks(app, background, lighting, audio, wind, lightables, bins) : undefined
   if (fireworks) {
     fireworks.setInteractive(true)
     controls.fireworks = fireworks
@@ -201,7 +204,7 @@ const main = async () => {
   // neighbours put out diyas and set off fireworks of their own
   if (new URLSearchParams(window.location.search).get("guests") !== "off") {
     background.houses.forEach(({name, porch, door, pots}, idx) => {
-      const home = {floor: porch, door, pots}
+      const home = {floor: porch, door, pots, bin: bins.at(idx)}
       createGuests(app, background, lighting, {diyas, fireworks, kandils, rangoli}, home,
         name === "deepaNiwas" ? undefined : familyFor(idx + 1), idx === background.home() ? "player" : "neighbour")
     })
