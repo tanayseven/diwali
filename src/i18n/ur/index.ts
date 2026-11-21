@@ -62,6 +62,8 @@ const ur = {
 		effects: "صوتی اثرات",
 		nextTrack: "اگلا گانا",
 		language: "زبان",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "چمک کم کریں",
 	},
 	tooltip: {
 		hintButton: "آگے کیا کریں",

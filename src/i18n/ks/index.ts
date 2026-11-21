@@ -62,6 +62,8 @@ const ks = {
 		effects: "صوتی اثرات",
 		nextTrack: "یِنہٕ وول گیوٚن",
 		language: "زبان",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "چمک کٔم کٔرِو",
 	},
 	tooltip: {
 		hintButton: "پتہٕ کیا کرُن",

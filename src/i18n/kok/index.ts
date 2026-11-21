@@ -62,6 +62,8 @@ const kok = {
 		effects: "ध्वनी परिणाम",
 		nextTrack: "फुडलें गीत",
 		language: "भास",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "चकचकाट उणो करात",
 	},
 	tooltip: {
 		hintButton: "फुडें कितें करचें",

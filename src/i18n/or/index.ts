@@ -62,6 +62,8 @@ const or = {
 		effects: "ସାଉଣ୍ଡ ଇଫେକ୍ଟ",
 		nextTrack: "ପରବର୍ତ୍ତୀ ଗୀତ",
 		language: "ଭାଷା",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ଝଲସ କମାନ୍ତୁ",
 	},
 	tooltip: {
 		hintButton: "ଏହା ପରେ କ'ଣ କରିବେ",

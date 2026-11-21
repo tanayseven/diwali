@@ -1,6 +1,7 @@
 import {fontFamily} from "./app"
 import type {AudioControl} from "./audioControl"
 import type {Locales} from "./i18n/i18n-types"
+import {onReduceFlashing, reduceFlashing, setReduceFlashing} from "./flashing"
 import {createLanguageButton, pickLanguage} from "./languageButton"
 import {languageName} from "./languagePicker"
 import {LL} from "./locale"
@@ -182,6 +183,10 @@ const createSettings = (audio: AudioControl, locale: Locales) => {
     row("", next),
     row(LL.settings.language(), language),
   )
+  // Also on the warning shown at the start, so kept the same as that
+  const lessFlashing = switchFor(LL.settings.reduceFlashing(), reduceFlashing(), setReduceFlashing)
+  onReduceFlashing(reduced => lessFlashing.checked = reduced)
+  rows.appendChild(row(LL.settings.reduceFlashing(), lessFlashing))
   panel.append(heading, rows)
 
   const show = () => {

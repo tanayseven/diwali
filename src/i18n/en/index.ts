@@ -71,6 +71,8 @@ const en = {
 		effects: "Sound effects",
 		nextTrack: "Next track",
 		language: "Language",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "Reduce flashing",
 	},
 	// Shown on hovering over things in the inventory bar and in the scene
 	tooltip: {

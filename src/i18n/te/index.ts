@@ -62,6 +62,8 @@ const te = {
 		effects: "సౌండ్ ఎఫెక్ట్‌లు",
 		nextTrack: "తదుపరి పాట",
 		language: "భాష",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "మెరుపును తగ్గించండి",
 	},
 	tooltip: {
 		hintButton: "తర్వాత ఏం చేయాలి",

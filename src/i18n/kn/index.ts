@@ -62,6 +62,8 @@ const kn = {
 		effects: "ಧ್ವನಿ ಪರಿಣಾಮಗಳು",
 		nextTrack: "ಮುಂದಿನ ಹಾಡು",
 		language: "ಭಾಷೆ",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ಮಿನುಗು ಕಡಿಮೆ ಮಾಡಿ",
 	},
 	tooltip: {
 		hintButton: "ಮುಂದೆ ಏನು ಮಾಡಬೇಕು",

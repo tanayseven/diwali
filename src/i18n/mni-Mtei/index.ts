@@ -62,6 +62,8 @@ const mni = {
 		effects: "ꯈꯣꯟꯖꯦꯜ ꯏꯐꯦꯛꯇ",
 		nextTrack: "ꯃꯊꯪꯒꯤ ꯏꯁꯩ",
 		language: "ꯂꯣꯜ",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "ꯃꯤꯟꯖꯤꯟ-ꯃꯤꯟꯖꯤꯟ ꯇꯧꯕ ꯍꯟꯊꯍꯅꯕꯤꯌꯨ",
 	},
 	tooltip: {
 		hintButton: "ꯃꯊꯪꯗꯥ ꯀꯔꯤ ꯇꯧꯒꯗꯒꯦ",

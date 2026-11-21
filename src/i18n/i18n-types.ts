@@ -210,6 +210,10 @@ type RootTranslation = {
 		 * L​a​n​g​u​a​g​e
 		 */
 		language: string
+		/**
+		 * R​e​d​u​c​e​ ​f​l​a​s​h​i​n​g
+		 */
+		reduceFlashing: string
 	}
 	tooltip: {
 		/**
@@ -747,6 +751,10 @@ export type TranslationFunctions = {
 		 * Language
 		 */
 		language: () => LocalizedString
+		/**
+		 * Reduce flashing
+		 */
+		reduceFlashing: () => LocalizedString
 	}
 	tooltip: {
 		/**

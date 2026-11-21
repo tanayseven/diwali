@@ -62,6 +62,8 @@ const hi = {
 		effects: "साउंड इफ़ेक्ट",
 		nextTrack: "अगला गाना",
 		language: "भाषा",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "चमक कम करें",
 	},
 	tooltip: {
 		hintButton: "आगे क्या करें",

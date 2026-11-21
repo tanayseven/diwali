@@ -62,6 +62,8 @@ const mai = {
 		effects: "ध्वनि प्रभाव",
 		nextTrack: "अगिला गीत",
 		language: "भाषा",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "चमक कम करू",
 	},
 	tooltip: {
 		hintButton: "आगाँ की करू",

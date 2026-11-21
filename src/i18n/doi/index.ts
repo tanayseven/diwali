@@ -62,6 +62,8 @@ const doi = {
 		effects: "साउंड इफेक्ट",
 		nextTrack: "अगला गाना",
 		language: "भाशा",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "चमक घट्ट करो",
 	},
 	tooltip: {
 		hintButton: "अग्गें केह् करना ऐ",

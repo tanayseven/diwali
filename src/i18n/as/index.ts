@@ -62,6 +62,8 @@ const asm = {
 		effects: "ধ্বনি প্ৰভাৱ",
 		nextTrack: "পিছৰ গীত",
 		language: "ভাষা",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "জিলিকনি কমাওক",
 	},
 	tooltip: {
 		hintButton: "ইয়াৰ পিছত কি কৰিব",

@@ -62,6 +62,8 @@ const hiLatn = {
 		effects: "Sound effects",
 		nextTrack: "Agla gaana",
 		language: "Bhasha",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "Chamak kam karein",
 	},
 	tooltip: {
 		hintButton: "Aage kya karein",

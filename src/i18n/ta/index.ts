@@ -62,6 +62,8 @@ const ta = {
 		effects: "ஒலி விளைவுகள்",
 		nextTrack: "அடுத்த பாடல்",
 		language: "மொழி",
+		// Also on the photosensitivity warning shown at the start
+		reduceFlashing: "மின்னுவதைக் குறை",
 	},
 	tooltip: {
 		hintButton: "அடுத்து என்ன செய்வது",
