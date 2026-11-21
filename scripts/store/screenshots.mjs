@@ -1,6 +1,9 @@
 // Takes the screenshots F-Droid shows on the app's page, in fastlane/, by playing the
 // built game in headless Chromium on a landscape phone's screen: diyas lit on the porch,
-// fireworks going off, fairy lights hung on the house, and a rangoli drawn on the floor.
+// fireworks going off, fairy lights hung on the house, a rangoli drawn on the floor, lit
+// kandils hung from the house, and the whole street, zoomed out, then, played again with
+// the families out on the porches, one celebrating by the diyas lit on its porch. The
+// home page shows them too.
 //
 //   npm run build && node scripts/store/screenshots.mjs [out-dir]
 //
@@ -29,9 +32,9 @@ const page = await browser.newPage({
 })
 page.on("pageerror", error => console.error("Page error:", error.message))
 // As someone who's used every tool before and been shown how to zoom, so no tool's
-// first step, nor how to zoom, is shown over the scene
+// first step, nor how to zoom, nor how to make a kandil, is shown over the scene
 await page.addInitScript(() => {
-  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "diyas", "fireworks", "kandil", "decorate", "rangoli"]))
+  localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
 })
 
 const drag = async (from, to, {hold = 0, steps = 12} = {}) => {
@@ -59,36 +62,43 @@ const shoot = async () => {
 }
 
 mkdirSync(out, {recursive: true})
-// Starting close up on the porch, where it puts things
-await page.goto(`http://localhost:${port}/?start=porch`)
-await page.getByRole("button", {name: "English"}).click()
 // Past the warning and the advice on sound, each as soon as it's shown
-for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
-  await page.getByText(text).waitFor()
-  await page.waitForTimeout(900)
-  await page.mouse.click(screen.width / 2, screen.height / 2)
+const pastSplashes = async () => {
+  for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+    await page.getByText(text).waitFor()
+    await page.waitForTimeout(900)
+    await page.mouse.click(screen.width / 2, screen.height / 2)
+  }
+  await page.waitForTimeout(1500)
 }
-await page.waitForTimeout(1500)
+// Starting close up on the porch, where it puts things, without the families, who'd
+// wander in front of them
+await page.goto(`http://localhost:${port}/?start=porch&guests=off`)
+await page.getByRole("button", {name: "English"}).click()
+await pastSplashes()
 
 // Diyas along the porch, each with a wick and oil, lit with the match
 // Round where the rangoli goes, in the middle of the porch
 const diyas = [{x: 290, y: 234}, {x: 420, y: 198}, {x: 550, y: 234}]
+const lightDiyas = async spots => {
+  for (const at of spots) {
+    await drag(slot(0), at)
+    await drag(slot(1), at)
+    await drag(slot(2), at)
+    // The oil's poured before the next can go in
+    await page.waitForTimeout(1600)
+  }
+  await page.mouse.move(slot(3).x, slot(3).y)
+  await page.mouse.down()
+  for (const at of spots) {
+    await page.mouse.move(at.x, at.y - 6, {steps: 12})
+    await page.waitForTimeout(1300)
+  }
+  await page.mouse.up()
+  await page.waitForTimeout(800)
+}
 await pickTool(rail.diyas)
-for (const at of diyas) {
-  await drag(slot(0), at)
-  await drag(slot(1), at)
-  await drag(slot(2), at)
-  // The oil's poured before the next can go in
-  await page.waitForTimeout(1600)
-}
-await page.mouse.move(slot(3).x, slot(3).y)
-await page.mouse.down()
-for (const at of diyas) {
-  await page.mouse.move(at.x, at.y - 6, {steps: 12})
-  await page.waitForTimeout(1300)
-}
-await page.mouse.up()
-await page.waitForTimeout(800)
+await lightDiyas(diyas)
 await shoot()
 
 // An anar and a chakri lit beside them
@@ -129,6 +139,41 @@ const ring = async (colour, radius, petals, squash = 0.45) => {
 await ring(0, 62, 12)
 await ring(1, 40, 8)
 await ring(2, 18, 6)
+await shoot()
+
+// Kandils hung from the house, each made by tapping a paper, tails and the bulb, as one
+// just hung is picked to take what's tapped next
+await pickTool(rail.kandil)
+const kandils = [{at: {x: 150, y: 95}, paper: 1, tails: 5}, {at: {x: 690, y: 95}, paper: 3, tails: 7}, {at: {x: 560, y: 110}, paper: 4, tails: 8}]
+for (const {at, paper, tails} of kandils) {
+  await drag(slot(0), at, {steps: 16})
+  for (const idx of [paper, tails, 9]) {
+    await page.mouse.click(slot(idx).x, slot(idx).y)
+    await page.waitForTimeout(250)
+  }
+}
+// Long enough for what each needed next to have floated away
+await page.waitForTimeout(3000)
+await shoot()
+
+// The whole street, zoomed right out, with the house lit up in the middle of it
+for (let i = 0; i < 8; i++) {
+  await page.keyboard.press("-")
+  await page.waitForTimeout(300)
+}
+// With the bar hidden, so it doesn't cover the porch, and shown again after
+await page.keyboard.press("h")
+await page.waitForTimeout(1500)
+await shoot()
+await page.keyboard.press("h")
+
+// Played again with the families out on the porches: diyas lit on this one, then the
+// porch left to its family for a while, to light more of their own and celebrate
+await page.goto(`http://localhost:${port}/?start=porch`)
+await pastSplashes()
+await pickTool(rail.diyas)
+await lightDiyas(diyas)
+await page.waitForTimeout(45000)
 await shoot()
 
 await browser.close()

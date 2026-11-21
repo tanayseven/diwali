@@ -203,6 +203,8 @@ test("a kandil just made takes paper tapped in the bar, and says so when it can'
   await page.touchscreen.tap(slot(2).x, slot(2).y)
   await page.waitForTimeout(400)
   assert.deepEqual(await page.evaluate(() => window.vibrations), [20, [25, 60, 25]])
+  // Until the kandil's tooltip, saying what it needs, has gone, as it can cover the rail
+  await page.waitForTimeout(2800)
 })
 
 test("a string of fairy lights hung by a finger is held up by a hand, and hung", async () => {
