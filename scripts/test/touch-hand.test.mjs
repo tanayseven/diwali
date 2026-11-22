@@ -624,6 +624,7 @@ test("a tournament round counts down, scores what's lit, ranks every house, and 
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
     localStorage.setItem("diwali-house", "deepaNiwas")
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour", "fireworks"]))
   }, muted)
   const round = await context.newPage()
   round.on("pageerror", error => console.error("Page error:", error.message))
@@ -651,6 +652,8 @@ test("a tournament round counts down, scores what's lit, ranks every house, and 
     await round.mouse.move(slot(0).x, slot(0).y)
     await round.mouse.down()
     await round.mouse.move(porch.x, porch.y, {steps: 12})
+    // Let go once it's got there, which can take a moment on a slow machine
+    await round.waitForTimeout(300)
     await round.mouse.up()
     await round.waitForTimeout(300)
     await round.mouse.move(slot(6).x, slot(6).y)
