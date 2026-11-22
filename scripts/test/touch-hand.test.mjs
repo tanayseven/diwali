@@ -78,6 +78,20 @@ before(async () => {
       localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
     }
   }, muted)
+  // Whether the zoom out button's said what it does yet, and then stopped saying it, as
+  // the zoom tip does once it's zoomed in, for a moment, early on, which on a slow
+  // machine can be over before the test that looks for it gets to
+  await context.addInitScript(() => {
+    window.zoomOutSaid = "not yet"
+    new MutationObserver(() => {
+      const said = [...document.querySelectorAll("div")].some(div => div.textContent === "Zoom out" && div.style.visibility === "visible")
+      if (said) {
+        window.zoomOutSaid = "saying"
+      } else if (window.zoomOutSaid === "saying") {
+        window.zoomOutSaid = "said"
+      }
+    }).observe(document, {subtree: true, childList: true, attributes: true, attributeFilter: ["style"], characterData: true})
+  })
   // Every vibration asked for, kept to look at, in place of vibrating
   await context.addInitScript(() => {
     window.vibrations = []
@@ -159,10 +173,10 @@ test("starts muted, and stays muted", async () => {
 })
 
 test("the first visit shows how to zoom, in and then out", async () => {
-  // Zoomed in, then out, the zoom out button saying what it does as it does
-  await page.getByText("Zoom out", {exact: true}).waitFor({timeout: 6000})
-  // And then it's done, with nothing over the scene
-  await page.getByText("Zoom out", {exact: true}).waitFor({state: "hidden", timeout: 6000})
+  // Zoomed in, then out, the zoom out button saying what it does as it does, and then
+  // it's done, with nothing over the scene, however early on that was
+  await page.waitForFunction(() => window.zoomOutSaid === "said", undefined, {timeout: 30000})
+  assert.ok(!await page.getByText("Zoom out", {exact: true}).isVisible(), "nothing's left over the scene")
 })
 
 test("a diya dragged by a finger is held by a hand, which goes once it's let go", async () => {
@@ -643,11 +657,11 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
     await menu.getByRole("button", {name: "Tournament"}).tap()
     // The time left and the player's points, at the top
     const hud = round.getByRole("status")
-    await hud.waitFor({timeout: 10000})
+    await hud.waitFor({timeout: 30000})
     assert.match(await hud.innerText(), /You 0/)
     // Once it's started, a rangoli put down scores, picked from its panel and put down
     // with a tap, as it can be without a drag on a slow machine
-    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.getByText("Go!").waitFor({timeout: 30000})
     await round.touchscreen.tap(52, rail.rangoli)
     await round.waitForTimeout(800)
     await round.touchscreen.tap(slot(0).x, slot(0).y)
@@ -667,6 +681,79 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Results']")).opacity === "1")
     await results.getByRole("button", {name: "Free play"}).tap()
     await results.waitFor({state: "hidden", timeout: 5000})
+  } finally {
+    await context.close()
+  }
+})
+
+test("in a tournament round, the street button shows three houses at a time, slid along by the arrows, a tap on a neighbour looks at it, and what it puts up is said", async () => {
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-house", "deepaNiwas")
+  }, muted)
+  const round = await context.newPage()
+  round.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=90&camera`)
+    await round.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await round.getByText(text).waitFor({timeout: 60000})
+      await round.waitForTimeout(900)
+      await round.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    const menu = round.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+    await menu.getByRole("button", {name: "Tournament"}).tap()
+    await round.getByText("Go!").waitFor({timeout: 30000})
+    const street = round.getByRole("button", {name: "Show the whole street"})
+    await street.tap()
+    await round.waitForTimeout(1500)
+    assert.equal(await street.getAttribute("aria-pressed"), "true")
+    // Which houses are wholly on screen, from side to side and roof to ground, once the
+    // view's eased there, which can take a good few seconds on a slow machine
+    const shows = async expected => {
+      try {
+        await round.waitForFunction(expected => JSON.stringify(window.diwaliCamera.houses().map(({left, top, right, bottom}) => {
+          const from = window.diwaliCamera.toScreen({x: left, y: top})
+          const to = window.diwaliCamera.toScreen({x: right, y: bottom})
+          return from.x >= 0 && from.y >= 0 && to.x <= innerWidth && to.y <= innerHeight
+        })) === JSON.stringify(expected), expected, {timeout: 20000})
+      } catch {
+        assert.fail(`the houses on screen aren't ${JSON.stringify(expected)}`)
+      }
+      // And it's stopped there, not moving from one frame to the next, as a tap while
+      // it's still moving doesn't count
+      await round.waitForFunction(() => {
+        const {x} = window.diwaliCamera.toScreen({x: 0, y: 0})
+        const still = window.lastViewX === x
+        window.lastViewX = x
+        return still
+      }, undefined, {timeout: 20000, polling: "raf"})
+    }
+    // Deepa Niwas, third along, with a neighbour either side
+    await shows([false, true, true, true, false, false])
+    // Then a house along to the right
+    await round.getByRole("button", {name: "Houses to the right"}).tap()
+    await shows([false, false, true, true, true, false])
+    // A tap on the house furthest right of them looks at it, out of the street
+    const last = await round.evaluate(() => {
+      const {left, right, bottom} = window.diwaliCamera.houses()[4]
+      return window.diwaliCamera.toScreen({x: (left + right) / 2, y: bottom - 60})
+    })
+    await round.touchscreen.tap(last.x, last.y)
+    await round.waitForFunction(() => document.querySelector("[aria-label='Show the whole street']").getAttribute("aria-pressed") === "false",
+      undefined, {timeout: 5000})
+    // Eased in to it, in the middle of the screen, however long that takes
+    await round.waitForFunction(width => {
+      const {left, right} = window.diwaliCamera.houses()[4]
+      return Math.abs(window.diwaliCamera.toScreen({x: (left + right) / 2, y: 0}).x - width / 2) < width / 4
+    }, screen.width, {timeout: 20000})
+    // A neighbour's decorating is said under the round's pill, as it's done, the first
+    // of it a good while into the round, as the neighbours take their time
+    await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
+      .some(line => / \+\d+$/.test(line.textContent ?? "")), undefined, {timeout: 60000})
   } finally {
     await context.close()
   }

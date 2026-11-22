@@ -94,6 +94,14 @@ const mr = {
 		youWin: "तुम्ही जिंकलात!",
 		houseWins: "{house} जिंकले!",
 		playAgain: "पुन्हा खेळा",
+		street: "संपूर्ण गल्ली दाखवा",
+		streetLeft: "डावीकडची घरे",
+		streetRight: "उजवीकडची घरे",
+		feed: {
+			lights: "{house} ने दिव्यांच्या माळा लावल्या",
+			kandil: "{house} ने कंदील लावला",
+			rangoli: "{house} ने रांगोळी काढली",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

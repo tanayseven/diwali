@@ -94,6 +94,14 @@ const pa = {
 		youWin: "ਤੁਸੀਂ ਜਿੱਤ ਗਏ!",
 		houseWins: "{house} ਜਿੱਤਿਆ!",
 		playAgain: "ਫਿਰ ਖੇਡੋ",
+		street: "ਪੂਰੀ ਗਲੀ ਦਿਖਾਓ",
+		streetLeft: "ਖੱਬੇ ਪਾਸੇ ਦੇ ਘਰ",
+		streetRight: "ਸੱਜੇ ਪਾਸੇ ਦੇ ਘਰ",
+		feed: {
+			lights: "{house} ਨੇ ਲਾਈਟਾਂ ਲਗਾਈਆਂ",
+			kandil: "{house} ਨੇ ਕੰਦੀਲ ਟੰਗੀ",
+			rangoli: "{house} ਨੇ ਰੰਗੋਲੀ ਬਣਾਈ",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

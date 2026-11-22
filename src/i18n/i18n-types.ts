@@ -299,6 +299,35 @@ type RootTranslation = {
 		 * P​l​a​y​ ​a​g​a​i​n
 		 */
 		playAgain: string
+		/**
+		 * S​h​o​w​ ​t​h​e​ ​w​h​o​l​e​ ​s​t​r​e​e​t
+		 */
+		street: string
+		/**
+		 * H​o​u​s​e​s​ ​t​o​ ​t​h​e​ ​l​e​f​t
+		 */
+		streetLeft: string
+		/**
+		 * H​o​u​s​e​s​ ​t​o​ ​t​h​e​ ​r​i​g​h​t
+		 */
+		streetRight: string
+		feed: {
+			/**
+			 * {​h​o​u​s​e​}​ ​h​u​n​g​ ​l​i​g​h​t​s
+			 * @param {string} house
+			 */
+			lights: RequiredParams<'house'>
+			/**
+			 * {​h​o​u​s​e​}​ ​h​u​n​g​ ​a​ ​k​a​n​d​i​l
+			 * @param {string} house
+			 */
+			kandil: RequiredParams<'house'>
+			/**
+			 * {​h​o​u​s​e​}​ ​d​r​e​w​ ​a​ ​r​a​n​g​o​l​i
+			 * @param {string} house
+			 */
+			rangoli: RequiredParams<'house'>
+		}
 	}
 	settings: {
 		/**
@@ -942,6 +971,32 @@ export type TranslationFunctions = {
 		 * Play again
 		 */
 		playAgain: () => LocalizedString
+		/**
+		 * Show the whole street
+		 */
+		street: () => LocalizedString
+		/**
+		 * Houses to the left
+		 */
+		streetLeft: () => LocalizedString
+		/**
+		 * Houses to the right
+		 */
+		streetRight: () => LocalizedString
+		feed: {
+			/**
+			 * {house} hung lights
+			 */
+			lights: (arg: { house: string }) => LocalizedString
+			/**
+			 * {house} hung a kandil
+			 */
+			kandil: (arg: { house: string }) => LocalizedString
+			/**
+			 * {house} drew a rangoli
+			 */
+			rangoli: (arg: { house: string }) => LocalizedString
+		}
 	}
 	settings: {
 		/**

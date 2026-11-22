@@ -94,6 +94,14 @@ const sat = {
 		youWin: "ᱟᱢ ᱡᱤᱛᱠᱟᱫᱟᱢ!",
 		houseWins: "{house} ᱡᱤᱛᱠᱟᱫᱟ!",
 		playAgain: "ᱫᱚᱦᱲᱟ ᱮᱱᱮᱡ ᱢᱮ",
+		street: "ᱡᱚᱛᱚ ᱥᱚᱲᱚᱠ ᱩᱫᱩᱜ ᱢᱮ",
+		streetLeft: "ᱞᱮᱸᱜᱟ ᱥᱮᱫ ᱚᱲᱟᱜ ᱠᱚ",
+		streetRight: "ᱡᱚᱡᱚᱢ ᱥᱮᱫ ᱚᱲᱟᱜ ᱠᱚ",
+		feed: {
+			lights: "{house} ᱫᱤᱭᱟ ᱠᱚ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",
+			kandil: "{house} ᱠᱚᱱᱰᱤᱞ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",
+			rangoli: "{house} ᱨᱚᱝᱜᱚᱞᱤ ᱚᱞ ᱠᱮᱫᱟ",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

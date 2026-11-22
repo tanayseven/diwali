@@ -94,6 +94,14 @@ const mni = {
 		youWin: "ꯅꯍꯥꯛ ꯃꯥꯏꯄꯥꯀꯦ!",
 		houseWins: "{house} ꯃꯥꯏꯄꯥꯀꯦ!",
 		playAgain: "ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯁꯥꯟꯅꯧ",
+		street: "ꯂꯝꯕꯤ ꯄꯨꯝꯅꯃꯛ ꯎꯠꯄꯤꯌꯨ",
+		streetLeft: "ꯑꯋꯥꯏ ꯊꯪꯕꯥ ꯌꯨꯃꯁꯤꯡ",
+		streetRight: "ꯑꯔꯣꯏ ꯊꯪꯕꯥ ꯌꯨꯃꯁꯤꯡ",
+		feed: {
+			lights: "{house} ꯃꯉꯥꯜ ꯊꯥꯡꯒꯠꯂꯦ",
+			kandil: "{house} ꯀꯟꯗꯤꯜ ꯊꯥꯡꯒꯠꯂꯦ",
+			rangoli: "{house} ꯔꯉ꯭ꯒꯣꯂꯤ ꯌꯦꯛꯂꯦ",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

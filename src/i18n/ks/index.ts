@@ -94,6 +94,14 @@ const ks = {
 		youWin: "توٚہۍ ژیٚنِو!",
 		houseWins: "{house} ژیوٚن!",
 		playAgain: "بیٚیہِ گِندِو",
+		street: "پوٗرٕ کوچہٕ ہاوِو",
+		streetLeft: "کھوَر طرفٕچ گرٕ",
+		streetRight: "دَچھِن طرفٕچ گرٕ",
+		feed: {
+			lights: "{house} لۄگ گاش",
+			kandil: "{house} لۄگ قندیل",
+			rangoli: "{house} بنوٚو رنگولی",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

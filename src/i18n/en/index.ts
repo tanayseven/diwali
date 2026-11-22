@@ -105,6 +105,14 @@ const en = {
 		youWin: "You win!",
 		houseWins: "{house:string} wins!",
 		playAgain: "Play again",
+		street: "Show the whole street",
+		streetLeft: "Houses to the left",
+		streetRight: "Houses to the right",
+		feed: {
+			lights: "{house:string} hung lights",
+			kandil: "{house:string} hung a kandil",
+			rangoli: "{house:string} drew a rangoli",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -94,6 +94,14 @@ const ur = {
 		youWin: "آپ جیت گئے!",
 		houseWins: "{house} جیت گیا!",
 		playAgain: "دوبارہ کھیلیں",
+		street: "پوری گلی دکھائیں",
+		streetLeft: "بائیں طرف کے گھر",
+		streetRight: "دائیں طرف کے گھر",
+		feed: {
+			lights: "{house} نے روشنیاں لگائیں",
+			kandil: "{house} نے قندیل لٹکائی",
+			rangoli: "{house} نے رنگولی بنائی",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

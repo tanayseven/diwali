@@ -94,6 +94,14 @@ const doi = {
 		youWin: "तुस जित्ती गे!",
 		houseWins: "{house} जित्ती गेआ!",
 		playAgain: "फ्ही खेढो",
+		street: "पूरी गली दस्सो",
+		streetLeft: "खब्बे पास्से दे घर",
+		streetRight: "सज्जे पास्से दे घर",
+		feed: {
+			lights: "{house} नै बत्तियां लाइयां",
+			kandil: "{house} नै कंदील टंगी",
+			rangoli: "{house} नै रंगोली बनाई",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

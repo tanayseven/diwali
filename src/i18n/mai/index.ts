@@ -94,6 +94,14 @@ const mai = {
 		youWin: "अहाँ जीति गेलहुँ!",
 		houseWins: "{house} जीति गेल!",
 		playAgain: "फेर सँ खेलू",
+		street: "पूरा गली देखाउ",
+		streetLeft: "बामा दिसक घर",
+		streetRight: "दहिना दिसक घर",
+		feed: {
+			lights: "{house} बत्ती लगौलक",
+			kandil: "{house} कंदील टांगलक",
+			rangoli: "{house} रंगोली बनौलक",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

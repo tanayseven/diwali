@@ -1,4 +1,4 @@
-import {Application, Assets, Container, FederatedPointerEvent, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
+import {Application, Assets, Container, FederatedPointerEvent, FillGradient, Graphics, Point, PointData, Rectangle, Sprite, Texture} from "pixi.js"
 import {pixelDensity, quality} from "./app"
 import {stereoPan} from "./audioControl"
 import {hudFrame} from "./hud"
@@ -193,6 +193,20 @@ const followEase = 5
 const followKeep = 0.45
 const followHold = 1.8
 const followReturn = 1100
+// The street, shown three houses at a time, slid along a house at a time: as wide as the
+// widest three, with this much either side, down to just below the road, easing out to it
+// and back over this long, in ms. The sky's drawn on up above the scene this far, and in
+// its colours either side, with stars scattered over it, this many
+const streetMargin = 60
+const streetBottom = 800
+const streetGlide = 900
+const skyAbove = 4000
+const skyColours = {top: 0x0e1638, bottom: 0x2e3f78}
+const streetShows = 3
+const starsBeyond = 260
+// A press on the street shown whole that moves less than this, on screen, is a tap on
+// whichever house it's on
+const streetTapSlop = 10
 
 const coverScale = (width: number, height: number) => Math.max(width / sceneWidth, height / sceneHeight)
 const fitScale = (view: {width: number, height: number}, width: number, height: number) =>
@@ -258,7 +272,23 @@ const createBackground = (app: Application) => {
   const scene = new Container()
   const sky = new Sprite(Assets.get<Texture>(skyUrl))
   sky.x = drawnLeft
-  scene.addChild(sky)
+  // Behind it, its colours carried on along the whole street and up above the scene,
+  // only seen when the whole street's shown
+  const skyBeyond = new Graphics()
+    .rect(scenery.left, -skyAbove, scenery.right - scenery.left, skyAbove)
+    .fill(skyColours.top)
+    .rect(scenery.left, 0, scenery.right - scenery.left, sceneHeight)
+    .fill(new FillGradient({
+      type: "linear", start: {x: 0, y: 0}, end: {x: 0, y: 1},
+      colorStops: [{offset: 0, color: skyColours.top}, {offset: 1, color: skyColours.bottom}],
+    }))
+  for (let k = 0; k < starsBeyond; k++) {
+    // Thinning out lower down, where the city's glow would hide them
+    const x = scenery.left + Math.random() * (scenery.right - scenery.left)
+    const y = -700 + Math.random() ** 1.6 * 1100
+    skyBeyond.circle(x, y, Math.random() < 0.8 ? 1.5 : 2.5).fill({color: Math.random() < 0.6 ? 0xffffff : 0xfff2b0, alpha: 0.5 + Math.random() * 0.5})
+  }
+  scene.addChild(skyBeyond, sky)
   // The skyline's two layers. The near one has whatever changes in it drawn over it too,
   // like its windows going dark
   const skylineLayers = {far: new Container(), near: new Container()}
@@ -266,6 +296,13 @@ const createBackground = (app: Application) => {
     skylineLayers[layer].position.set(skylineLeft, skylineTop)
     skylineLayers[layer].scale.set(skylineScale)
     skylineLayers[layer].addChild(new Sprite(Assets.get<Texture>(skylineUrls[layer])))
+    // And mirrored either side, so it carries on along the street when it's shown wider
+    ;[0, skylineSize.width * 2].forEach(x => {
+      const beyond = new Sprite(Assets.get<Texture>(skylineUrls[layer]))
+      beyond.x = x
+      beyond.scale.x = -1
+      skylineLayers[layer].addChildAt(beyond, 0)
+    })
     scene.addChild(skylineLayers[layer])
   })
   // The hills, along the whole street: repeated, every other one mirrored, so each
@@ -369,6 +406,49 @@ const createBackground = (app: Application) => {
     returning?: {start: PointData, elapsed: number},
   } | undefined
 
+  // The whole street, while it's shown, or being eased out to or back from, with the view
+  // before, to go back to
+  let street: {before: {zoom: number, centre: PointData}} | undefined
+  // A view being eased to, from where it was, and what to do once it's there
+  let glide: {from: {zoom: number, centre: PointData}, to: {zoom: number, centre: PointData}, elapsed: number, then?: () => void} | undefined
+  // The three houses from each along the street, as far as there are three
+  const lastWindow = Math.max(0, houses.length - streetShows)
+  const windowSides = (first: number) => {
+    const last = houses[Math.min(houses.length - 1, first + streetShows - 1)]
+    return {left: houses[first].left - streetMargin, right: last.left + last.width + streetMargin}
+  }
+  const widestWindow = Math.max(...houses.slice(0, lastWindow + 1).map((_, first) => {
+    const {left, right} = windowSides(first)
+    return right - left
+  }))
+  // The zoom that shows the widest three, the same for any three, so sliding along doesn't
+  // zoom in and out
+  const streetZoom = () => {
+    const {width, height} = app.screen
+    return width / widestWindow / coverScale(width, height)
+  }
+  // Which three are shown, by the first, the ones the middle of the view's nearest the
+  // middle of
+  const windowAt = (x: number) => {
+    const idx = houses.reduce((best, house, k) =>
+      Math.abs(house.left + house.width / 2 - x) < Math.abs(houses[best].left + houses[best].width / 2 - x) ? k : best, 0)
+    return Math.min(lastWindow, Math.max(0, idx - 1))
+  }
+  // The view of three houses from one along the street
+  const streetView = (first: number) => {
+    const {width, height} = app.screen
+    const scale = streetZoom() * coverScale(width, height)
+    const {left, right} = windowSides(first)
+    return {zoom: streetZoom(), centre: {x: (left + right) / 2, y: streetBottom - height / 2 / scale}}
+  }
+  // Every street change told to whoever's listening, as the button that shows it does
+  const streetListeners = new Set<(shown: boolean) => void>()
+  const glideTo = (to: {zoom: number, centre: PointData}, then?: () => void) => {
+    following = undefined
+    zoomAnimation = undefined
+    glide = {from: {zoom, centre: {...centre}}, to, elapsed: 0, then}
+  }
+
   const maxZoom = () => {
     const {width, height} = app.screen
     return fitScale(closestView, width, height) / coverScale(width, height)
@@ -379,14 +459,19 @@ const createBackground = (app: Application) => {
   // covers
   const clampView = () => {
     const {width, height} = app.screen
-    zoom = Math.min(maxZoom(), Math.max(1, zoom))
+    zoom = Math.min(maxZoom(), Math.max(street ? Math.min(1, streetZoom()) : 1, zoom))
     const scale = coverScale(width, height) * zoom
     const bar = hudFrame(app.screen)
     const belowBar = Math.min(groundBelow, (height - (bar.y - bar.height / 2) + barClearance) / scale)
     const clampAxis = (value: number, half: number, from: number, to: number) =>
       half * 2 >= to - from ? (from + to) / 2 : Math.min(to - half, Math.max(from + half, value))
     centre.x = clampAxis(centre.x, width / 2 / scale, scenery.left, scenery.right)
-    centre.y = clampAxis(centre.y, height / 2 / scale, 0, sceneHeight + belowBar)
+    if (!street) {
+      centre.y = clampAxis(centre.y, height / 2 / scale, 0, sceneHeight + belowBar)
+    } else if (!glide) {
+      // Kept with the road just above the bottom of the screen
+      centre.y = streetBottom - height / 2 / scale
+    }
   }
 
   // How far the view's jolted aside by a shake now, on screen, and the shake, while it lasts
@@ -498,6 +583,24 @@ const createBackground = (app: Application) => {
   })
 
   app.ticker.add(() => {
+    if (!glide) {
+      return
+    }
+    glide.elapsed += app.ticker.deltaMS
+    const t = smootherStep(Math.min(1, glide.elapsed / streetGlide))
+    const {from, to} = glide
+    zoom = from.zoom + (to.zoom - from.zoom) * t
+    centre.x = from.centre.x + (to.centre.x - from.centre.x) * t
+    centre.y = from.centre.y + (to.centre.y - from.centre.y) * t
+    if (t === 1) {
+      const {then} = glide
+      glide = undefined
+      then?.()
+    }
+    layout()
+  })
+
+  app.ticker.add(() => {
     if (!zoomAnimation) {
       return
     }
@@ -524,7 +627,12 @@ const createBackground = (app: Application) => {
     return {distance: Math.hypot(a.x - b.x, a.y - b.y), middle: new Point((a.x + b.x) / 2, (a.y + b.y) / 2)}
   }
 
+  // Where a press on the street shown whole started, to tell a tap from a pan
+  let streetPress: Point | undefined
   panSurface.on("pointerdown", e => {
+    if (street && !glide) {
+      streetPress = e.global.clone()
+    }
     if (pinch || onPress?.(scene.toLocal(e.global), e)) {
       return
     }
@@ -551,7 +659,9 @@ const createBackground = (app: Application) => {
     }
     if (pinch && touches.size === 2) {
       const next = pinchFrom()
-      zoomTo(zoom * next.distance / pinch.distance, next.middle)
+      if (!street) {
+        zoomTo(zoom * next.distance / pinch.distance, next.middle)
+      }
       panBy(next.middle.x - pinch.middle.x, next.middle.y - pinch.middle.y)
       pinch = next
       return
@@ -564,6 +674,23 @@ const createBackground = (app: Application) => {
     panFrom = at
   }
   const onPointerUp = (e: PointerEvent) => {
+    // A tap on a house on the street shown whole looks at it
+    if (streetPress && street && !glide && e.target === app.canvas) {
+      const at = toStage(e)
+      if (Math.hypot(at.x - streetPress.x, at.y - streetPress.y) < streetTapSlop) {
+        const point = scene.toLocal(at)
+        const idx = houses.findIndex(({left, width}) => point.x >= left && point.x <= left + width)
+        // The player's own goes back to where the view was, if it was on it, or looks at
+        // it, like any other
+        const before = street.before.centre.x
+        if (idx === home && before >= houses[home].left && before <= houses[home].left + houses[home].width) {
+          showStreet(false)
+        } else if (idx >= 0) {
+          lookAt(idx)
+        }
+      }
+    }
+    streetPress = undefined
     touches.delete(e.pointerId)
     if (touches.size < 2) {
       pinch = undefined
@@ -580,7 +707,9 @@ const createBackground = (app: Application) => {
     following = undefined
     // Trackpad pinches arrive as the wheel with Ctrl held, as does Ctrl and a mouse wheel
     if (e.ctrlKey) {
-      zoomTo(zoom * Math.exp(-e.deltaY * 0.01), toStage(e))
+      if (!street) {
+        zoomTo(zoom * Math.exp(-e.deltaY * 0.01), toStage(e))
+      }
     } else {
       // Otherwise wheels and trackpads scroll the scenery past, like scrolling a page
       panBy(-e.deltaX, -e.deltaY)
@@ -591,6 +720,57 @@ const createBackground = (app: Application) => {
   window.addEventListener("pointerup", onPointerUp)
   window.addEventListener("pointercancel", onPointerUp)
   window.addEventListener("wheel", onWheel, {passive: false})
+
+  // Eases out to show the whole street at once, or back to the view before
+  const showStreet = (on: boolean) => {
+    if (on && !street) {
+      street = {before: {zoom, centre: {...centre}}}
+      glideTo(streetView(windowAt(centre.x)))
+      streetListeners.forEach(listener => listener(true))
+    } else if (!on && street && !glide) {
+      glideTo(street.before, () => {
+        street = undefined
+      })
+      streetListeners.forEach(listener => listener(false))
+    }
+  }
+  // Slides the street along a house to the left (-1) or right (1), from the three nearest
+  // the middle of the view, as far as the street goes
+  const slideStreet = (by: -1 | 1) => {
+    // Not while it's being let go of; while it's sliding, on from where it's sliding to,
+    // so presses in quick succession each count
+    if (!street || glide?.then) {
+      return
+    }
+    const next = windowAt(glide?.to.centre.x ?? centre.x) + by
+    if (next >= 0 && next <= lastWindow) {
+      glideTo(streetView(next))
+    }
+  }
+  // Eases from the street shown whole in to a house on it, zoomed all the way out, as
+  // the player's own is to begin with
+  const lookAt = (idx: number) => {
+    if (!street || glide) {
+      return
+    }
+    const {left, width: across} = houses[idx]
+    // Where the view settles once it's let go, the same as it would be kept to then
+    const whole = {zoom, centre: {...centre}}
+    street = undefined
+    zoom = 1
+    centre.x = left + across / 2
+    centre.y = sceneHeight
+    clampView()
+    const to = {zoom, centre: {...centre}}
+    zoom = whole.zoom
+    centre.x = whole.centre.x
+    centre.y = whole.centre.y
+    street = {before: to}
+    glideTo(to, () => {
+      street = undefined
+    })
+    streetListeners.forEach(listener => listener(false))
+  }
 
   layout()
 
@@ -607,6 +787,8 @@ const createBackground = (app: Application) => {
           const {left, top, width, height} = houses[home]
           return {left, top, right: left + width, bottom: top + height}
         },
+        // And every house on the street, the same way
+        houses: () => houses.map(({left, top, width, height}) => ({left, top, right: left + width, bottom: top + height})),
       },
     })
   }
@@ -639,6 +821,9 @@ const createBackground = (app: Application) => {
     // Zooms in (above 1) or out (below 1) by a factor, eased over a moment, about a
     // point on screen, or its middle
     zoomBy(factor: number, about: PointData = screenCentre()) {
+      if (street) {
+        return
+      }
       const from = zoomAnimation?.to ?? zoom
       const to = Math.min(maxZoom(), Math.max(1, from * factor))
       zoomAnimation = {from: zoom, to, about, elapsed: 0}
@@ -657,13 +842,31 @@ const createBackground = (app: Application) => {
     // or zoom leaves it where it's got to
     follow(target: () => PointData | undefined) {
       const at = target()
-      if (!at) {
+      // The street shown whole has it all in view already
+      if (!at || street) {
         return
       }
       following = {target, last: {x: at.x, y: at.y}, gone: 0, from: following?.from ?? {...centre}}
     },
-    canZoomIn: () => zoom < maxZoom() - 1e-3,
-    canZoomOut: () => zoom > 1 + 1e-3,
+    canZoomIn: () => !street && zoom < maxZoom() - 1e-3,
+    canZoomOut: () => !street && zoom > 1 + 1e-3,
+    // Shows the whole street at once, eased out to, or back to how it was; while it's
+    // shown, a tap on a house looks at it, and the player's own goes back
+    showStreet,
+    isStreetShown: () => street !== undefined,
+    slideStreet,
+    // Whether the street can be slid along any further that way
+    canSlideStreet: (by: -1 | 1) => {
+      const next = windowAt(glide?.to.centre.x ?? centre.x) + by
+      return street !== undefined && next >= 0 && next <= lastWindow
+    },
+    // Calls back whenever the street's shown or put away; returns how to stop
+    onStreet(listener: (shown: boolean) => void) {
+      streetListeners.add(listener)
+      return () => {
+        streetListeners.delete(listener)
+      }
+    },
     // Lets a tool claim presses on the scenery, e.g. to draw, instead of them panning it
     setPressHandler(handler: PressHandler | undefined) {
       onPress = handler
@@ -747,5 +950,5 @@ const createBackground = (app: Application) => {
 
 type Background = ReturnType<typeof createBackground>
 
-export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, isInside, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skylineUrls}
+export {addBackgroundAssets, backgroundAssets, createBackground, doorway, groundBelow, houses, houseUrl, isInside, porchFloor, porchPots, sceneHeight, sceneWidth, scenery, skyAbove, skylineUrls}
 export type {Background, House}

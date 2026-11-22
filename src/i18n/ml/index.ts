@@ -94,6 +94,14 @@ const ml = {
 		youWin: "നിങ്ങൾ ജയിച്ചു!",
 		houseWins: "{house} ജയിച്ചു!",
 		playAgain: "വീണ്ടും കളിക്കൂ",
+		street: "തെരുവ് മുഴുവൻ കാണിക്കൂ",
+		streetLeft: "ഇടതുവശത്തെ വീടുകൾ",
+		streetRight: "വലതുവശത്തെ വീടുകൾ",
+		feed: {
+			lights: "{house} വിളക്കുമാലകൾ തൂക്കി",
+			kandil: "{house} നക്ഷത്രവിളക്ക് തൂക്കി",
+			rangoli: "{house} രംഗോലി വരച്ചു",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
