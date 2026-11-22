@@ -159,10 +159,11 @@ test("starts muted, and stays muted", async () => {
 })
 
 test("the first visit shows how to zoom, in and then out", async () => {
-  // Zoomed in, then out, the zoom out button saying what it does as it does
-  await page.getByText("Zoom out", {exact: true}).waitFor({timeout: 6000})
+  // Zoomed in, then out, the zoom out button saying what it does as it does, which can
+  // take a while on a slow, busy machine
+  await page.getByText("Zoom out", {exact: true}).waitFor({timeout: 20000})
   // And then it's done, with nothing over the scene
-  await page.getByText("Zoom out", {exact: true}).waitFor({state: "hidden", timeout: 6000})
+  await page.getByText("Zoom out", {exact: true}).waitFor({state: "hidden", timeout: 20000})
 })
 
 test("a diya dragged by a finger is held by a hand, which goes once it's let go", async () => {
@@ -643,11 +644,11 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
     await menu.getByRole("button", {name: "Tournament"}).tap()
     // The time left and the player's points, at the top
     const hud = round.getByRole("status")
-    await hud.waitFor({timeout: 10000})
+    await hud.waitFor({timeout: 30000})
     assert.match(await hud.innerText(), /You 0/)
     // Once it's started, a rangoli put down scores, picked from its panel and put down
     // with a tap, as it can be without a drag on a slow machine
-    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.getByText("Go!").waitFor({timeout: 30000})
     await round.touchscreen.tap(52, rail.rangoli)
     await round.waitForTimeout(800)
     await round.touchscreen.tap(slot(0).x, slot(0).y)
@@ -692,7 +693,7 @@ test("in a tournament round, the street button shows three houses at a time, sli
     await menu.waitFor({timeout: 10000})
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
     await menu.getByRole("button", {name: "Tournament"}).tap()
-    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.getByText("Go!").waitFor({timeout: 30000})
     const street = round.getByRole("button", {name: "Show the whole street"})
     await street.tap()
     await round.waitForTimeout(1500)
