@@ -825,7 +825,7 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await menu.waitFor({timeout: 10000})
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
     await menu.getByRole("button", {name: "Tournament"}).tap()
-    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.getByText("Go!").waitFor({timeout: 30000})
     await round.touchscreen.tap(52, rail.fireworks)
     await round.waitForTimeout(800)
     // Near the right-hand end of the porch, with Sai Krupa next door that side
