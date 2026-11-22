@@ -30,13 +30,15 @@ const playerPoints: Partial<Record<Progress, {points: number, most: number}>> = 
 // And for what a neighbour puts up
 const neighbourPoints: Record<Decoration["kind"], number> = {lights: 30, kandil: 50, rangoli: 40}
 // How each neighbour goes about it: how many seconds in they start, and by what share of
-// the round they're done, if they get through it all. Each round, a little different
+// the round they'd be done, if the round went on that long. None gets through it all in
+// a round: from about half to three quarters of their decorations. Each round, a little
+// different
 const paces = [
-  {start: 3, done: 0.95},
-  {start: 6, done: 0.8},
-  {start: 2, done: 1.1},
-  {start: 8, done: 0.9},
-  {start: 4, done: 1.25},
+  {start: 8, done: 1.3},
+  {start: 12, done: 1.6},
+  {start: 6, done: 1.4},
+  {start: 14, done: 1.8},
+  {start: 10, done: 1.5},
 ]
 const paceJitter = 0.15
 
