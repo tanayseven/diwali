@@ -737,10 +737,12 @@ const createBackground = (app: Application) => {
   // Slides the street along a house to the left (-1) or right (1), from the three nearest
   // the middle of the view, as far as the street goes
   const slideStreet = (by: -1 | 1) => {
-    if (!street || glide) {
+    // Not while it's being let go of; while it's sliding, on from where it's sliding to,
+    // so presses in quick succession each count
+    if (!street || glide?.then) {
       return
     }
-    const next = windowAt(centre.x) + by
+    const next = windowAt(glide?.to.centre.x ?? centre.x) + by
     if (next >= 0 && next <= lastWindow) {
       glideTo(streetView(next))
     }
