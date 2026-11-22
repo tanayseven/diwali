@@ -619,12 +619,12 @@ test("in the Android app, a kandil lit in a later session is followed, after a p
   }
 })
 
-test("a tournament round counts down, scores what's lit, ranks every house, and goes back to free play", async () => {
+test("a tournament round counts down, scores what's put up, ranks every house, and goes back to free play", async () => {
   const context = await browser.newContext(phone)
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
     localStorage.setItem("diwali-house", "deepaNiwas")
-    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour", "fireworks"]))
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour", "rangoli"]))
   }, muted)
   const round = await context.newPage()
   round.on("pageerror", error => console.error("Page error:", error.message))
@@ -645,28 +645,24 @@ test("a tournament round counts down, scores what's lit, ranks every house, and 
     const hud = round.getByRole("status")
     await hud.waitFor({timeout: 10000})
     assert.match(await hud.innerText(), /You 0/)
-    // Once it's started, an anar put down and lit scores
+    // Once it's started, a rangoli put down scores, picked from its panel and put down
+    // with a tap, as it can be without a drag on a slow machine
     await round.getByText("Go!").waitFor({timeout: 10000})
-    await round.touchscreen.tap(52, rail.fireworks)
+    await round.touchscreen.tap(52, rail.rangoli)
     await round.waitForTimeout(800)
-    await round.mouse.move(slot(0).x, slot(0).y)
-    await round.mouse.down()
-    await round.mouse.move(porch.x, porch.y, {steps: 12})
-    // Let go once it's got there, which can take a moment on a slow machine
-    await round.waitForTimeout(300)
-    await round.mouse.up()
-    await round.waitForTimeout(300)
-    await round.mouse.move(slot(6).x, slot(6).y)
-    await round.mouse.down()
-    await round.mouse.move(porch.x, porch.y - 4, {steps: 12})
-    // Held to it till it's lit, which takes longer on a slow machine
-    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
-    await round.mouse.up()
+    await round.touchscreen.tap(slot(0).x, slot(0).y)
+    const panel = round.getByRole("dialog", {name: "Draw Rangoli"})
+    await panel.waitFor({timeout: 5000})
+    await round.getByRole("button", {name: "centre star"}).tap()
+    await round.getByRole("button", {name: "✓"}).tap()
+    await panel.waitFor({state: "hidden", timeout: 5000})
+    await round.touchscreen.tap(porch.x, porch.y + 20)
+    await round.waitForFunction(() => /You 40/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
     // Then every house, ranked, with the player's among them
     const results = round.getByRole("dialog", {name: "Results"})
     await results.waitFor({timeout: 60000})
     assert.equal(await results.getByRole("listitem").count(), 6)
-    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+15/)
+    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+40/)
     assert.equal(await hud.count(), 0, "the round's time and points are gone")
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Results']")).opacity === "1")
     await results.getByRole("button", {name: "Free play"}).tap()
