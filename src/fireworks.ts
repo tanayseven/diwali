@@ -344,8 +344,9 @@ const rocketReach = {up: 260, side: 260, down: 700}
 // A sky shot's fuse fizzes round to the tube, then with a thump it fires a shell
 // straight up out of its mouth, much faster than a rocket climbs, trailing a thin tail of
 // golden sparks, to about 530 over the porch, higher than a rocket goes. At the top of
-// its climb the shell bursts into a great ball of gold stars, flecked with blue, that
-// hang and droop longer than a rocket's. In scene units and seconds
+// its climb the shell bursts into a great round ball of gold stars, much bigger than a
+// rocket's, round a ring of blue ones, with a spray of fast sparks flying out; a third of
+// the gold stars crackle into glitter as they fade. In scene units and seconds
 const skyShotFuse = {from: {x: 47.2, y: 90.5}, to: {x: 40, y: 97}, duration: 2}
 const skyShotSpeed = 1050
 const skyShotLean = 0.04
@@ -354,17 +355,28 @@ const skyShotBurstSpeed = 50
 const skyShotTrailRate = 260 * quality.particleScale
 const skyShotTrailSpeed = {min: 10, max: 50}
 const skyShotMuzzlePuffs = 14
-const skyShotStars = {min: 170, max: 220}
-const skyShotStarSpeed = {min: 130, max: 250}
-const skyShotStarLife = {min: 1.6, max: 2.4}
+// The gold stars fly out in every direction at much the same speed, as the shell's
+// burst is round: seen from the side, that's a round ball, thickest at its rim
+const skyShotStars = {min: 240, max: 300}
+const skyShotStarSpeed = {min: 300, max: 340}
+const skyShotStarLife = {min: 2.1, max: 2.9}
 const skyShotStarFall = 0.3
 const skyShotStarSize = 2.3
+// Of them, this share crackle partway through their life, bursting into glitter
+const skyShotCrackle = 0.35
+// The blue ring in the middle: fewer, slower and flat, so it's a ring rather than a ball
+const skyShotRing = 56
+const skyShotRingSpeed = {min: 140, max: 150}
+const skyShotRingLife = {min: 1.4, max: 1.8}
+// The spray of fast, short-lived sparks flying out as it bursts
+const skyShotSpray = 90
+const skyShotSpraySpeed = {min: 220, max: 480}
 const skyShotColours = [0xffc861, 0xffd98a]
 const skyShotFleckColour = 0x76a8ff
-// The share of a burst's stars that are blue flecks among the gold
-const skyShotFlecks = 0.15
 const skyShotShellRadius = 3
 const skyShotLightColour = 0xffd27a
+// How far its burst's light reaches, further than a rocket's, as it's bigger
+const skyShotBurstLight = 480
 
 // A chakri's fuse fizzes to the coil's end, then it spins up, burns and spins down,
 // in seconds. Its drawings go from whole to burnt out over the burn
@@ -1659,12 +1671,48 @@ const createFireworks = (
       shades: () => shades,
     }
   }
-  // A sky shot's: a bigger ball of gold stars, longer lived, flecked with blue
-  const skyShotBurst = () => {
+  // A star thrown out of a burst, drawn bigger than a spark and drooping
+  const addStar = (
+    flight: Flight, vx: number, vy: number, life: number, floor: number, fall: number, size: number, shades: number[],
+  ) => {
+    const star = addSpark(flight.x, flight.y, flight.vx * 0.3 + vx, flight.vy * 0.3 + vy, life, "spark", floor + random(-4, 8))
+    if (star) {
+      star.fall = fall
+      star.size = size
+      star.shades = shades
+    }
+    return star
+  }
+
+  // A sky shot's shell bursts into a round ball of gold stars, round a flat ring of blue
+  // ones, with a spray of sparks flying out, and some of its stars crackle as they fade
+  const skyShotStarsFrom = (flight: Flight, floor: number) => {
     const gold = skyShotTables[Math.floor(Math.random() * skyShotTables.length)]
-    return {
-      stars: skyShotStars, speed: skyShotStarSpeed, life: skyShotStarLife, fall: skyShotStarFall, size: skyShotStarSize,
-      shades: () => Math.random() < skyShotFlecks ? skyShotFleckTable : gold,
+    const count = Math.round(random(skyShotStars.min, skyShotStars.max) * quality.particleScale)
+    for (let idx = 0; idx < count; idx++) {
+      // A direction picked evenly over a sphere, seen from the side
+      const z = random(-1, 1)
+      const angle = random(0, Math.PI * 2)
+      const across = Math.sqrt(1 - z * z) * random(skyShotStarSpeed.min, skyShotStarSpeed.max)
+      const life = random(skyShotStarLife.min, skyShotStarLife.max)
+      const star = addStar(flight, Math.cos(angle) * across, Math.sin(angle) * across, life, floor, skyShotStarFall,
+        skyShotStarSize, gold)
+      if (star) {
+        star.burstAt = Math.random() < skyShotCrackle ? life * random(0.55, 0.85) : Infinity
+      }
+    }
+    const ring = Math.round(skyShotRing * quality.particleScale)
+    for (let idx = 0; idx < ring; idx++) {
+      const angle = (idx + random(-0.3, 0.3)) / ring * Math.PI * 2
+      const speed = random(skyShotRingSpeed.min, skyShotRingSpeed.max)
+      addStar(flight, Math.cos(angle) * speed, Math.sin(angle) * speed, random(skyShotRingLife.min, skyShotRingLife.max),
+        floor, skyShotStarFall, skyShotStarSize, skyShotFleckTable)
+    }
+    const spray = Math.round(skyShotSpray * quality.particleScale)
+    for (let idx = 0; idx < spray; idx++) {
+      const angle = random(0, Math.PI * 2)
+      const speed = random(skyShotSpraySpeed.min, skyShotSpraySpeed.max)
+      addSpark(flight.x, flight.y, Math.cos(angle) * speed, Math.sin(angle) * speed, random(0.35, 0.8), "speck", floor)
     }
   }
 
@@ -1672,19 +1720,17 @@ const createFireworks = (
   // climb
   const burstRocket = (rocket: Placed, flight: Flight) => {
     const floor = rocket.sprite.y
-    const burst = rocket.kind === "skyshot" ? skyShotBurst() : rocketBurst()
-    const count = Math.round(random(burst.stars.min, burst.stars.max) * quality.particleScale)
-    for (let idx = 0; idx < count; idx++) {
-      // Spread evenly round, and some coming more towards or away, filling in the middle
-      const angle = random(0, Math.PI * 2)
-      const speed = random(burst.speed.min, burst.speed.max) * Math.sqrt(random(0.15, 1))
-      const star = addSpark(flight.x, flight.y, flight.vx * 0.3 + Math.cos(angle) * speed,
-        flight.vy * 0.3 + Math.sin(angle) * speed, random(burst.life.min, burst.life.max), "spark",
-        floor + random(-4, 8))
-      if (star) {
-        star.fall = burst.fall
-        star.size = burst.size
-        star.shades = burst.shades()
+    if (rocket.kind === "skyshot") {
+      skyShotStarsFrom(flight, floor)
+    } else {
+      const burst = rocketBurst()
+      const count = Math.round(random(burst.stars.min, burst.stars.max) * quality.particleScale)
+      for (let idx = 0; idx < count; idx++) {
+        // Spread evenly round, and some coming more towards or away, filling in the middle
+        const angle = random(0, Math.PI * 2)
+        const speed = random(burst.speed.min, burst.speed.max) * Math.sqrt(random(0.15, 1))
+        addStar(flight, Math.cos(angle) * speed, Math.sin(angle) * speed, random(burst.life.min, burst.life.max),
+          floor, burst.fall, burst.size, burst.shades())
       }
     }
     for (let idx = 0; idx < rocketBurstSpecks; idx++) {
@@ -1813,7 +1859,7 @@ const createFireworks = (
     }
     const at = fuseAt ?? skyShot.lightAt
     const bursting = !flying && !fuseAt
-    light.shine(at, lerp(40, bursting ? rocketLightRadius.burst : rocketLightRadius.flying, brightness), brightness * 1.3)
+    light.shine(at, lerp(40, bursting ? skyShotBurstLight : rocketLightRadius.flying, brightness), brightness * 1.3)
     glow.position.copyFrom(at)
     core.position.copyFrom(at)
     glow.width = glow.height = (bursting ? sutliGlowRadius : rocketGlowRadius) * 2 * (0.3 + 0.7 * brightness)
