@@ -19,7 +19,9 @@ jobs:
     # Not ubuntu-latest, now 26.04, which the locked playwright-core can't install
     # Chromium on yet
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # Usually done in 11 or 12 minutes, but a slow runner can take twice that, and the
+    # tournament's tests play whole rounds
+    timeout-minutes: 30
     env:
       # Every one of mise's protections, which it only takes from the environment
       MISE_PARANOID: 1
