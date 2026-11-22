@@ -1,16 +1,18 @@
 import {fontFamily} from "./app"
 import {LL} from "./locale"
 
-// How the game's played: decorating freely, or competing against the neighbours
-type Mode = "free" | "tournament"
+// How the game's played: decorating freely, or competing against the neighbours, or
+// recording a video greeting to send someone
+type Mode = "free" | "tournament" | "greeting"
 
 const highlight = "#ffd700"
 const fadeDuration = 400
 const trophyUrl = "sprites/icons/trophy.svg"
 const freePlayUrl = "sprites/icons/diya.svg"
+const greetingUrl = "sprites/icons/greeting.svg"
 
 // Shown at the start, every time, after the splashes: free play, or a tournament against
-// the neighbours, behind the trophy. Resolves with the one picked
+// the neighbours, behind the trophy, or a video greeting. Resolves with the one picked
 const showModeMenu = () => new Promise<Mode>(resolve => {
   const overlay = document.createElement("div")
   overlay.setAttribute("role", "dialog")
@@ -40,9 +42,9 @@ const showModeMenu = () => new Promise<Mode>(resolve => {
   const row = document.createElement("div")
   Object.assign(row.style, {
     display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: "min(20px, 3vw)",
-    width: "min(640px, 100%)",
+    width: "min(900px, 100%)",
   })
 
   // A big button with a picture, a name and a line on what it is
@@ -100,7 +102,8 @@ const showModeMenu = () => new Promise<Mode>(resolve => {
 
   const freePlay = choice("free", freePlayUrl, LL.modeMenu.freePlay(), LL.modeMenu.freePlayAbout())
   const tournament = choice("tournament", trophyUrl, LL.modeMenu.tournament(), LL.modeMenu.tournamentAbout())
-  row.append(freePlay, tournament)
+  const greeting = choice("greeting", greetingUrl, LL.modeMenu.greeting(), LL.modeMenu.greetingAbout())
+  row.append(freePlay, tournament, greeting)
   // Taps only count once it's had time to fade in, timed from now
   const readyAt = performance.now() + fadeDuration
   overlay.append(heading, row)
@@ -111,5 +114,5 @@ const showModeMenu = () => new Promise<Mode>(resolve => {
   }))
 })
 
-export {freePlayUrl, showModeMenu, trophyUrl}
+export {freePlayUrl, greetingUrl, showModeMenu, trophyUrl}
 export type {Mode}
