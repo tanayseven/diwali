@@ -78,6 +78,20 @@ before(async () => {
       localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
     }
   }, muted)
+  // Whether the zoom out button's said what it does yet, and then stopped saying it, as
+  // the zoom tip does once it's zoomed in, for a moment, early on, which on a slow
+  // machine can be over before the test that looks for it gets to
+  await context.addInitScript(() => {
+    window.zoomOutSaid = "not yet"
+    new MutationObserver(() => {
+      const said = [...document.querySelectorAll("div")].some(div => div.textContent === "Zoom out" && div.style.visibility === "visible")
+      if (said) {
+        window.zoomOutSaid = "saying"
+      } else if (window.zoomOutSaid === "saying") {
+        window.zoomOutSaid = "said"
+      }
+    }).observe(document, {subtree: true, childList: true, attributes: true, attributeFilter: ["style"], characterData: true})
+  })
   // Every vibration asked for, kept to look at, in place of vibrating
   await context.addInitScript(() => {
     window.vibrations = []
@@ -159,11 +173,10 @@ test("starts muted, and stays muted", async () => {
 })
 
 test("the first visit shows how to zoom, in and then out", async () => {
-  // Zoomed in, then out, the zoom out button saying what it does as it does, which can
-  // take a while on a slow, busy machine
-  await page.getByText("Zoom out", {exact: true}).waitFor({timeout: 20000})
-  // And then it's done, with nothing over the scene
-  await page.getByText("Zoom out", {exact: true}).waitFor({state: "hidden", timeout: 20000})
+  // Zoomed in, then out, the zoom out button saying what it does as it does, and then
+  // it's done, with nothing over the scene, however early on that was
+  await page.waitForFunction(() => window.zoomOutSaid === "said", undefined, {timeout: 30000})
+  assert.ok(!await page.getByText("Zoom out", {exact: true}).isVisible(), "nothing's left over the scene")
 })
 
 test("a diya dragged by a finger is held by a hand, which goes once it's let go", async () => {
@@ -710,15 +723,20 @@ test("in a tournament round, the street button shows three houses at a time, sli
       } catch {
         assert.fail(`the houses on screen aren't ${JSON.stringify(expected)}`)
       }
+      // And it's stopped there, not moving from one frame to the next, as a tap while
+      // it's still moving doesn't count
+      await round.waitForFunction(() => {
+        const {x} = window.diwaliCamera.toScreen({x: 0, y: 0})
+        const still = window.lastViewX === x
+        window.lastViewX = x
+        return still
+      }, undefined, {timeout: 20000, polling: "raf"})
     }
     // Deepa Niwas, third along, with a neighbour either side
     await shows([false, true, true, true, false, false])
     // Then a house along to the right
     await round.getByRole("button", {name: "Houses to the right"}).tap()
     await shows([false, false, true, true, true, false])
-    // A neighbour's decorating is said under the round's pill, as it's done
-    await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
-      .some(line => / \+\d+$/.test(line.textContent ?? "")), undefined, {timeout: 15000})
     // A tap on the house furthest right of them looks at it, out of the street
     const last = await round.evaluate(() => {
       const {left, right, bottom} = window.diwaliCamera.houses()[4]
@@ -732,6 +750,10 @@ test("in a tournament round, the street button shows three houses at a time, sli
       const {left, right} = window.diwaliCamera.houses()[4]
       return Math.abs(window.diwaliCamera.toScreen({x: (left + right) / 2, y: 0}).x - width / 2) < width / 4
     }, screen.width, {timeout: 20000})
+    // A neighbour's decorating is said under the round's pill, as it's done, the first
+    // of it a good while into the round, as the neighbours take their time
+    await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
+      .some(line => / \+\d+$/.test(line.textContent ?? "")), undefined, {timeout: 60000})
   } finally {
     await context.close()
   }
