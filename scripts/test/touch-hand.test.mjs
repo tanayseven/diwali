@@ -682,7 +682,7 @@ test("in a tournament round, the street button shows three houses at a time, sli
   const round = await context.newPage()
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
-    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=20&camera`)
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=90&camera`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
