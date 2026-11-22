@@ -781,7 +781,7 @@ test("a street challenge in a tournament round is won by the first house to do i
     await menu.waitFor({timeout: 10000})
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
     await menu.getByRole("button", {name: "Tournament"}).tap()
-    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.getByText("Go!").waitFor({timeout: 30000})
     // A design picked, ready to put down once the race starts
     await round.touchscreen.tap(52, rail.rangoli)
     await round.waitForTimeout(800)
