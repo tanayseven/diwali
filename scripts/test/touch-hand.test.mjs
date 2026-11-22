@@ -836,6 +836,8 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await round.mouse.move(slot(4).x, slot(4).y)
     await round.mouse.down()
     await round.mouse.move(spot.x, spot.y, {steps: 12})
+    // Let go once it's got there, which can take a moment on a slow machine
+    await round.waitForTimeout(300)
     await round.mouse.up()
     await round.waitForTimeout(300)
     await round.mouse.move(slot(6).x, slot(6).y)
