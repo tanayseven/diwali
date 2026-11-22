@@ -226,6 +226,12 @@ for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
   await wait(1500)
   await tap({x: screen.width / 2, y: screen.height / 2})
 }
+step("Free play or a tournament")
+const freePlay = page.getByRole("button", {name: "Free play"})
+await freePlay.waitFor({timeout: 10000})
+await wait(1500)
+const box = await freePlay.boundingBox()
+await tap({x: box.x + box.width / 2, y: box.y + box.height / 2})
 await wait(2000)
 
 // Pairs of points either side of the door, the nearest pair first

@@ -75,6 +75,10 @@ const pastSplashes = async () => {
     await page.waitForTimeout(900)
     await page.mouse.click(screen.width / 2, screen.height / 2)
   }
+  // Then free play, from the menu
+  await page.getByRole("button", {name: "Free play"}).waitFor()
+  await page.waitForTimeout(600)
+  await page.getByRole("button", {name: "Free play"}).click()
   await page.waitForTimeout(1500)
 }
 // Starting close up on the porch, where it puts things, without the families, who'd

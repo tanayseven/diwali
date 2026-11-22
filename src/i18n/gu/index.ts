@@ -80,6 +80,14 @@ const gu = {
 		heading: "તમારું ઘર પસંદ કરો",
 		hint: "તેને દિવાળી માટે શણગારો. તમારા પડોશીઓએ પોતાનાં ઘર પહેલેથી જ શણગારી દીધાં છે, અને તેમના પરિવારો બહાર ઉજવણી કરી રહ્યા છે.",
 	},
+	modeMenu: {
+		heading: "તમે કેવી રીતે ઉજવશો?",
+		freePlay: "મુક્ત રમત",
+		freePlayAbout: "તમારું ઘર તમારી ગતિએ સજાવો",
+		tournament: "સ્પર્ધા",
+		tournamentAbout: "સૌથી સુંદર ઘર માટે પડોશીઓ સાથે સ્પર્ધા કરો",
+		comingSoon: "ટૂંક સમયમાં આવી રહ્યું છે",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "સેટિંગ્સ",

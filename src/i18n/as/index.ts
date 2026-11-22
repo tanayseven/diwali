@@ -80,6 +80,14 @@ const asm = {
 		heading: "আপোনাৰ ঘৰটো বাছক",
 		hint: "দীপাৱলীৰ বাবে ইয়াক সজাওক। আপোনাৰ চুবুৰীয়াসকলে নিজৰ ঘৰ আগতেই সজাই থৈছে, আৰু তেওঁলোকৰ পৰিয়াল বাহিৰত উৎসৱ পালন কৰিছে।",
 	},
+	modeMenu: {
+		heading: "আপুনি কেনেকৈ উদযাপন কৰিব?",
+		freePlay: "মুক্ত খেল",
+		freePlayAbout: "নিজৰ গতিত আপোনাৰ ঘৰ সজাওক",
+		tournament: "প্ৰতিযোগিতা",
+		tournamentAbout: "আটাইতকৈ ধুনীয়া ঘৰৰ বাবে ওচৰ-চুবুৰীয়াৰ সৈতে প্ৰতিযোগিতা কৰক",
+		comingSoon: "সোনকালে আহি আছে",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ছেটিংছ",

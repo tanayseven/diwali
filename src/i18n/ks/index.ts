@@ -80,6 +80,14 @@ const ks = {
 		heading: "پنُن گرٕ ژارِو",
 		hint: "یہِ سجٲوِو دیوالی خٲطرٕ۔ توٚہی ہٕندۍ ہمسایہٕ چھِ پنٕنۍ گرٕ گۄڈٕے سجٲوِتھ، تہٕ تِہندۍ کٔنبہٕ چھِ نیبرٕ جشن مناوان۔",
 	},
+	modeMenu: {
+		heading: "توٚہۍ کِتھ پٲٹھۍ مَناوِو؟",
+		freePlay: "آزاد گِندُن",
+		freePlayAbout: "پنُن گرٕ پننِس رفتارس پٮ۪ٹھ سجٲوِو",
+		tournament: "مُقابلہٕ",
+		tournamentAbout: "سارِوٕے کھۄتہٕ خوبصورت گرٕ خٲطرٕ کٔرِو ہمسایَن سۭتۍ مُقابلہٕ",
+		comingSoon: "جلدٕے یِوان",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سیٹِنگز",

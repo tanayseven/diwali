@@ -80,6 +80,14 @@ const sd = {
 		heading: "پنهنجو گهر چونڊيو",
 		hint: "ان کي ڏياريءَ لاءِ سينگاريو. توهان جي پاڙيسرين پنهنجا گهر اڳ ۾ ئي سينگاري ڇڏيا آهن، ۽ سندن ڪٽنب ٻاهر جشن ملهائي رهيا آهن.",
 	},
+	modeMenu: {
+		heading: "توهان ڪيئن ملهائيندا؟",
+		freePlay: "آزاد راند",
+		freePlayAbout: "پنهنجي گهر کي پنهنجي رفتار سان سينگاريو",
+		tournament: "مقابلو",
+		tournamentAbout: "سڀ کان سهڻي گهر لاءِ پاڙيسرين سان مقابلو ڪريو",
+		comingSoon: "جلد اچي رهيو آهي",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "سيٽنگون",

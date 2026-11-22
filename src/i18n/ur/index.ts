@@ -80,6 +80,14 @@ const ur = {
 		heading: "اپنا گھر چنیں",
 		hint: "اسے دیوالی کے لیے سجائیں۔ آپ کے پڑوسی اپنے گھر پہلے ہی سجا چکے ہیں، اور ان کے گھر والے باہر جشن منا رہے ہیں۔",
 	},
+	modeMenu: {
+		heading: "آپ کیسے منائیں گے؟",
+		freePlay: "آزاد کھیل",
+		freePlayAbout: "اپنے گھر کو اپنی رفتار سے سجائیں",
+		tournament: "مقابلہ",
+		tournamentAbout: "سب سے خوبصورت گھر کے لیے پڑوسیوں سے مقابلہ کریں",
+		comingSoon: "جلد آ رہا ہے",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ترتیبات",

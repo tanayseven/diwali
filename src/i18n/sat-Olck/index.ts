@@ -80,6 +80,14 @@ const sat = {
 		heading: "ᱟᱢᱟᱜ ᱚᱲᱟᱜ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
 		hint: "ᱫᱤᱣᱟᱞᱤ ᱞᱟᱹᱜᱤᱫ ᱱᱚᱶᱟ ᱥᱟᱡᱟᱣ ᱢᱮ᱾ ᱟᱢᱟᱜ ᱯᱟᱲᱚᱥᱤ ᱠᱚ ᱫᱚ ᱟᱡᱟᱜ ᱚᱲᱟᱜ ᱢᱟᱲᱟᱝ ᱠᱷᱚᱱ ᱜᱮ ᱥᱟᱡᱟᱣ ᱠᱮᱫᱟ ᱠᱚᱣᱟ, ᱟᱨ ᱩᱱᱠᱩᱣᱟᱜ ᱜᱷᱟᱨᱚᱧᱡᱽ ᱠᱚ ᱵᱟᱦᱨᱮ ᱨᱮ ᱯᱚᱨᱚᱵ ᱠᱚ ᱢᱟᱱᱟᱣᱮᱫᱟ᱾",
 	},
+	modeMenu: {
+		heading: "ᱟᱢ ᱫᱚ ᱪᱮᱫ ᱞᱮᱠᱟᱛᱮ ᱢᱟᱱᱟᱣᱟᱢ?",
+		freePlay: "ᱢᱩᱠᱛᱤ ᱮᱱᱮᱡ",
+		freePlayAbout: "ᱟᱢᱟᱜ ᱚᱲᱟᱜ ᱟᱢᱟᱜ ᱛᱮᱡᱤ ᱛᱮ ᱥᱟᱡᱟᱣ ᱢᱮ",
+		tournament: "ᱴᱩᱨᱱᱟᱢᱮᱱᱴ",
+		tournamentAbout: "ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱥᱩᱱᱫᱟᱨ ᱚᱲᱟᱜ ᱞᱟᱹᱜᱤᱫ ᱯᱟᱲᱚᱥᱤ ᱠᱚ ᱥᱟᱶ ᱯᱮᱨᱮᱡ ᱢᱮ",
+		comingSoon: "ᱞᱚᱜᱚᱱ ᱦᱤᱡᱩᱜ ᱠᱟᱱᱟ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ᱥᱮᱴᱤᱝᱥ",

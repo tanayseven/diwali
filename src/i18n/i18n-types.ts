@@ -251,6 +251,32 @@ type RootTranslation = {
 		 */
 		hint: string
 	}
+	modeMenu: {
+		/**
+		 * H​o​w​ ​w​i​l​l​ ​y​o​u​ ​c​e​l​e​b​r​a​t​e​?
+		 */
+		heading: string
+		/**
+		 * F​r​e​e​ ​p​l​a​y
+		 */
+		freePlay: string
+		/**
+		 * D​e​c​o​r​a​t​e​ ​y​o​u​r​ ​h​o​u​s​e​ ​a​t​ ​y​o​u​r​ ​o​w​n​ ​p​a​c​e
+		 */
+		freePlayAbout: string
+		/**
+		 * T​o​u​r​n​a​m​e​n​t
+		 */
+		tournament: string
+		/**
+		 * C​o​m​p​e​t​e​ ​w​i​t​h​ ​t​h​e​ ​n​e​i​g​h​b​o​u​r​s​ ​f​o​r​ ​t​h​e​ ​b​e​s​t​ ​h​o​u​s​e
+		 */
+		tournamentAbout: string
+		/**
+		 * C​o​m​i​n​g​ ​s​o​o​n
+		 */
+		comingSoon: string
+	}
 	settings: {
 		/**
 		 * S​e​t​t​i​n​g​s
@@ -845,6 +871,32 @@ export type TranslationFunctions = {
 		 * Decorate it for Diwali. Your neighbours have decorated theirs already, and their families are out celebrating.
 		 */
 		hint: () => LocalizedString
+	}
+	modeMenu: {
+		/**
+		 * How will you celebrate?
+		 */
+		heading: () => LocalizedString
+		/**
+		 * Free play
+		 */
+		freePlay: () => LocalizedString
+		/**
+		 * Decorate your house at your own pace
+		 */
+		freePlayAbout: () => LocalizedString
+		/**
+		 * Tournament
+		 */
+		tournament: () => LocalizedString
+		/**
+		 * Compete with the neighbours for the best house
+		 */
+		tournamentAbout: () => LocalizedString
+		/**
+		 * Coming soon
+		 */
+		comingSoon: () => LocalizedString
 	}
 	settings: {
 		/**

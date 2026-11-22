@@ -80,6 +80,14 @@ const mni = {
 		heading: "ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝ ꯈꯟꯕꯤꯌꯨ",
 		hint: "ꯗꯤꯋꯥꯂꯤꯒꯤꯗꯃꯛ ꯃꯗꯨ ꯁꯦꯃꯖꯤꯟꯕꯤꯌꯨ꯫ ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝꯂꯣꯟꯅꯕꯁꯤꯡꯅꯥ ꯃꯈꯣꯌꯒꯤ ꯌꯨꯝ ꯍꯥꯟꯅꯅꯥ ꯁꯦꯃꯖꯤꯟꯂꯦ, ꯑꯃꯁꯨꯡ ꯃꯈꯣꯌꯒꯤ ꯏꯃꯨꯡ ꯃꯅꯨꯡꯁꯤꯡ ꯃꯄꯥꯟꯗꯥ ꯀꯨꯝꯍꯩ ꯄꯥꯡꯊꯣꯛꯂꯤ꯫",
 	},
+	modeMenu: {
+		heading: "ꯅꯍꯥꯛ ꯀꯔꯝꯅ ꯄꯥꯡꯊꯣꯛꯀꯅꯤ?",
+		freePlay: "ꯅꯤꯡꯇꯝꯕ ꯁꯥꯟꯅꯕ",
+		freePlayAbout: "ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝ ꯅꯍꯥꯛꯀꯤ ꯊꯧꯅꯥꯗ ꯁꯦꯃꯖꯤꯟꯕꯤꯌꯨ",
+		tournament: "ꯇꯨꯔꯅꯥꯃꯦꯟꯇ",
+		tournamentAbout: "ꯈ꯭ꯕꯥꯏꯗꯒꯤ ꯐꯖꯕ ꯌꯨꯝꯒꯤꯗꯃꯛ ꯌꯨꯝꯂꯣꯟꯅꯕꯁꯤꯡꯒ ꯂꯥꯟꯊꯦꯡꯅꯧ",
+		comingSoon: "ꯊꯨꯅꯥ ꯂꯥꯛꯀꯅꯤ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ꯁꯦꯇꯤꯡꯁ",

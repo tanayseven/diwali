@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Handles -->
+  <path d="M17 14H8v6c0 8 6 14 13 15" fill="none" stroke="#e0a526" stroke-width="4" stroke-linecap="round"/>
+  <path d="M47 14h9v6c0 8-6 14-13 15" fill="none" stroke="#e0a526" stroke-width="4" stroke-linecap="round"/>
+  <!-- Cup -->
+  <path d="M16 8h32v14c0 10-7 18-16 18S16 32 16 22z" fill="#ffc93c"/>
+  <path d="M40 8h8v14c0 10-7 18-16 18 6-3 8-10 8-18z" fill="#e0a526"/>
+  <path d="M21 12h4v10c0 4 1 7 3 9-4-1-7-5-7-10z" fill="#fff3c4" opacity="0.8"/>
+  <!-- Stem and base -->
+  <path d="M28 40h8v8h-8z" fill="#e0a526"/>
+  <path d="M20 48h24l2 8H18z" fill="#b5651d"/>
+  <path d="M22 50h20v3H22z" fill="#ffc93c"/>
+  <!-- A diya's flame on the cup -->
+  <path d="M32 15c3 4 4 7 0 10-4-3-3-6 0-10z" fill="#ff7a1a"/>
+</svg>

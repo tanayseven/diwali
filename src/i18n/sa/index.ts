@@ -80,6 +80,14 @@ const sa = {
 		heading: "स्वगृहं चिनोतु",
 		hint: "दीपावल्यै तद् अलङ्करोतु। भवतः प्रतिवेशिनः स्वगृहाणि पूर्वमेव अलङ्कृतवन्तः, तेषां कुटुम्बानि च बहिः उत्सवम् आचरन्ति।",
 	},
+	modeMenu: {
+		heading: "भवान् कथम् उत्सवं करिष्यति?",
+		freePlay: "स्वैरक्रीडा",
+		freePlayAbout: "स्वगत्या स्वगृहम् अलङ्कुरु",
+		tournament: "स्पर्धा",
+		tournamentAbout: "सुन्दरतमगृहाय प्रतिवेशिभिः सह स्पर्धस्व",
+		comingSoon: "शीघ्रम् आगमिष्यति",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "विन्यासाः",

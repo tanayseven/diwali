@@ -89,6 +89,15 @@ const en = {
 		heading: "Pick your house",
 		hint: "Decorate it for Diwali. Your neighbours have decorated theirs already, and their families are out celebrating.",
 	},
+	// The menu at the start, after the splashes, to play freely or in a tournament
+	modeMenu: {
+		heading: "How will you celebrate?",
+		freePlay: "Free play",
+		freePlayAbout: "Decorate your house at your own pace",
+		tournament: "Tournament",
+		tournamentAbout: "Compete with the neighbours for the best house",
+		comingSoon: "Coming soon",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",

@@ -16,6 +16,7 @@ import {createNameplates} from "./nameplates"
 import type {Lightable} from "./matchstick"
 import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
+import {freePlayUrl, showModeMenu, trophyUrl} from "./modeMenu"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {forgetHouse, savedHouse, showHousePicker} from "./housePicker"
@@ -117,7 +118,7 @@ const main = async () => {
       ...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...kandilAssets,
       ...handAssets, ...tools.map(tool => tool.icon),
     ],
-    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg"],
+    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg", freePlayUrl, trophyUrl],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
@@ -129,6 +130,9 @@ const main = async () => {
   await showSoundSplash()
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
+  // Free play, or a tournament against the neighbours, picked every time. Only free play
+  // can be picked for now: the tournament's shown as coming soon
+  await showModeMenu()
   // The player's own house on the street, to decorate, picked the first time, and after
   // that, kept, until another's picked from the settings
   const homeName = savedHouse() ?? await showHousePicker()
