@@ -86,7 +86,14 @@ const kn = {
 		freePlayAbout: "ನಿಮ್ಮ ಮನೆಯನ್ನು ನಿಮ್ಮದೇ ವೇಗದಲ್ಲಿ ಅಲಂಕರಿಸಿ",
 		tournament: "ಸ್ಪರ್ಧೆ",
 		tournamentAbout: "ಅತ್ಯಂತ ಸುಂದರ ಮನೆಗಾಗಿ ನೆರೆಹೊರೆಯವರೊಂದಿಗೆ ಸ್ಪರ್ಧಿಸಿ",
-		comingSoon: "ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ",
+	},
+	tournament: {
+		you: "ನೀವು",
+		go: "ಶುರು!",
+		results: "ಫಲಿತಾಂಶ",
+		youWin: "ನೀವು ಗೆದ್ದಿರಿ!",
+		houseWins: "{house} ಗೆದ್ದಿತು!",
+		playAgain: "ಮತ್ತೆ ಆಡಿ",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

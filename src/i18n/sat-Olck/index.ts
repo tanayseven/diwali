@@ -86,7 +86,14 @@ const sat = {
 		freePlayAbout: "ᱟᱢᱟᱜ ᱚᱲᱟᱜ ᱟᱢᱟᱜ ᱛᱮᱡᱤ ᱛᱮ ᱥᱟᱡᱟᱣ ᱢᱮ",
 		tournament: "ᱴᱩᱨᱱᱟᱢᱮᱱᱴ",
 		tournamentAbout: "ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱥᱩᱱᱫᱟᱨ ᱚᱲᱟᱜ ᱞᱟᱹᱜᱤᱫ ᱯᱟᱲᱚᱥᱤ ᱠᱚ ᱥᱟᱶ ᱯᱮᱨᱮᱡ ᱢᱮ",
-		comingSoon: "ᱞᱚᱜᱚᱱ ᱦᱤᱡᱩᱜ ᱠᱟᱱᱟ",
+	},
+	tournament: {
+		you: "ᱟᱢ",
+		go: "ᱮᱦᱚᱵ!",
+		results: "ᱚᱨᱡᱚ",
+		youWin: "ᱟᱢ ᱡᱤᱛᱠᱟᱫᱟᱢ!",
+		houseWins: "{house} ᱡᱤᱛᱠᱟᱫᱟ!",
+		playAgain: "ᱫᱚᱦᱲᱟ ᱮᱱᱮᱡ ᱢᱮ",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

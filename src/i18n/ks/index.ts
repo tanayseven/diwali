@@ -86,7 +86,14 @@ const ks = {
 		freePlayAbout: "پنُن گرٕ پننِس رفتارس پٮ۪ٹھ سجٲوِو",
 		tournament: "مُقابلہٕ",
 		tournamentAbout: "سارِوٕے کھۄتہٕ خوبصورت گرٕ خٲطرٕ کٔرِو ہمسایَن سۭتۍ مُقابلہٕ",
-		comingSoon: "جلدٕے یِوان",
+	},
+	tournament: {
+		you: "توٚہۍ",
+		go: "شروٗع!",
+		results: "نَتیجہٕ",
+		youWin: "توٚہۍ ژیٚنِو!",
+		houseWins: "{house} ژیوٚن!",
+		playAgain: "بیٚیہِ گِندِو",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

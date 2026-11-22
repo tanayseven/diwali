@@ -96,7 +96,15 @@ const en = {
 		freePlayAbout: "Decorate your house at your own pace",
 		tournament: "Tournament",
 		tournamentAbout: "Compete with the neighbours for the best house",
-		comingSoon: "Coming soon",
+	},
+	// A round of the tournament: the player, the countdown's last word, and the results
+	tournament: {
+		you: "You",
+		go: "Go!",
+		results: "Results",
+		youWin: "You win!",
+		houseWins: "{house:string} wins!",
+		playAgain: "Play again",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

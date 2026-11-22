@@ -86,7 +86,14 @@ const te = {
 		freePlayAbout: "మీ ఇంటిని మీ వేగంలో అలంకరించండి",
 		tournament: "పోటీ",
 		tournamentAbout: "అత్యంత అందమైన ఇంటి కోసం పొరుగువారితో పోటీ పడండి",
-		comingSoon: "త్వరలో వస్తోంది",
+	},
+	tournament: {
+		you: "మీరు",
+		go: "మొదలు!",
+		results: "ఫలితాలు",
+		youWin: "మీరు గెలిచారు!",
+		houseWins: "{house} గెలిచింది!",
+		playAgain: "మళ్ళీ ఆడండి",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

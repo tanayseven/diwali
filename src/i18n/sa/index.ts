@@ -86,7 +86,14 @@ const sa = {
 		freePlayAbout: "स्वगत्या स्वगृहम् अलङ्कुरु",
 		tournament: "स्पर्धा",
 		tournamentAbout: "सुन्दरतमगृहाय प्रतिवेशिभिः सह स्पर्धस्व",
-		comingSoon: "शीघ्रम् आगमिष्यति",
+	},
+	tournament: {
+		you: "भवान्",
+		go: "आरभस्व!",
+		results: "परिणामाः",
+		youWin: "भवान् विजितवान्!",
+		houseWins: "{house} विजयते!",
+		playAgain: "पुनः क्रीड",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

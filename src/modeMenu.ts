@@ -46,7 +46,7 @@ const showModeMenu = () => new Promise<Mode>(resolve => {
   })
 
   // A big button with a picture, a name and a line on what it is
-  const choice = (mode: Mode, icon: string, name: string, about: string, soon?: string) => {
+  const choice = (mode: Mode, icon: string, name: string, about: string) => {
     const card = document.createElement("button")
     card.type = "button"
     card.setAttribute("aria-label", name)
@@ -75,26 +75,6 @@ const showModeMenu = () => new Promise<Mode>(resolve => {
     line.textContent = about
     Object.assign(line.style, {fontSize: "min(16px, 3.6vh)", lineHeight: "1.3", opacity: "0.85"})
     card.append(picture, label, line)
-    if (soon) {
-      // Not ready yet: shown, so it's known it's coming, but can't be picked
-      card.disabled = true
-      card.setAttribute("aria-label", `${name}, ${soon}`)
-      Object.assign(card.style, {cursor: "default"})
-      Object.assign(picture.style, {opacity: "0.55"})
-      Object.assign(label.style, {opacity: "0.7"})
-      const badge = document.createElement("span")
-      badge.textContent = soon
-      // Below the rest, in the card's flow, so a long one in any language covers nothing
-      Object.assign(badge.style, {
-        padding: "2px 10px",
-        borderRadius: "10px",
-        background: highlight,
-        color: "#1a1448",
-        fontSize: "min(14px, 3.2vh)",
-      })
-      card.appendChild(badge)
-      return card
-    }
     const lightUp = (on: boolean) => {
       card.style.borderColor = on ? highlight : "#555555"
       label.style.color = on ? highlight : "#ffffff"
@@ -119,7 +99,7 @@ const showModeMenu = () => new Promise<Mode>(resolve => {
   }
 
   const freePlay = choice("free", freePlayUrl, LL.modeMenu.freePlay(), LL.modeMenu.freePlayAbout())
-  const tournament = choice("tournament", trophyUrl, LL.modeMenu.tournament(), LL.modeMenu.tournamentAbout(), LL.modeMenu.comingSoon())
+  const tournament = choice("tournament", trophyUrl, LL.modeMenu.tournament(), LL.modeMenu.tournamentAbout())
   row.append(freePlay, tournament)
   // Taps only count once it's had time to fade in, timed from now
   const readyAt = performance.now() + fadeDuration

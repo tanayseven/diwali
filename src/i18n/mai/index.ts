@@ -86,7 +86,14 @@ const mai = {
 		freePlayAbout: "अपन घर अपन गति सँ सजाउ",
 		tournament: "प्रतियोगिता",
 		tournamentAbout: "सभसँ सुन्नर घरक लेल पड़ोसी सभ सँ प्रतियोगिता करू",
-		comingSoon: "जल्दिये आबि रहल अछि",
+	},
+	tournament: {
+		you: "अहाँ",
+		go: "शुरू!",
+		results: "परिणाम",
+		youWin: "अहाँ जीति गेलहुँ!",
+		houseWins: "{house} जीति गेल!",
+		playAgain: "फेर सँ खेलू",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

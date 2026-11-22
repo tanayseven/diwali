@@ -86,7 +86,14 @@ const mr = {
 		freePlayAbout: "तुमचे घर तुमच्या वेगाने सजवा",
 		tournament: "स्पर्धा",
 		tournamentAbout: "सर्वात सुंदर घरासाठी शेजाऱ्यांशी स्पर्धा करा",
-		comingSoon: "लवकरच येत आहे",
+	},
+	tournament: {
+		you: "तुम्ही",
+		go: "सुरू!",
+		results: "निकाल",
+		youWin: "तुम्ही जिंकलात!",
+		houseWins: "{house} जिंकले!",
+		playAgain: "पुन्हा खेळा",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

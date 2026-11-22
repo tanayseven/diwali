@@ -86,7 +86,14 @@ const doi = {
 		freePlayAbout: "अपने घरै गी अपनी रफ्तारा कन्नै सजाओ",
 		tournament: "मुकाबला",
 		tournamentAbout: "सारें शा सोहने घरै आस्तै गुआंढियें कन्नै मुकाबला करो",
-		comingSoon: "जल्दी औआ करदा ऐ",
+	},
+	tournament: {
+		you: "तुस",
+		go: "शुरू!",
+		results: "नतीजे",
+		youWin: "तुस जित्ती गे!",
+		houseWins: "{house} जित्ती गेआ!",
+		playAgain: "फ्ही खेढो",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -86,7 +86,14 @@ const or = {
 		freePlayAbout: "ନିଜ ଗତିରେ ଆପଣଙ୍କ ଘର ସଜାନ୍ତୁ",
 		tournament: "ପ୍ରତିଯୋଗିତା",
 		tournamentAbout: "ସବୁଠାରୁ ସୁନ୍ଦର ଘର ପାଇଁ ପଡ଼ୋଶୀଙ୍କ ସହ ପ୍ରତିଯୋଗିତା କରନ୍ତୁ",
-		comingSoon: "ଶୀଘ୍ର ଆସୁଛି",
+	},
+	tournament: {
+		you: "ଆପଣ",
+		go: "ଆରମ୍ଭ!",
+		results: "ଫଳାଫଳ",
+		youWin: "ଆପଣ ଜିତିଲେ!",
+		houseWins: "{house} ଜିତିଲା!",
+		playAgain: "ପୁଣି ଖେଳନ୍ତୁ",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

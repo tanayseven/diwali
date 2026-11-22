@@ -86,7 +86,14 @@ const ta = {
 		freePlayAbout: "உங்கள் வேகத்தில் உங்கள் வீட்டை அலங்கரியுங்கள்",
 		tournament: "போட்டி",
 		tournamentAbout: "மிக அழகான வீட்டுக்காக அக்கம்பக்கத்தினருடன் போட்டியிடுங்கள்",
-		comingSoon: "விரைவில் வருகிறது",
+	},
+	tournament: {
+		you: "நீங்கள்",
+		go: "தொடங்கு!",
+		results: "முடிவுகள்",
+		youWin: "நீங்கள் வென்றீர்கள்!",
+		houseWins: "{house} வென்றது!",
+		playAgain: "மீண்டும் விளையாடு",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
