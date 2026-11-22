@@ -53,6 +53,12 @@ const openGame = async (browser, size) => {
     isMobile: !!size.mobile,
     hasTouch: !!size.mobile,
   })
+  // As someone who's picked their house and been shown round before, so the scene opens
+  // straight onto Deepa Niwas, with no house to pick and nothing shown over it
+  await context.addInitScript(() => {
+    localStorage.setItem("diwali-house", "deepaNiwas")
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "tour", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
+  })
   const page = await context.newPage()
   page.on("pageerror", error => report(`  page error: ${error.message}`))
   const cdp = await context.newCDPSession(page)
@@ -64,6 +70,7 @@ const openGame = async (browser, size) => {
 // The photosensitivity warning shows once loading's done, which waits for the music to
 // buffer, so how long it takes varies. Its text is what's looked for
 const warningText = "flashing and twinkling lights"
+const soundText = "stereo sound system"
 // Opens the game, trying again if the load's cut off, which now and then happens as one
 // browser context closes and the next opens. Picks English, which the warning's text is in
 const open = async page => {
@@ -86,6 +93,11 @@ const enterScene = async page => {
   await page.waitForTimeout(500)
   await page.keyboard.press("Space")
   await page.waitForFunction(text => !document.body.innerText.includes(text), warningText, {timeout: 15000})
+  // Then the advice on sound, the same way
+  await page.waitForFunction(text => document.body.innerText.includes(text), soundText, {timeout: 15000})
+  await page.waitForTimeout(500)
+  await page.keyboard.press("Space")
+  await page.waitForFunction(text => !document.body.innerText.includes(text), soundText, {timeout: 15000})
   // Settled into the scene, past building it and the first frames
   await page.waitForTimeout(5000)
 }
