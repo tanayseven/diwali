@@ -113,6 +113,13 @@ const en = {
 			kandil: "{house:string} hung a kandil",
 			rangoli: "{house:string} drew a rangoli",
 		},
+		challenge: {
+			kandil: "First to hang a kandil",
+			lights: "First to hang a string of lights",
+			rangoli: "First to put down a rangoli",
+			won: "{house:string} won the race",
+			youWon: "You won the race!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

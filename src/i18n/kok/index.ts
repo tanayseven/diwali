@@ -102,6 +102,13 @@ const kok = {
 			kandil: "{house} न आकाशकंदील लायलो",
 			rangoli: "{house} न रांगोळी काडली",
 		},
+		challenge: {
+			kandil: "सगळ्यांत आदीं आकाशकंदील लायात",
+			lights: "सगळ्यांत आदीं दिव्यांची माळ लायात",
+			rangoli: "सगळ्यांत आदीं रांगोळी काडात",
+			won: "{house} न शर्यत जिखली",
+			youWon: "तुमी शर्यत जिखली!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

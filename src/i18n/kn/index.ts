@@ -102,6 +102,13 @@ const kn = {
 			kandil: "{house} ಆಕಾಶಬುಟ್ಟಿ ತೂಗುಹಾಕಿತು",
 			rangoli: "{house} ರಂಗೋಲಿ ಹಾಕಿತು",
 		},
+		challenge: {
+			kandil: "ಎಲ್ಲರಿಗಿಂತ ಮೊದಲು ಆಕಾಶಬುಟ್ಟಿ ತೂಗುಹಾಕಿ",
+			lights: "ಎಲ್ಲರಿಗಿಂತ ಮೊದಲು ದೀಪದ ಸರ ತೂಗುಹಾಕಿ",
+			rangoli: "ಎಲ್ಲರಿಗಿಂತ ಮೊದಲು ರಂಗೋಲಿ ಹಾಕಿ",
+			won: "{house} ಸ್ಪರ್ಧೆ ಗೆದ್ದಿತು",
+			youWon: "ನೀವು ಸ್ಪರ್ಧೆ ಗೆದ್ದಿರಿ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

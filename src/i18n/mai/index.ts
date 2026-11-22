@@ -102,6 +102,13 @@ const mai = {
 			kandil: "{house} कंदील टांगलक",
 			rangoli: "{house} रंगोली बनौलक",
 		},
+		challenge: {
+			kandil: "सभसँ पहिने कंदील टाँगू",
+			lights: "सभसँ पहिने बत्तीक लड़ी लगाउ",
+			rangoli: "सभसँ पहिने रंगोली बनाउ",
+			won: "{house} दौड़ जीति लेलक",
+			youWon: "अहाँ दौड़ जीति लेलहुँ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

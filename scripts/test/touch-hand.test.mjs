@@ -759,6 +759,50 @@ test("in a tournament round, the street button shows three houses at a time, sli
   }
 })
 
+test("a street challenge in a tournament round is won by the first house to do it, here the player's rangoli", async () => {
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-house", "deepaNiwas")
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
+  }, muted)
+  const round = await context.newPage()
+  round.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    // The first race, a quarter of the way in, is to put down a rangoli
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=40&challenge=rangoli`)
+    await round.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await round.getByText(text).waitFor({timeout: 60000})
+      await round.waitForTimeout(900)
+      await round.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    const menu = round.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+    await menu.getByRole("button", {name: "Tournament"}).tap()
+    await round.getByText("Go!").waitFor({timeout: 10000})
+    // A design picked, ready to put down once the race starts
+    await round.touchscreen.tap(52, rail.rangoli)
+    await round.waitForTimeout(800)
+    await round.touchscreen.tap(slot(0).x, slot(0).y)
+    const panel = round.getByRole("dialog", {name: "Draw Rangoli"})
+    await panel.waitFor({timeout: 3000})
+    await round.getByRole("button", {name: "centre star"}).tap()
+    await round.getByRole("button", {name: "✓"}).tap()
+    await panel.waitFor({state: "hidden", timeout: 3000})
+    const race = round.getByRole("alert")
+    await round.getByText("First to put down a rangoli +50").waitFor({timeout: 30000})
+    await round.touchscreen.tap(porch.x, porch.y + 20)
+    await round.getByText("You won the race! +50").waitFor({timeout: 5000})
+    // Its points and the rangoli's both
+    await round.waitForFunction(() => /You 90/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 3000})
+    assert.equal(await race.count(), 1)
+  } finally {
+    await context.close()
+  }
+})
+
 // Last, as it starts the game again
 test("the language picked is used again next time, and the globe button picks another, which it starts again in", async () => {
   await page.reload()

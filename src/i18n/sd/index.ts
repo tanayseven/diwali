@@ -102,6 +102,13 @@ const sd = {
 			kandil: "{house} قنديل لٽڪائي",
 			rangoli: "{house} رنگولي ٺاهي",
 		},
+		challenge: {
+			kandil: "سڀ کان پهرين قنديل لٽڪايو",
+			lights: "سڀ کان پهرين بتين جي لڙي لڳايو",
+			rangoli: "سڀ کان پهرين رنگولي ٺاهيو",
+			won: "{house} ڊوڙ کٽي",
+			youWon: "توهان ڊوڙ کٽي!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
