@@ -95,6 +95,8 @@ const sd = {
 		houseWins: "{house} کٽي ويو!",
 		playAgain: "ٻيهر کيڏو",
 		street: "سڄي گهٽي ڏيکاريو",
+		streetLeft: "کاٻي پاسي وارا گهر",
+		streetRight: "ساڄي پاسي وارا گهر",
 		feed: {
 			lights: "{house} بتيون لڳايون",
 			kandil: "{house} قنديل لٽڪائي",

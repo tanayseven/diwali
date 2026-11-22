@@ -95,6 +95,8 @@ const ml = {
 		houseWins: "{house} ജയിച്ചു!",
 		playAgain: "വീണ്ടും കളിക്കൂ",
 		street: "തെരുവ് മുഴുവൻ കാണിക്കൂ",
+		streetLeft: "ഇടതുവശത്തെ വീടുകൾ",
+		streetRight: "വലതുവശത്തെ വീടുകൾ",
 		feed: {
 			lights: "{house} വിളക്കുമാലകൾ തൂക്കി",
 			kandil: "{house} നക്ഷത്രവിളക്ക് തൂക്കി",

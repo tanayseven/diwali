@@ -95,6 +95,8 @@ const asm = {
 		houseWins: "{house} জিকিলে!",
 		playAgain: "পুনৰ খেলক",
 		street: "গোটেই পথটো দেখুৱাওক",
+		streetLeft: "বাওঁফালৰ ঘৰ",
+		streetRight: "সোঁফালৰ ঘৰ",
 		feed: {
 			lights: "{house}এ চাকি ওলমাইছে",
 			kandil: "{house}এ আকাশবন্তি ওলমাইছে",

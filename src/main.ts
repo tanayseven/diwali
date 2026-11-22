@@ -321,9 +321,12 @@ const main = async () => {
   const zoomControls = createZoomControls(app, background, [camera])
   const rail = createSideRail(app, available, select)
   const hudToggle = createHudToggle(app, showBars)
+  // The street shown wide has the rail, the zoom buttons and the eye put away too, so
+  // nothing covers the houses at its ends
   background.onStreet(shown => {
     streetShown = shown
     showBars()
+    rail.container.visible = zoomControls.container.visible = hudToggle.container.visible = !shown
   })
   app.stage.addChild(zoomControls.container, rail.container, hudToggle.container)
   screens.push(zoomControls, rail, hudToggle)

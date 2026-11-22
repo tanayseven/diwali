@@ -54,6 +54,8 @@ const popRise = 40
 const popSize = 26
 // Each thing a neighbour does, said under the pill for this long, in ms
 const feedShown = 3000
+// Over each house while the street's shown, its name and points, at this size on screen
+const labelSize = 22
 
 // A pill at the top of the screen with the time left, the player's points, and who's
 // ahead of them, if anyone is
@@ -99,7 +101,43 @@ const createRoundHud = (background: Background) => {
   const stopStreet = background.onStreet(shown => {
     street.setAttribute("aria-pressed", String(shown))
     street.style.borderColor = shown ? highlight : "transparent"
+    showArrows()
   })
+  // Arrows either side of the screen, while the street's shown, sliding it a house along
+  const arrow = (by: -1 | 1) => {
+    const pressed = document.createElement("button")
+    pressed.type = "button"
+    pressed.textContent = by < 0 ? "‹" : "›"
+    pressed.setAttribute("aria-label", by < 0 ? LL.tournament.streetLeft() : LL.tournament.streetRight())
+    Object.assign(pressed.style, {
+      position: "fixed",
+      top: "50%",
+      [by < 0 ? "left" : "right"]: "12px",
+      transform: "translateY(-50%)",
+      zIndex: "2",
+      width: "min(52px, 13vh)",
+      height: "min(52px, 13vh)",
+      borderRadius: "50%",
+      border: `2px solid ${highlight}`,
+      background: "rgba(26, 26, 26, 0.85)",
+      color: highlight,
+      fontFamily,
+      fontSize: "min(36px, 9vh)",
+      lineHeight: "1",
+      cursor: "pointer",
+      display: "none",
+    })
+    pressed.addEventListener("click", () => background.slideStreet(by))
+    document.body.appendChild(pressed)
+    return pressed
+  }
+  const arrows = {left: arrow(-1), right: arrow(1)}
+  // Each shown while the street's shown, if it can go any further that way
+  const showArrows = () => {
+    const shown = background.isStreetShown() && street.getAttribute("aria-pressed") === "true"
+    arrows.left.style.display = shown && background.canSlideStreet(-1) ? "block" : "none"
+    arrows.right.style.display = shown && background.canSlideStreet(1) ? "block" : "none"
+  }
   const time = document.createElement("span")
   Object.assign(time.style, {color: highlight, fontVariantNumeric: "tabular-nums", minWidth: "2.6em"})
   const mine = document.createElement("span")
@@ -127,16 +165,56 @@ const createRoundHud = (background: Background) => {
     transition: "opacity 300ms ease-in-out",
   })
   let feedTimer: ReturnType<typeof setTimeout> | undefined
-  // S shows the whole street, or puts it away, as the button does
+  // S shows the street, or puts it away, as the button does, and the arrow keys slide it
   const onKey = (e: KeyboardEvent) => {
-    if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (e.ctrlKey || e.metaKey || e.altKey) {
+      return
+    }
+    if (e.key === "s" || e.key === "S") {
       background.showStreet(!background.isStreetShown())
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      background.slideStreet(e.key === "ArrowLeft" ? -1 : 1)
     }
   }
   window.addEventListener("keydown", onKey)
   document.body.append(hud, feed)
+  // Over each house, its name and points, seen while the street's shown, the same size
+  // on screen whatever the zoom, and above the night, the player's own in gold
+  const labels = background.houses.map(({left, top, width}, idx) => {
+    const label = new Text({
+      text: "",
+      style: {fontFamily, fontSize: labelSize, fill: 0xffffff, stroke: {color: 0x1a1a1a, width: 5}, align: "center"},
+      anchor: {x: 0.5, y: 1},
+    })
+    label.eventMode = "none"
+    label.zIndex = 10000
+    label.visible = false
+    background.decorations.addChild(label)
+    return {label, at: {x: left + width / 2, y: top}, idx}
+  })
+  let labelling = true
+  const placeLabels = () => {
+    if (!labelling) {
+      return
+    }
+    const shown = street.getAttribute("aria-pressed") === "true"
+    const scale = 1 / background.scale()
+    labels.forEach(({label, at}) => {
+      label.visible = shown
+      label.scale.set(scale)
+      label.position.set(at.x, at.y - 10 * scale)
+    })
+    showArrows()
+    requestAnimationFrame(placeLabels)
+  }
+  placeLabels()
   return {
     show(secondsLeft: number, contenders: Contender[]) {
+      contenders.forEach(({idx, name, points, player}) => {
+        const {label} = labels[idx]
+        label.text = `${player ? LL.tournament.you() : name}\n${points}`
+        label.style.fill = player ? highlight : "#ffffff"
+      })
       const whole = Math.max(0, Math.ceil(secondsLeft))
       time.textContent = `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`
       const player = contenders.find(({player}) => player)
@@ -151,6 +229,10 @@ const createRoundHud = (background: Background) => {
       feedTimer = setTimeout(() => feed.style.opacity = "0", feedShown)
     },
     remove() {
+      labelling = false
+      labels.forEach(({label}) => label.destroy())
+      arrows.left.remove()
+      arrows.right.remove()
       clearTimeout(feedTimer)
       stopStreet()
       window.removeEventListener("keydown", onKey)

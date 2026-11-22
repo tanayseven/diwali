@@ -303,6 +303,14 @@ type RootTranslation = {
 		 * S​h​o​w​ ​t​h​e​ ​w​h​o​l​e​ ​s​t​r​e​e​t
 		 */
 		street: string
+		/**
+		 * H​o​u​s​e​s​ ​t​o​ ​t​h​e​ ​l​e​f​t
+		 */
+		streetLeft: string
+		/**
+		 * H​o​u​s​e​s​ ​t​o​ ​t​h​e​ ​r​i​g​h​t
+		 */
+		streetRight: string
 		feed: {
 			/**
 			 * {​h​o​u​s​e​}​ ​h​u​n​g​ ​l​i​g​h​t​s
@@ -967,6 +975,14 @@ export type TranslationFunctions = {
 		 * Show the whole street
 		 */
 		street: () => LocalizedString
+		/**
+		 * Houses to the left
+		 */
+		streetLeft: () => LocalizedString
+		/**
+		 * Houses to the right
+		 */
+		streetRight: () => LocalizedString
 		feed: {
 			/**
 			 * {house} hung lights

@@ -95,6 +95,8 @@ const sat = {
 		houseWins: "{house} ᱡᱤᱛᱠᱟᱫᱟ!",
 		playAgain: "ᱫᱚᱦᱲᱟ ᱮᱱᱮᱡ ᱢᱮ",
 		street: "ᱡᱚᱛᱚ ᱥᱚᱲᱚᱠ ᱩᱫᱩᱜ ᱢᱮ",
+		streetLeft: "ᱞᱮᱸᱜᱟ ᱥᱮᱫ ᱚᱲᱟᱜ ᱠᱚ",
+		streetRight: "ᱡᱚᱡᱚᱢ ᱥᱮᱫ ᱚᱲᱟᱜ ᱠᱚ",
 		feed: {
 			lights: "{house} ᱫᱤᱭᱟ ᱠᱚ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",
 			kandil: "{house} ᱠᱚᱱᱰᱤᱞ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",

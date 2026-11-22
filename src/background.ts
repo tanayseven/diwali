@@ -193,14 +193,17 @@ const followEase = 5
 const followKeep = 0.45
 const followHold = 1.8
 const followReturn = 1100
-// The whole street, shown at once: every house, with this much either side, from as far
-// above as it takes down to just below the road, easing out to it and back over this long,
-// in ms. The sky's drawn on up above the scene this far, and in its colours either side
+// The street, shown three houses at a time, slid along a house at a time: as wide as the
+// widest three, with this much either side, down to just below the road, easing out to it
+// and back over this long, in ms. The sky's drawn on up above the scene this far, and in
+// its colours either side, with stars scattered over it, this many
 const streetMargin = 60
 const streetBottom = 800
 const streetGlide = 900
 const skyAbove = 4000
 const skyColours = {top: 0x0e1638, bottom: 0x2e3f78}
+const streetShows = 3
+const starsBeyond = 260
 // A press on the street shown whole that moves less than this, on screen, is a tap on
 // whichever house it's on
 const streetTapSlop = 10
@@ -279,6 +282,12 @@ const createBackground = (app: Application) => {
       type: "linear", start: {x: 0, y: 0}, end: {x: 0, y: 1},
       colorStops: [{offset: 0, color: skyColours.top}, {offset: 1, color: skyColours.bottom}],
     }))
+  for (let k = 0; k < starsBeyond; k++) {
+    // Thinning out lower down, where the city's glow would hide them
+    const x = scenery.left + Math.random() * (scenery.right - scenery.left)
+    const y = -700 + Math.random() ** 1.6 * 1100
+    skyBeyond.circle(x, y, Math.random() < 0.8 ? 1.5 : 2.5).fill({color: Math.random() < 0.6 ? 0xffffff : 0xfff2b0, alpha: 0.5 + Math.random() * 0.5})
+  }
   scene.addChild(skyBeyond, sky)
   // The skyline's two layers. The near one has whatever changes in it drawn over it too,
   // like its windows going dark
@@ -287,6 +296,13 @@ const createBackground = (app: Application) => {
     skylineLayers[layer].position.set(skylineLeft, skylineTop)
     skylineLayers[layer].scale.set(skylineScale)
     skylineLayers[layer].addChild(new Sprite(Assets.get<Texture>(skylineUrls[layer])))
+    // And mirrored either side, so it carries on along the street when it's shown wider
+    ;[0, skylineSize.width * 2].forEach(x => {
+      const beyond = new Sprite(Assets.get<Texture>(skylineUrls[layer]))
+      beyond.x = x
+      beyond.scale.x = -1
+      skylineLayers[layer].addChildAt(beyond, 0)
+    })
     scene.addChild(skylineLayers[layer])
   })
   // The hills, along the whole street: repeated, every other one mirrored, so each
@@ -395,16 +411,35 @@ const createBackground = (app: Application) => {
   let street: {before: {zoom: number, centre: PointData}} | undefined
   // A view being eased to, from where it was, and what to do once it's there
   let glide: {from: {zoom: number, centre: PointData}, to: {zoom: number, centre: PointData}, elapsed: number, then?: () => void} | undefined
-  const streetLeft = houses[0].left - streetMargin
-  const streetRight = houses[houses.length - 1].left + houses[houses.length - 1].width + streetMargin
-  // The zoom, and the middle, that show every house at once
-  const streetView = () => {
+  // The three houses from each along the street, as far as there are three
+  const lastWindow = Math.max(0, houses.length - streetShows)
+  const windowSides = (first: number) => {
+    const last = houses[Math.min(houses.length - 1, first + streetShows - 1)]
+    return {left: houses[first].left - streetMargin, right: last.left + last.width + streetMargin}
+  }
+  const widestWindow = Math.max(...houses.slice(0, lastWindow + 1).map((_, first) => {
+    const {left, right} = windowSides(first)
+    return right - left
+  }))
+  // The zoom that shows the widest three, the same for any three, so sliding along doesn't
+  // zoom in and out
+  const streetZoom = () => {
     const {width, height} = app.screen
-    const scale = width / (streetRight - streetLeft)
-    return {
-      zoom: scale / coverScale(width, height),
-      centre: {x: (streetLeft + streetRight) / 2, y: streetBottom - height / 2 / scale},
-    }
+    return width / widestWindow / coverScale(width, height)
+  }
+  // Which three are shown, by the first, the ones the middle of the view's nearest the
+  // middle of
+  const windowAt = (x: number) => {
+    const idx = houses.reduce((best, house, k) =>
+      Math.abs(house.left + house.width / 2 - x) < Math.abs(houses[best].left + houses[best].width / 2 - x) ? k : best, 0)
+    return Math.min(lastWindow, Math.max(0, idx - 1))
+  }
+  // The view of three houses from one along the street
+  const streetView = (first: number) => {
+    const {width, height} = app.screen
+    const scale = streetZoom() * coverScale(width, height)
+    const {left, right} = windowSides(first)
+    return {zoom: streetZoom(), centre: {x: (left + right) / 2, y: streetBottom - height / 2 / scale}}
   }
   // Every street change told to whoever's listening, as the button that shows it does
   const streetListeners = new Set<(shown: boolean) => void>()
@@ -424,7 +459,7 @@ const createBackground = (app: Application) => {
   // covers
   const clampView = () => {
     const {width, height} = app.screen
-    zoom = Math.min(maxZoom(), Math.max(street ? Math.min(1, streetView().zoom) : 1, zoom))
+    zoom = Math.min(maxZoom(), Math.max(street ? Math.min(1, streetZoom()) : 1, zoom))
     const scale = coverScale(width, height) * zoom
     const bar = hudFrame(app.screen)
     const belowBar = Math.min(groundBelow, (height - (bar.y - bar.height / 2) + barClearance) / scale)
@@ -690,13 +725,24 @@ const createBackground = (app: Application) => {
   const showStreet = (on: boolean) => {
     if (on && !street) {
       street = {before: {zoom, centre: {...centre}}}
-      glideTo(streetView())
+      glideTo(streetView(windowAt(centre.x)))
       streetListeners.forEach(listener => listener(true))
     } else if (!on && street && !glide) {
       glideTo(street.before, () => {
         street = undefined
       })
       streetListeners.forEach(listener => listener(false))
+    }
+  }
+  // Slides the street along a house to the left (-1) or right (1), from the three nearest
+  // the middle of the view, as far as the street goes
+  const slideStreet = (by: -1 | 1) => {
+    if (!street || glide) {
+      return
+    }
+    const next = windowAt(centre.x) + by
+    if (next >= 0 && next <= lastWindow) {
+      glideTo(streetView(next))
     }
   }
   // Eases from the street shown whole in to a house on it, zoomed all the way out, as
@@ -806,6 +852,12 @@ const createBackground = (app: Application) => {
     // shown, a tap on a house looks at it, and the player's own goes back
     showStreet,
     isStreetShown: () => street !== undefined,
+    slideStreet,
+    // Whether the street can be slid along any further that way
+    canSlideStreet: (by: -1 | 1) => {
+      const next = windowAt(glide?.to.centre.x ?? centre.x) + by
+      return street !== undefined && next >= 0 && next <= lastWindow
+    },
     // Calls back whenever the street's shown or put away; returns how to stop
     onStreet(listener: (shown: boolean) => void) {
       streetListeners.add(listener)

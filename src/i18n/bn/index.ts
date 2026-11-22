@@ -95,6 +95,8 @@ const bn = {
 		houseWins: "{house} জিতেছে!",
 		playAgain: "আবার খেলুন",
 		street: "পুরো রাস্তা দেখান",
+		streetLeft: "বাঁ দিকের বাড়ি",
+		streetRight: "ডান দিকের বাড়ি",
 		feed: {
 			lights: "{house} আলো ঝুলিয়েছে",
 			kandil: "{house} আকাশপ্রদীপ ঝুলিয়েছে",

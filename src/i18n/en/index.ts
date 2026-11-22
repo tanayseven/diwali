@@ -106,6 +106,8 @@ const en = {
 		houseWins: "{house:string} wins!",
 		playAgain: "Play again",
 		street: "Show the whole street",
+		streetLeft: "Houses to the left",
+		streetRight: "Houses to the right",
 		feed: {
 			lights: "{house:string} hung lights",
 			kandil: "{house:string} hung a kandil",

@@ -95,6 +95,8 @@ const sa = {
 		houseWins: "{house} विजयते!",
 		playAgain: "पुनः क्रीड",
 		street: "सम्पूर्णां वीथिं दर्शय",
+		streetLeft: "वामतः गृहाणि",
+		streetRight: "दक्षिणतः गृहाणि",
 		feed: {
 			lights: "{house} दीपमालाः अलम्बयत्",
 			kandil: "{house} आकाशदीपम् अलम्बयत्",

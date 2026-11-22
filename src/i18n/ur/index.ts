@@ -95,6 +95,8 @@ const ur = {
 		houseWins: "{house} جیت گیا!",
 		playAgain: "دوبارہ کھیلیں",
 		street: "پوری گلی دکھائیں",
+		streetLeft: "بائیں طرف کے گھر",
+		streetRight: "دائیں طرف کے گھر",
 		feed: {
 			lights: "{house} نے روشنیاں لگائیں",
 			kandil: "{house} نے قندیل لٹکائی",

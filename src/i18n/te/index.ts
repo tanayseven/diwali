@@ -95,6 +95,8 @@ const te = {
 		houseWins: "{house} గెలిచింది!",
 		playAgain: "మళ్ళీ ఆడండి",
 		street: "మొత్తం వీధిని చూపించు",
+		streetLeft: "ఎడమ వైపు ఇళ్ళు",
+		streetRight: "కుడి వైపు ఇళ్ళు",
 		feed: {
 			lights: "{house} దీపాల తోరణాలు వేలాడదీసింది",
 			kandil: "{house} ఆకాశదీపం వేలాడదీసింది",

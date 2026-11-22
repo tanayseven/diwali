@@ -672,7 +672,7 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
   }
 })
 
-test("in a tournament round, the street button shows every house at once, a tap on a neighbour looks at it, and what it puts up is said", async () => {
+test("in a tournament round, the street button shows three houses at a time, slid along by the arrows, a tap on a neighbour looks at it, and what it puts up is said", async () => {
   const context = await browser.newContext(phone)
   await context.addInitScript(settings => {
     localStorage.setItem("diwali-audio", JSON.stringify(settings))
@@ -697,29 +697,34 @@ test("in a tournament round, the street button shows every house at once, a tap 
     await street.tap()
     await round.waitForTimeout(1500)
     assert.equal(await street.getAttribute("aria-pressed"), "true")
-    // Every house, from side to side and roof to ground, on screen
-    const onScreen = await round.evaluate(() => window.diwaliCamera.houses().map(({left, top, right, bottom}) => {
+    // Which houses are wholly on screen, from side to side and roof to ground
+    const onScreen = () => round.evaluate(() => window.diwaliCamera.houses().map(({left, top, right, bottom}) => {
       const from = window.diwaliCamera.toScreen({x: left, y: top})
       const to = window.diwaliCamera.toScreen({x: right, y: bottom})
       return from.x >= 0 && from.y >= 0 && to.x <= innerWidth && to.y <= innerHeight
     }))
-    assert.deepEqual(onScreen, [true, true, true, true, true, true])
+    // Deepa Niwas, third along, with a neighbour either side
+    assert.deepEqual(await onScreen(), [false, true, true, true, false, false])
+    // Then a house along to the right
+    await round.getByRole("button", {name: "Houses to the right"}).tap()
+    await round.waitForTimeout(1500)
+    assert.deepEqual(await onScreen(), [false, false, true, true, true, false])
     // A neighbour's decorating is said under the round's pill, as it's done
     await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
       .some(line => / \+\d+$/.test(line.textContent ?? "")), undefined, {timeout: 15000})
-    // A tap on the house furthest right looks at it, out of the street
+    // A tap on the house furthest right of them looks at it, out of the street
     const last = await round.evaluate(() => {
-      const {left, right, bottom} = window.diwaliCamera.houses().at(-1)
+      const {left, right, bottom} = window.diwaliCamera.houses()[4]
       return window.diwaliCamera.toScreen({x: (left + right) / 2, y: bottom - 60})
     })
     await round.touchscreen.tap(last.x, last.y)
     await round.waitForTimeout(1500)
     assert.equal(await street.getAttribute("aria-pressed"), "false")
     const middle = await round.evaluate(() => {
-      const {left, right} = window.diwaliCamera.houses().at(-1)
+      const {left, right} = window.diwaliCamera.houses()[4]
       return window.diwaliCamera.toScreen({x: (left + right) / 2, y: 0}).x
     })
-    assert.ok(Math.abs(middle - screen.width / 2) < screen.width / 4, `the house furthest right is in the middle, at ${middle}`)
+    assert.ok(Math.abs(middle - screen.width / 2) < screen.width / 4, `the house tapped is in the middle, at ${middle}`)
   } finally {
     await context.close()
   }

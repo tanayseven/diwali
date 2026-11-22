@@ -95,6 +95,8 @@ const gu = {
 		houseWins: "{house} જીત્યું!",
 		playAgain: "ફરી રમો",
 		street: "આખી શેરી બતાવો",
+		streetLeft: "ડાબી બાજુનાં ઘર",
+		streetRight: "જમણી બાજુનાં ઘર",
 		feed: {
 			lights: "{house} એ લાઇટ લગાવી",
 			kandil: "{house} એ કંદીલ લટકાવ્યું",

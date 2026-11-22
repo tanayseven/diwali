@@ -95,6 +95,8 @@ const ta = {
 		houseWins: "{house} வென்றது!",
 		playAgain: "மீண்டும் விளையாடு",
 		street: "முழுத் தெருவையும் காட்டு",
+		streetLeft: "இடப்பக்க வீடுகள்",
+		streetRight: "வலப்பக்க வீடுகள்",
 		feed: {
 			lights: "{house} விளக்குச் சரங்களைத் தொங்கவிட்டது",
 			kandil: "{house} கந்தீலைத் தொங்கவிட்டது",

@@ -95,6 +95,8 @@ const kok = {
 		houseWins: "{house} जिखलें!",
 		playAgain: "परत खेळात",
 		street: "पुराय रस्तो दाखयात",
+		streetLeft: "दाव्यान आशिल्लीं घरां",
+		streetRight: "उजव्यान आशिल्लीं घरां",
 		feed: {
 			lights: "{house} न दिव्यांच्यो माळो लायल्यो",
 			kandil: "{house} न आकाशकंदील लायलो",

@@ -95,6 +95,8 @@ const hiLatn = {
 		houseWins: "{house} jeeta!",
 		playAgain: "Phir se khelo",
 		street: "Poori gali dikhao",
+		streetLeft: "Baayi taraf ke ghar",
+		streetRight: "Daayi taraf ke ghar",
 		feed: {
 			lights: "{house} ne lights lagayi",
 			kandil: "{house} ne kandil taanga",

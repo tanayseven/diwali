@@ -95,6 +95,8 @@ const kn = {
 		houseWins: "{house} ಗೆದ್ದಿತು!",
 		playAgain: "ಮತ್ತೆ ಆಡಿ",
 		street: "ಇಡೀ ಬೀದಿಯನ್ನು ತೋರಿಸಿ",
+		streetLeft: "ಎಡಭಾಗದ ಮನೆಗಳು",
+		streetRight: "ಬಲಭಾಗದ ಮನೆಗಳು",
 		feed: {
 			lights: "{house} ದೀಪಗಳನ್ನು ತೂಗುಹಾಕಿತು",
 			kandil: "{house} ಆಕಾಶಬುಟ್ಟಿ ತೂಗುಹಾಕಿತು",

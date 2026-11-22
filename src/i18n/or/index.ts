@@ -95,6 +95,8 @@ const or = {
 		houseWins: "{house} ଜିତିଲା!",
 		playAgain: "ପୁଣି ଖେଳନ୍ତୁ",
 		street: "ପୂରା ଗଳି ଦେଖାନ୍ତୁ",
+		streetLeft: "ବାମ ପଟର ଘର",
+		streetRight: "ଡାହାଣ ପଟର ଘର",
 		feed: {
 			lights: "{house} ଆଲୁଅ ଲଗାଇଲା",
 			kandil: "{house} ଆକାଶଦୀପ ଟାଙ୍ଗିଲା",

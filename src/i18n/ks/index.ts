@@ -95,6 +95,8 @@ const ks = {
 		houseWins: "{house} ژیوٚن!",
 		playAgain: "بیٚیہِ گِندِو",
 		street: "پوٗرٕ کوچہٕ ہاوِو",
+		streetLeft: "کھوَر طرفٕچ گرٕ",
+		streetRight: "دَچھِن طرفٕچ گرٕ",
 		feed: {
 			lights: "{house} لۄگ گاش",
 			kandil: "{house} لۄگ قندیل",

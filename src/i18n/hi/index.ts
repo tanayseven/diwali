@@ -95,6 +95,8 @@ const hi = {
 		houseWins: "{house} जीता!",
 		playAgain: "फिर से खेलें",
 		street: "पूरी गली दिखाएँ",
+		streetLeft: "बाईं ओर के घर",
+		streetRight: "दाईं ओर के घर",
 		feed: {
 			lights: "{house} ने रोशनी लगाई",
 			kandil: "{house} ने कंदील टाँगा",
