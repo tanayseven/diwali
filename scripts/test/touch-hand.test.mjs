@@ -770,7 +770,7 @@ test("a street challenge in a tournament round is won by the first house to do i
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
     // The first race, a quarter of the way in, is to put down a rangoli
-    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=40&challenge=rangoli`)
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=90&challenge=rangoli`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
