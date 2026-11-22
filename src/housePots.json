@@ -1,0 +1,51 @@
+[
+	{
+		"url": "sprites/house-pots/1.svg",
+		"x": 144,
+		"y": 487,
+		"width": 123,
+		"height": 327
+	},
+	{
+		"url": "sprites/house-pots/2.svg",
+		"x": 626,
+		"y": 594,
+		"width": 87,
+		"height": 123
+	},
+	{
+		"url": "sprites/house-pots/3.svg",
+		"x": 717,
+		"y": 606,
+		"width": 69,
+		"height": 89
+	},
+	{
+		"url": "sprites/house-pots/4.svg",
+		"x": 1028,
+		"y": 368,
+		"width": 123,
+		"height": 327
+	},
+	{
+		"url": "sprites/house-pots/5.svg",
+		"x": 1269,
+		"y": 319,
+		"width": 156,
+		"height": 421
+	},
+	{
+		"url": "sprites/house-pots/6.svg",
+		"x": 1480,
+		"y": 706,
+		"width": 87,
+		"height": 123
+	},
+	{
+		"url": "sprites/house-pots/7.svg",
+		"x": 1571,
+		"y": 718,
+		"width": 69,
+		"height": 89
+	}
+]

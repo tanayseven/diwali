@@ -95,7 +95,8 @@ const createRangoli = (app: Application, background: Background, lighting: Light
       floor.sprite.position.set(left, top)
       floor.sprite.scale.set(1 / resolution)
       floor.sprite.eventMode = "none"
-      // On the floor, under every diya and firework placed on it
+      // On the floor, under every diya and firework placed on it, and the pots standing on
+      // the porch (src/background.ts, at 1.5)
       floor.sprite.zIndex = 1
       floor.mask = new Graphics().poly(porch.flatMap(p => [p.x, p.y])).fill(0xffffff)
       floor.sprite.mask = floor.mask

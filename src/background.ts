@@ -2,6 +2,7 @@ import {Application, Assets, Container, FederatedPointerEvent, Point, PointData,
 import {pixelDensity, quality} from "./app"
 import {stereoPan} from "./audioControl"
 import {hudFrame} from "./hud"
+import housePots from "./housePots.json"
 import {neighbours, neighboursLeft} from "./street"
 import type {HouseName} from "./street"
 
@@ -10,6 +11,11 @@ import type {HouseName} from "./street"
 const skyUrl = "sprites/backgrounds/night-sky.svg"
 const hillsUrl = "sprites/backgrounds/night-hills.svg"
 const houseUrl = "sprites/house.svg"
+// The pots of plants and trees standing on its porch, each cropped from the house's
+// drawing, by where it is in the drawing's units, made by scripts/art/house-pots.mjs.
+// They're drawn again over the porch floor's rangoli, so a pot stands on it rather
+// than under it
+const housePotUrls = housePots.map(({url}) => url)
 // The scene is 1280 x 720, around the main house, and everything's placed in those
 // same units. The street carries on either side of it, with a house after another
 // along it, and the sky and the hills carry on 400 past the last of them, so the
@@ -193,7 +199,7 @@ const fitScale = (view: {width: number, height: number}, width: number, height: 
   Math.max(coverScale(width, height), Math.min(width / view.width, height / view.height))
 
 // Every asset the background needs, to be loaded before it's created
-const backgroundAssets = [skyUrl, hillsUrl, ...Object.values(skylineUrls), ...houses.map(({url}) => url)]
+const backgroundAssets = [skyUrl, hillsUrl, ...Object.values(skylineUrls), ...houses.map(({url}) => url), ...housePotUrls]
 
 // The SVGs are rasterised once at load, so draw them at the size they'll be shown
 // on this screen to keep them sharp. The house is drawn for the closest zoom; the
@@ -212,6 +218,7 @@ const addBackgroundAssets = () => {
   const skylineResolution = Math.min(skyResolution * skylineScale, widest / skylineSize.width)
   Object.values(skylineUrls).forEach(url => Assets.add({alias: url, src: url, data: {resolution: skylineResolution}}))
   Assets.add({alias: houseUrl, src: houseUrl, data: {resolution: houseResolution}})
+  housePotUrls.forEach(url => Assets.add({alias: url, src: url, data: {resolution: houseResolution}}))
   // The other houses are drawn in scene units, so to be as sharp as the main house is,
   // which is drawn smaller, they're drawn at as many pixels a scene unit as it is,
   // and no more, as each takes a good deal of memory on a phone
@@ -293,6 +300,16 @@ const createBackground = (app: Application) => {
   // Things placed in the scene, like diyas, so they move with the camera
   const decorations = new Container()
   scene.addChild(decorations)
+  // Its pots again, over the rangoli drawn on the porch floor (src/rangoli.ts, at 1) and
+  // under everything put on the porch, which is drawn by how far forward it is
+  housePots.forEach(({url, x, y}) => {
+    const pot = new Sprite(Assets.get<Texture>(url))
+    pot.position.copyFrom(fromHouseSvg(x, y))
+    pot.scale.set(houseScale)
+    pot.zIndex = 1.5
+    pot.eventMode = "none"
+    decorations.addChild(pot)
+  })
   // Catches presses on the scenery for panning. It's underneath the scene, so anything
   // placed in it (like diyas) is pressed first
   const panSurface = new Container()
