@@ -1,0 +1,5 @@
+• Make the street and zoom tip tests wait for what they look for however slowly it comes
+• Give the street test a round long enough to finish in on a slow machine
+• Wait in the street test for the view to ease where it's going, however slowly it's drawn
+• Give the tournament tests, and the zoom tip's, time enough to start on a slow machine
+• Let arrow presses in quick succession each slide the street along
