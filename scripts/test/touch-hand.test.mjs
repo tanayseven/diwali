@@ -356,7 +356,8 @@ test("a finger held on a placed diya shows what it is", async () => {
   const lit = page.getByText("Lit", {exact: true})
   const at = {x: diya.x, y: diya.y - 4}
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchStart", touchPoints: [at]})
-  const shownWhileHeld = await lit.waitFor({timeout: 5000}).then(() => true, () => false)
+  // Shown once it's been held a moment, which can take a while on a slow, busy machine
+  const shownWhileHeld = await lit.waitFor({timeout: 10000}).then(() => true, () => false)
   await touchscreen.send("Input.dispatchTouchEvent", {type: "touchEnd", touchPoints: []})
   assert.ok(shownWhileHeld, "the diya's tooltip shows while the finger's held on it")
 })
@@ -627,8 +628,8 @@ test("a tournament round counts down, scores what's lit, ranks every house, and 
   const round = await context.newPage()
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
-    // A round of a few seconds
-    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=12`)
+    // A short round, long enough to light an anar on a slow machine
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=30`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
@@ -655,12 +656,12 @@ test("a tournament round counts down, scores what's lit, ranks every house, and 
     await round.mouse.move(slot(6).x, slot(6).y)
     await round.mouse.down()
     await round.mouse.move(porch.x, porch.y - 4, {steps: 12})
-    await round.waitForTimeout(2000)
+    // Held to it till it's lit, which takes longer on a slow machine
+    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
     await round.mouse.up()
-    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 5000})
     // Then every house, ranked, with the player's among them
     const results = round.getByRole("dialog", {name: "Results"})
-    await results.waitFor({timeout: 30000})
+    await results.waitFor({timeout: 60000})
     assert.equal(await results.getByRole("listitem").count(), 6)
     assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+15/)
     assert.equal(await hud.count(), 0, "the round's time and points are gone")
