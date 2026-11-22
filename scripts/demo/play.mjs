@@ -167,9 +167,11 @@ const lightEach = async (index, targets, hold = 1300, after = 300) => {
 }
 // A point in the scene moved by a distance in scene units
 const by = (at, dx, dy) => ({x: at.x + dx, y: at.y + dy})
-// A finger drawn through points in the scene
+// A finger drawn through points in the scene, held so what it draws with, shown up and
+// to the left of it on a touch screen, goes through them
 const draw = async points => {
-  const [first, ...rest] = await Promise.all(points.map(onScreen))
+  const shown = await Promise.all(points.map(onScreen))
+  const [first, ...rest] = shown.map(at => ({x: at.x + lift, y: at.y + lift}))
   await touch("touchStart", first)
   for (const point of rest) {
     await touch("touchMove", point)
@@ -191,18 +193,6 @@ const zoom = async (presses, settle = 400 * slow) => {
 const scroll = async (dx, dy) => {
   await page.mouse.move(screen.width / 2, 20)
   await page.mouse.wheel(dx, dy)
-}
-// Drags the scenery down by a distance on screen with the mouse, quickly, in strokes
-// down the sky between the rail and the buttons, which pans by exactly as far
-const flingBy = async dy => {
-  const strokes = Math.max(1, Math.ceil(Math.abs(dy) / 220))
-  for (let i = 0; i < strokes; i++) {
-    const from = {x: screen.width / 2, y: dy > 0 ? 30 : 250}
-    await page.mouse.move(from.x, from.y)
-    await page.mouse.down()
-    await page.mouse.move(from.x, from.y + dy / strokes, {steps: 6})
-    await page.mouse.up()
-  }
 }
 // Pans so a point in the scene is in the middle of the screen, or as near as the camera
 // goes, scrolling until it's there
@@ -280,14 +270,16 @@ for (const side of ["left", "right"]) {
 // the porch roof and a pair from the wings, each pair coloured alike, zoomed out to see
 // them all
 await zoom(-5)
-await lookAt(640, 560)
+await lookAt(640, 520)
 step("Five kandils, hung from the house")
 await tap({x: 52, y: rail.kandil})
-// Where each is held by the top of its string, and its paper and tails
+// Where each is held by the top of its string, and its paper and tails, each hung on a
+// short string, just under the ledge it hangs from: the porch roof's, at y 429,
+// and the wings', at y 457
 const kandils = [
-  {at: {x: 640, y: 490}, paper: 4, tails: 8},
-  ...mirrored([70], 520).map(at => ({at, paper: 1, tails: 7})),
-  ...mirrored([290], 495).map(at => ({at, paper: 3, tails: 5})),
+  {at: {x: 640, y: 440}, paper: 4, tails: 8},
+  ...mirrored([70], 448).map(at => ({at, paper: 1, tails: 7})),
+  ...mirrored([290], 467).map(at => ({at, paper: 3, tails: 5})),
 ]
 for (const {at} of kandils) {
   await put(0, at, 400)
@@ -304,6 +296,20 @@ for (const {at, paper, tails} of kandils) {
 }
 await wait(1000)
 await shot("kandils")
+
+// Fairy lights along the eaves of each wing, either side of the kandils hung from them,
+// each snapped up onto the eave above
+step("Fairy lights, mixed, along the eaves of each wing")
+// Moved before the tool's picked, as a press on the house would hang a string
+await lookAt(640, 520)
+await tap({x: 52, y: rail.decorate})
+await tap(slot(6))
+const line = (from, to) => Array.from({length: 5}, (_, i) => ({x: from + (to - from) * i / 4, y: 472}))
+await draw(line(280, 480))
+await wait(1200)
+await draw(line(1000, 800))
+await wait(2000)
+await shot("fairy-lights")
 
 // A pair of ready-made rangolis, alike, on the porch floor either side of the fireworks
 // to come, each put down where the floor's tapped
@@ -337,10 +343,10 @@ step("Fireworks, zoomed out a little: four of each, in two rows")
 await tap({x: 52, y: rail.fireworks})
 await zoom(1)
 await lookAt(640, 645)
-// In the bar's order: anar, laddi, chakri, sutli bomb and rocket, each from the door out
+// In the bar's order: anar, laddi, chakri, sutli bomb, rocket and sky shot, each from the door out
 const rows = {back: 610, front: 632}
-const fireworkOffsets = {anar: 100, laddi: 280, chakri: 220, sutli: 160, rocket: 40}
-const kinds = ["anar", "laddi", "chakri", "sutli", "rocket"]
+const fireworkOffsets = {anar: 100, laddi: 280, chakri: 220, sutli: 160, rocket: 40, skyshot: 12}
+const kinds = ["anar", "laddi", "chakri", "sutli", "rocket", "skyshot"]
 const fireworks = Object.fromEntries(kinds.map(kind => [kind, [
   ...mirrored([fireworkOffsets[kind]], rows.back),
   ...mirrored([fireworkOffsets[kind]], rows.front),
@@ -362,42 +368,39 @@ const fuseOf = at => by(at, 2.3, -8)
 const inTurn = ([backLeft, backRight, frontLeft, frontRight]) => [backLeft, backRight, frontRight, frontLeft]
 for (const [kind, name, after] of [["anar", "Anars", 1500], ["laddi", "Laddis", 1500], ["chakri", "Chakris", 2500], ["sutli", "Sutli bombs", 5000]]) {
   step(name)
-  await lightEach(5, inTurn(fireworks[kind]).map(fuseOf))
+  await lightEach(6, inTurn(fireworks[kind]).map(fuseOf))
   await wait(after)
   await shot(kind)
 }
-step("Rockets, each watched up to the sky till it bursts")
+step("Rockets, each followed up to the sky by the camera till it bursts")
 // A rocket goes up a couple of seconds after it's caught and bursts high over the roof,
-// out of sight of the porch with the bar below it. So each is lit on its own and
-// followed up to the sky straight away, without slowing, and then it's back down to the
-// porch for the next
+// out of sight of the porch. One the player lit is followed up by the camera on its own,
+// which comes back down after, so each is lit on its own and watched
 const porchView = await centre()
 for (const [i, rocket] of inTurn(fireworks.rocket).entries()) {
-  await lightEach(5, [fuseOf(rocket)], 2000, 0)
-  // Up at once, by dragging the sky down, as it's only a second or so from bursting
-  const shown = await onScreen({x: 640, y: 180})
-  await flingBy(screen.height / 2 - shown.y)
-  await page.waitForTimeout(3000)
+  await lightEach(6, [fuseOf(rocket)], 2000, 0)
+  await page.waitForTimeout(1800)
   if (i === 0) {
     await shot("rocket")
   }
+  await page.waitForTimeout(3200)
+  await lookAt(porchView.x, porchView.y, 300)
+}
+step("Sky shots, each followed up to the sky by the camera till it bursts")
+// Its fuse's frayed tip, out to the right of the tube, near its foot
+const skyShotFuseOf = at => by(at, 7.6, -7.7)
+for (const [i, skyShot] of inTurn(fireworks.skyshot).entries()) {
+  // The camera follows one the player lit up on its own, and comes back down after
+  await lightEach(6, [skyShotFuseOf(skyShot)], 2000, 0)
+  await page.waitForTimeout(2200)
+  if (i === 0) {
+    await shot("skyshot")
+  }
+  await page.waitForTimeout(2800)
   await lookAt(porchView.x, porchView.y, 300)
 }
 await wait(800)
 
-// Fairy lights across the front of each wing
-step("Fairy lights, mixed, across the front of each wing, zoomed out a little more")
-// Moved before the tool's picked, as a press on the house would hang a string
-await zoom(-1)
-await lookAt(640, 560)
-await tap({x: 52, y: rail.decorate})
-await tap(slot(6))
-const line = (from, to) => Array.from({length: 5}, (_, i) => ({x: from + (to - from) * i / 4, y: 472}))
-await draw(line(280, 480))
-await wait(1200)
-await draw(line(1000, 800))
-await wait(2000)
-await shot("fairy-lights")
 
 
 step("The whole house, with the bar hidden")

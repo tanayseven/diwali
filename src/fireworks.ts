@@ -48,13 +48,19 @@ const rocketUrls = {
   bottle: "sprites/fireworks/rocket-bottle.svg",
   flying: "sprites/fireworks/rocket-flying.svg",
 }
+// A sky shot (a paper tube that fires a shell into the sky) whole, and once it's fired,
+// its cap blown off and its top sooty
+const skyShotUrls = {
+  unlit: "sprites/fireworks/skyshot-unlit.svg",
+  spent: "sprites/fireworks/skyshot-spent.svg",
+}
 // Every texture the fireworks need, to be loaded before they're created
 const fireworksAssets = [
   ...Object.values(anarUrls), ...laddiUrls, ...chakriUrls, ...sutliUrls.fuse, sutliUrls.spent,
-  ...Object.values(rocketUrls), ...matchFrameUrls,
+  ...Object.values(rocketUrls), ...Object.values(skyShotUrls), ...matchFrameUrls,
 ]
 
-type Kind = "anar" | "laddi" | "chakri" | "sutli" | "rocket"
+type Kind = "anar" | "laddi" | "chakri" | "sutli" | "rocket" | "skyshot"
 
 // How each kind of firework's drawings sit in the scene. They're all the same size,
 // showing a frame of their drawing's units at a number of pixels to a unit. The origin
@@ -136,8 +142,22 @@ const rocketShape: Shape = {
   fuseAt: {x: 41.5, y: 53},
   scale: 0.48,
 }
+// The sky shot is a tall blue paper tube standing on y 108, from its red cap at y 13,
+// where it fires from, its fuse curling out of its side near the foot to a frayed tip
+// at (47.2, 90.5). It stands a little taller than the sutli bomb is wide, a little
+// over half the rocket's height
+const skyShotMouth = {x: 30, y: 14}
+const skyShotShape: Shape = {
+  frame: new Rectangle(0, 0, 60, 120),
+  density: 4,
+  origin: {x: 30, y: 108},
+  area: new Rectangle(18, 9, 32, 102),
+  fuseAt: {x: 47.2, y: 90.5},
+  scale: 0.44,
+}
 const shapes: Record<Kind, Shape> = {
   anar: anarShape, laddi: laddiShape, chakri: chakriShape, sutli: sutliShape, rocket: rocketShape,
+  skyshot: skyShotShape,
 }
 // A firework that can be lit grows this much while the match is dragged over it
 const targetGrowth = 1.12
@@ -321,6 +341,43 @@ const rocketFade = 5
 // to the porch
 const rocketReach = {up: 260, side: 260, down: 700}
 
+// A sky shot's fuse fizzes round to the tube, then with a thump it fires a shell
+// straight up out of its mouth, much faster than a rocket climbs, trailing a thin tail of
+// golden sparks, to about 530 over the porch, higher than a rocket goes. At the top of
+// its climb the shell bursts into a great round ball of gold stars, much bigger than a
+// rocket's, round a ring of blue ones, with a spray of fast sparks flying out; a third of
+// the gold stars crackle into glitter as they fade. In scene units and seconds
+const skyShotFuse = {from: {x: 47.2, y: 90.5}, to: {x: 40, y: 97}, duration: 2}
+const skyShotSpeed = 1050
+const skyShotLean = 0.04
+const skyShotDrag = 0.35
+const skyShotBurstSpeed = 50
+const skyShotTrailRate = 260 * quality.particleScale
+const skyShotTrailSpeed = {min: 10, max: 50}
+const skyShotMuzzlePuffs = 14
+// The gold stars fly out in every direction at much the same speed, as the shell's
+// burst is round: seen from the side, that's a round ball, thickest at its rim
+const skyShotStars = {min: 240, max: 300}
+const skyShotStarSpeed = {min: 300, max: 340}
+const skyShotStarLife = {min: 2.1, max: 2.9}
+const skyShotStarFall = 0.3
+const skyShotStarSize = 2.3
+// Of them, this share crackle partway through their life, bursting into glitter
+const skyShotCrackle = 0.35
+// The blue ring in the middle: fewer, slower and flat, so it's a ring rather than a ball
+const skyShotRing = 56
+const skyShotRingSpeed = {min: 140, max: 150}
+const skyShotRingLife = {min: 1.4, max: 1.8}
+// The spray of fast, short-lived sparks flying out as it bursts
+const skyShotSpray = 90
+const skyShotSpraySpeed = {min: 220, max: 480}
+const skyShotColours = [0xffc861, 0xffd98a]
+const skyShotFleckColour = 0x76a8ff
+const skyShotShellRadius = 3
+const skyShotLightColour = 0xffd27a
+// How far its burst's light reaches, further than a rocket's, as it's bigger
+const skyShotBurstLight = 480
+
 // A chakri's fuse fizzes to the coil's end, then it spins up, burns and spins down,
 // in seconds. Its drawings go from whole to burnt out over the burn
 const chakriFuse = {from: {x: 186, y: 297}, to: {x: 209, y: 310}, duration: 0.8}
@@ -407,14 +464,17 @@ const paint = (particle: Particle, bgr: number, alpha: number) => {
 // The sparks' colours as they age, worked out once and swapped ready to paint
 const sparkTable = Array.from({length: 256}, (_, idx) => toBgr(sparkColour(idx / 255)))
 const sparkBgr = (t: number) => sparkTable[Math.round(clamp(t) * 255)]
-// A rocket's stars as they age: white hot, then their colour, darkening as they fade
-const starTables = rocketColours.map(colour => Array.from({length: 256}, (_, idx) => {
+// A burst's stars as they age: white hot, then their colour, darkening as they fade
+const starTable = (colour: number) => Array.from({length: 256}, (_, idx) => {
   const t = idx / 255
   const shade = t < 0.06 ? 0xffffff
     : t < 0.25 ? mixColour(0xffffff, colour, (t - 0.06) / 0.19)
     : mixColour(colour, 0x301008, 0.6 * (t - 0.25) / 0.75)
   return toBgr(shade)
-}))
+})
+const starTables = rocketColours.map(starTable)
+const skyShotTables = skyShotColours.map(starTable)
+const skyShotFleckTable = starTable(skyShotFleckColour)
 const whiteBgr = 0xffffff
 const smokeBgr = toBgr(smokeTint)
 
@@ -563,11 +623,13 @@ const createFireworks = (
     chakri: itemFor(chakriShape, chakriUrls[0]),
     sutli: itemFor(sutliShape, sutliUrls.fuse[0]),
     rocket: itemFor(rocketShape, rocketUrls.unlit),
+    skyshot: itemFor(skyShotShape, skyShotUrls.unlit),
   }
   const unlitUrls: Record<Kind, string> = {
     anar: anarUrls.unlit, laddi: laddiUrls[0], chakri: chakriUrls[0], sutli: sutliUrls.fuse[0], rocket: rocketUrls.unlit,
+    skyshot: skyShotUrls.unlit,
   }
-  const kinds: Kind[] = ["anar", "laddi", "chakri", "sutli", "rocket"]
+  const kinds: Kind[] = ["anar", "laddi", "chakri", "sutli", "rocket", "skyshot"]
   const matchstick = createMatchstick(app, audio)
   const playAnarSound = audio.createEffect(anarSoundUrl)
   const playChakriSound = audio.createEffect(chakriSoundUrl)
@@ -604,18 +666,18 @@ const createFireworks = (
   dragLayer.addChild(touch.marker, touch.front)
   const slots = {
     anar: bar.addItem(0, stacks.anar), laddi: bar.addItem(1, stacks.laddi), chakri: bar.addItem(2, stacks.chakri),
-    sutli: bar.addItem(3, stacks.sutli), rocket: bar.addItem(4, stacks.rocket),
+    sutli: bar.addItem(3, stacks.sutli), rocket: bar.addItem(4, stacks.rocket), skyshot: bar.addItem(5, stacks.skyshot),
   }
-  const matchSlot = bar.addItem(5, matchstick.item)
+  const matchSlot = bar.addItem(6, matchstick.item)
 
   const tips = LL.tooltip
   const names: Record<Kind, () => string> = {
     anar: tips.anar.name, laddi: tips.laddi.name, chakri: tips.chakri.name, sutli: tips.sutli.name,
-    rocket: tips.rocket.name,
+    rocket: tips.rocket.name, skyshot: tips.skyshot.name,
   }
   const stackHints: Record<Kind, () => string> = {
     anar: tips.anar.stack, laddi: tips.laddi.stack, chakri: tips.chakri.stack, sutli: tips.sutli.stack,
-    rocket: tips.rocket.stack,
+    rocket: tips.rocket.stack, skyshot: tips.skyshot.stack,
   }
   kinds.forEach(kind => addTooltip(slots[kind].container, () => ({
     title: names[kind](),
@@ -874,7 +936,7 @@ const createFireworks = (
     sprite.cursor = "grab"
     const lightColours: Record<Kind, number> = {
       anar: lightColour, laddi: blastLightColour, chakri: chakriLightColour, sutli: sutliLightColour,
-      rocket: rocketLightColour,
+      rocket: rocketLightColour, skyshot: skyShotLightColour,
     }
     const light = lighting.addLight(lightColours[kind])
     const glow = new Sprite(glowTexture)
@@ -1601,22 +1663,74 @@ const createFireworks = (
     }
   }
 
-  // A rocket pops into a ball of coloured stars at the top of its climb
+  // A rocket's burst: a ball of stars of one colour, picked at random
+  const rocketBurst = () => {
+    const shades = starTables[Math.floor(Math.random() * starTables.length)]
+    return {
+      stars: rocketStars, speed: rocketStarSpeed, life: rocketStarLife, fall: rocketStarFall, size: rocketStarSize,
+      shades: () => shades,
+    }
+  }
+  // A star thrown out of a burst, drawn bigger than a spark and drooping
+  const addStar = (
+    flight: Flight, vx: number, vy: number, life: number, floor: number, fall: number, size: number, shades: number[],
+  ) => {
+    const star = addSpark(flight.x, flight.y, flight.vx * 0.3 + vx, flight.vy * 0.3 + vy, life, "spark", floor + random(-4, 8))
+    if (star) {
+      star.fall = fall
+      star.size = size
+      star.shades = shades
+    }
+    return star
+  }
+
+  // A sky shot's shell bursts into a round ball of gold stars, round a flat ring of blue
+  // ones, with a spray of sparks flying out, and some of its stars crackle as they fade
+  const skyShotStarsFrom = (flight: Flight, floor: number) => {
+    const gold = skyShotTables[Math.floor(Math.random() * skyShotTables.length)]
+    const count = Math.round(random(skyShotStars.min, skyShotStars.max) * quality.particleScale)
+    for (let idx = 0; idx < count; idx++) {
+      // A direction picked evenly over a sphere, seen from the side
+      const z = random(-1, 1)
+      const angle = random(0, Math.PI * 2)
+      const across = Math.sqrt(1 - z * z) * random(skyShotStarSpeed.min, skyShotStarSpeed.max)
+      const life = random(skyShotStarLife.min, skyShotStarLife.max)
+      const star = addStar(flight, Math.cos(angle) * across, Math.sin(angle) * across, life, floor, skyShotStarFall,
+        skyShotStarSize, gold)
+      if (star) {
+        star.burstAt = Math.random() < skyShotCrackle ? life * random(0.55, 0.85) : Infinity
+      }
+    }
+    const ring = Math.round(skyShotRing * quality.particleScale)
+    for (let idx = 0; idx < ring; idx++) {
+      const angle = (idx + random(-0.3, 0.3)) / ring * Math.PI * 2
+      const speed = random(skyShotRingSpeed.min, skyShotRingSpeed.max)
+      addStar(flight, Math.cos(angle) * speed, Math.sin(angle) * speed, random(skyShotRingLife.min, skyShotRingLife.max),
+        floor, skyShotStarFall, skyShotStarSize, skyShotFleckTable)
+    }
+    const spray = Math.round(skyShotSpray * quality.particleScale)
+    for (let idx = 0; idx < spray; idx++) {
+      const angle = random(0, Math.PI * 2)
+      const speed = random(skyShotSpraySpeed.min, skyShotSpraySpeed.max)
+      addSpark(flight.x, flight.y, Math.cos(angle) * speed, Math.sin(angle) * speed, random(0.35, 0.8), "speck", floor)
+    }
+  }
+
+  // A rocket, or a sky shot's shell, pops into a ball of coloured stars at the top of its
+  // climb
   const burstRocket = (rocket: Placed, flight: Flight) => {
     const floor = rocket.sprite.y
-    const shades = starTables[Math.floor(Math.random() * starTables.length)]
-    const count = Math.round(random(rocketStars.min, rocketStars.max) * quality.particleScale)
-    for (let idx = 0; idx < count; idx++) {
-      // Spread evenly round, and some coming more towards or away, filling in the middle
-      const angle = random(0, Math.PI * 2)
-      const speed = random(rocketStarSpeed.min, rocketStarSpeed.max) * Math.sqrt(random(0.15, 1))
-      const star = addSpark(flight.x, flight.y, flight.vx * 0.3 + Math.cos(angle) * speed,
-        flight.vy * 0.3 + Math.sin(angle) * speed, random(rocketStarLife.min, rocketStarLife.max), "spark",
-        floor + random(-4, 8))
-      if (star) {
-        star.fall = rocketStarFall
-        star.size = rocketStarSize
-        star.shades = shades
+    if (rocket.kind === "skyshot") {
+      skyShotStarsFrom(flight, floor)
+    } else {
+      const burst = rocketBurst()
+      const count = Math.round(random(burst.stars.min, burst.stars.max) * quality.particleScale)
+      for (let idx = 0; idx < count; idx++) {
+        // Spread evenly round, and some coming more towards or away, filling in the middle
+        const angle = random(0, Math.PI * 2)
+        const speed = random(burst.speed.min, burst.speed.max) * Math.sqrt(random(0.15, 1))
+        addStar(flight, Math.cos(angle) * speed, Math.sin(angle) * speed, random(burst.life.min, burst.life.max),
+          floor, burst.fall, burst.size, burst.shades())
       }
     }
     for (let idx = 0; idx < rocketBurstSpecks; idx++) {
@@ -1642,6 +1756,116 @@ const createFireworks = (
     rocket.state = "spent"
     rocket.spentAt = time
     makePickable(rocket)
+  }
+
+  // A sky shot fires its shell out of its mouth, straight up, with a thump and a puff of
+  // smoke, leaving the tube spent
+  const fireShell = (skyShot: Placed) => {
+    const mouth = onFirework(skyShot, skyShotMouth)
+    const sprite = new Sprite(sparkTexture)
+    sprite.anchor.set(0.5)
+    sprite.width = sprite.height = skyShotShellRadius * 2
+    sprite.tint = 0xfff0c8
+    sprite.blendMode = "add"
+    sprite.eventMode = "none"
+    sprite.zIndex = skyShot.sprite.zIndex + 0.5
+    sprite.position.copyFrom(mouth)
+    const lean = random(-skyShotLean, skyShotLean)
+    skyShot.flight = {
+      sprite, x: mouth.x, y: mouth.y, vx: Math.sin(lean) * skyShotSpeed, vy: -Math.cos(lean) * skyShotSpeed, thrustLeft: 0,
+    }
+    background.decorations.addChild(sprite)
+    skyShot.sprite.texture = Assets.get<Texture>(skyShotUrls.spent)
+    blastSounds[Math.floor(Math.random() * blastSounds.length)](...heardFrom(mouth))
+    skyShot.brightness = flashPeak()
+    skyShot.lightAt = mouth
+    if (skyShot.byPlayer) {
+      background.follow(() => skyShot.flight && {x: skyShot.flight.x, y: skyShot.flight.y})
+    }
+    haptics.rocketLaunch()
+    happen("rocket", mouth)
+    for (let idx = 0; idx < skyShotMuzzlePuffs; idx++) {
+      addSmoke(mouth.x + random(-5, 5), mouth.y - random(0, 14))
+    }
+    for (let idx = 0; idx < 24; idx++) {
+      const angle = -Math.PI / 2 + random(-0.5, 0.5)
+      const speed = random(80, 220)
+      addSpark(mouth.x, mouth.y, Math.cos(angle) * speed, Math.sin(angle) * speed, random(0.2, 0.5), "spark",
+        skyShot.sprite.y + random(-4, 8))
+    }
+  }
+
+  // Moves a sky shot on: the fuse fizzing round to the tube, then its shell's flight up,
+  // and its burst
+  const burnSkyShot = (skyShot: Placed, dt: number) => {
+    let fuseAt: PointData | undefined
+    if (skyShot.state === "fuse") {
+      const t = clamp(skyShot.elapsed / skyShotFuse.duration)
+      const {from, to} = skyShotFuse
+      fuseAt = onFirework(skyShot, {x: lerp(from.x, to.x, t), y: lerp(from.y, to.y, t)})
+      skyShot.sparkDebt += 60 * dt
+      while (skyShot.sparkDebt >= 1) {
+        skyShot.sparkDebt--
+        emitFuseSpark(skyShot, fuseAt)
+      }
+      if (skyShot.elapsed >= skyShotFuse.duration) {
+        skyShot.state = "burning"
+        fuseAt = undefined
+        fireShell(skyShot)
+      }
+    }
+    const {flight} = skyShot
+    if (skyShot.state === "burning" && flight) {
+      // Coasting up, slowed by gravity and the air
+      const drag = Math.max(0, 1 - skyShotDrag * dt)
+      flight.vx *= drag
+      flight.vy = (flight.vy + gravity * dt) * drag
+      flight.x += flight.vx * dt
+      flight.y += flight.vy * dt
+      flight.sprite.position.set(flight.x, flight.y)
+      // A thin tail of golden sparks, dropping away behind it
+      skyShot.sparkDebt += skyShotTrailRate * dt
+      while (skyShot.sparkDebt >= 1) {
+        skyShot.sparkDebt--
+        const angle = random(0, Math.PI * 2)
+        const speed = random(skyShotTrailSpeed.min, skyShotTrailSpeed.max)
+        addSpark(flight.x, flight.y, Math.cos(angle) * speed, flight.vy * 0.1 + Math.sin(angle) * speed,
+          random(0.25, 0.6), "ember", skyShot.sprite.y + random(-4, 8))
+      }
+      skyShot.lightAt = {x: flight.x, y: flight.y}
+      if (flight.vy >= -skyShotBurstSpeed) {
+        burstRocket(skyShot, flight)
+      }
+    }
+    smoulder(skyShot, onFirework(skyShot, skyShotMouth), dt)
+
+    // Its fuse glows, the thump lights up the porch for a moment, the shell glows a
+    // little on its way up, and its burst lights everything and dies away
+    const flying = skyShot.flight !== undefined
+    if (fuseAt) {
+      skyShot.brightness = lerp(skyShot.brightness, 0.1, clamp(dt * 12))
+    } else if (flying) {
+      skyShot.brightness = Math.max(0.2, skyShot.brightness * Math.exp(-rocketFade * 2 * fadeShare() * dt))
+    } else {
+      skyShot.brightness *= Math.exp(-rocketFade * fadeShare() * dt)
+    }
+    const {brightness, light, glow, core} = skyShot
+    const shining = brightness > 0.01
+    glow.visible = shining
+    core.visible = shining
+    if (!shining) {
+      light.off()
+      return
+    }
+    const at = fuseAt ?? skyShot.lightAt
+    const bursting = !flying && !fuseAt
+    light.shine(at, lerp(40, bursting ? skyShotBurstLight : rocketLightRadius.flying, brightness), brightness * 1.3)
+    glow.position.copyFrom(at)
+    core.position.copyFrom(at)
+    glow.width = glow.height = (bursting ? sutliGlowRadius : rocketGlowRadius) * 2 * (0.3 + 0.7 * brightness)
+    core.width = core.height = (bursting ? blastCoreRadius : rocketCoreRadius) * 2 * (0.3 + 0.7 * brightness)
+    glow.alpha = clamp(brightness * 1.5)
+    core.alpha = clamp(brightness * 3)
   }
 
   // Moves a rocket on: the fuse fizzing into its tube, then its flight, and its burst
@@ -1740,7 +1964,7 @@ const createFireworks = (
       // It still burns, lights the porch and is heard while it's off screen, but throws
       // nothing off unless what it throws would reach the screen
       const {x, y} = firework.flight ?? firework.sprite
-      const reach = firework.kind === "rocket" ? rocketReach : effectReach
+      const reach = firework.kind === "rocket" || firework.kind === "skyshot" ? rocketReach : effectReach
       offScreen = !background.overlapsView(x - reach.side, y - reach.up, x + reach.side, y + reach.down)
       if (firework.kind === "anar") {
         burnAnar(firework, dt)
@@ -1750,6 +1974,8 @@ const createFireworks = (
         burnSutli(firework, dt)
       } else if (firework.kind === "rocket") {
         burnRocket(firework, dt)
+      } else if (firework.kind === "skyshot") {
+        burnSkyShot(firework, dt)
       } else {
         burnChakri(firework, dt)
       }

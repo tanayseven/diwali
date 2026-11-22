@@ -149,6 +149,10 @@ const hiLatn = {
 			name: "Rocket",
 			stack: "Dandi wala rocket, khaali bottle mein khada. Ek drag karke porch pe rakho",
 		},
+		skyshot: {
+			name: "Sky Shot",
+			stack: "Aasmaan mein ooncha gola daagne wali nali, jahaan woh phat-ta hai. Ek drag karke porch pe rakho",
+		},
 		kandil: {
 			name: "Akash Kandil",
 			needsPaper: "Kaagaz chahiye",

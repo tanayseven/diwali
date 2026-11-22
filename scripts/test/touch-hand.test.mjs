@@ -304,7 +304,7 @@ test("the Fireworks bar's matchstick lights a diya", async () => {
   await page.waitForTimeout(800)
   // Held there while it's struck, put to the wick, and catches, which takes a second,
   // or longer on a slow machine, whose frames are only counted up to a tenth of a second
-  await mouseDrag(slot(5), {x: diya.x + 14, y: diya.y - 18}, 4000)
+  await mouseDrag(slot(6), {x: diya.x + 14, y: diya.y - 18}, 4000)
   await says(diya, "Lit")
 })
 

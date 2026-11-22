@@ -145,7 +145,7 @@ const mostGuestDiyas = 12
 // The fireworks they bring out to set off, the commoner ones more often, how many can
 // be on their porch, lit or not, for them to bring out another, how far from anyone
 // they put one down, and how long a burnt-out one's left before it's cleared away
-const guestFireworks: FireworkKind[] = ["anar", "anar", "anar", "chakri", "chakri", "chakri", "rocket", "rocket", "laddi", "sutli"]
+const guestFireworks: FireworkKind[] = ["anar", "anar", "anar", "chakri", "chakri", "chakri", "rocket", "rocket", "skyshot", "laddi", "sutli"]
 const mostFireworks = 5
 const fireworkClearance = 60
 const clearAfter = 6

@@ -53,6 +53,12 @@ const openGame = async (browser, size) => {
     isMobile: !!size.mobile,
     hasTouch: !!size.mobile,
   })
+  // As someone who's picked their house and been shown round before, so the scene opens
+  // straight onto Deepa Niwas, with no house to pick and nothing shown over it
+  await context.addInitScript(() => {
+    localStorage.setItem("diwali-house", "deepaNiwas")
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["zoom", "tour", "diyas", "fireworks", "kandil", "kandil-shown", "decorate", "rangoli"]))
+  })
   const page = await context.newPage()
   page.on("pageerror", error => report(`  page error: ${error.message}`))
   const cdp = await context.newCDPSession(page)
@@ -64,6 +70,7 @@ const openGame = async (browser, size) => {
 // The photosensitivity warning shows once loading's done, which waits for the music to
 // buffer, so how long it takes varies. Its text is what's looked for
 const warningText = "flashing and twinkling lights"
+const soundText = "stereo sound system"
 // Opens the game, trying again if the load's cut off, which now and then happens as one
 // browser context closes and the next opens. Picks English, which the warning's text is in
 const open = async page => {
@@ -86,6 +93,11 @@ const enterScene = async page => {
   await page.waitForTimeout(500)
   await page.keyboard.press("Space")
   await page.waitForFunction(text => !document.body.innerText.includes(text), warningText, {timeout: 15000})
+  // Then the advice on sound, the same way
+  await page.waitForFunction(text => document.body.innerText.includes(text), soundText, {timeout: 15000})
+  await page.waitForTimeout(500)
+  await page.keyboard.press("Space")
+  await page.waitForFunction(text => !document.body.innerText.includes(text), soundText, {timeout: 15000})
   // Settled into the scene, past building it and the first frames
   await page.waitForTimeout(5000)
 }
@@ -99,18 +111,22 @@ const drag = async (page, from, to) => {
 }
 
 // Every firework in the Fireworks bar, all five each of anars, laddis, chakris, sutli
-// bombs and rockets, dragged onto the porch in a grid, then each lit in turn with the
+// bombs, rockets and sky shots, dragged onto the porch in a grid, then each lit in turn with the
 // match dragged out of the bar and held over it until it catches. The rail's button
 // and the bar's slots are where they are at 1600 x 900
 const fireworksEach = 5
-const fireworkKinds = 5
+const fireworkKinds = 6
 const lightFireworks = async page => {
   await page.mouse.click(56, 354)
   await page.waitForTimeout(800)
   const slot = idx => [403 + 88.3 * idx, 797]
-  // Kinds take turns along each row, so each kind is spread across the porch
-  const spots = Array.from({length: fireworksEach * fireworkKinds}, (_, idx) =>
-    ({kind: idx % fireworkKinds, at: [240 + 280 * (idx % 5), 520 + 55 * Math.floor(idx / 5)]}))
+  // A kind to each place along a row, shifted along one each row, so each kind is spread
+  // across the porch, in five rows of six
+  const spots = Array.from({length: fireworksEach * fireworkKinds}, (_, idx) => {
+    const row = Math.floor(idx / fireworkKinds)
+    const column = idx % fireworkKinds
+    return {kind: (column + row) % fireworkKinds, at: [240 + 230 * column, 520 + 55 * row]}
+  })
   for (const {kind, at} of spots) {
     await drag(page, slot(kind), at)
   }

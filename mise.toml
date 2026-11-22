@@ -61,6 +61,10 @@ age.strict = true
 description = "Generate the typed translation functions in src/i18n/ from the locales"
 run = "npx typesafe-i18n --no-watch"
 
+[tasks."generate:house-pots"]
+description = "Crop the pots on Deepa Niwas's porch out of its drawing, to draw over the rangoli"
+run = "node scripts/art/house-pots.mjs"
+
 [tasks."generate:icons"]
 description = "Render the Android and desktop apps' icons, Android's launch screen and the store's icon and banner from public/favicon.svg, in every size"
 run = [
@@ -77,5 +81,5 @@ description = "Take the game's screenshots, in web/screenshots/, by playing the 
 run = ["npm run build", "node scripts/store/screenshots.mjs", "node scripts/store/captioned.mjs"]
 
 [tasks.generate]
-description = "Regenerate the translations, the icons and the store's screenshots"
-depends = ["generate:i18n", "generate:icons", "generate:screenshots"]
+description = "Regenerate the translations, the porch's pots, the icons and the store's screenshots"
+depends = ["generate:i18n", "generate:house-pots", "generate:icons", "generate:screenshots"]

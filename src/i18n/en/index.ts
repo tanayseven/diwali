@@ -161,6 +161,10 @@ const en = {
 			name: "Rocket",
 			stack: "A rocket on a stick, stood in an empty bottle. Drag one onto the porch",
 		},
+		skyshot: {
+			name: "Sky Shot",
+			stack: "A tube that fires a shell high into the sky, where it bursts. Drag one onto the porch",
+		},
 		kandil: {
 			name: "Akash Kandil",
 			needsPaper: "Needs paper",
