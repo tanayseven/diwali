@@ -578,13 +578,18 @@ const createBackground = (app: Application) => {
   layout()
 
   // Opened with ?camera, as scripts/demo/play.mjs does, where a point in the scene is
-  // on screen and back, for a script playing it to put things in the scene wherever
-  // the camera's got to
+  // on screen and back, and where the player's house is, for a script playing it to put
+  // things in the scene wherever the camera's got to
   if (new URLSearchParams(window.location.search).has("camera")) {
     Object.assign(window, {
       diwaliCamera: {
         toScreen: (point: PointData) => ({...scene.toGlobal(point)}),
         toScene: (point: PointData) => ({...scene.toLocal(point)}),
+        // The player's house, from its sides and roof to the ground, in the scene
+        house: () => {
+          const {left, top, width, height} = houses[home]
+          return {left, top, right: left + width, bottom: top + height}
+        },
       },
     })
   }

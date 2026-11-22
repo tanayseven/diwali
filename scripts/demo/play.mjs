@@ -67,6 +67,45 @@ await context.addInitScript(() => {
     localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour"]))
   }
 })
+// Each finger on the screen, and the mouse while it's pressed, shown as a ring that
+// follows it and fades as it's lifted, for whoever's watching to see what's touched. Only
+// the demo draws these, over everything, and they let every press through
+await context.addInitScript(() => {
+  const rings = new Map()
+  const style = document.createElement("style")
+  style.textContent = `.demo-touch {
+    position: fixed; z-index: 2147483647; pointer-events: none; width: 44px; height: 44px;
+    margin: -22px 0 0 -22px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.95);
+    background: rgba(255, 210, 63, 0.35); box-shadow: 0 0 12px rgba(255, 210, 63, 0.8);
+    transition: opacity 0.35s, transform 0.35s; transform: scale(0.8);
+  }
+  .demo-touch.down { transform: scale(1); }
+  .demo-touch.up { opacity: 0; transform: scale(1.6); }`
+  const place = (ring, event) => Object.assign(ring.style, {left: `${event.clientX}px`, top: `${event.clientY}px`})
+  addEventListener("pointerdown", event => {
+    const ring = document.createElement("div")
+    ring.className = "demo-touch"
+    place(ring, event)
+    document.documentElement.append(ring)
+    requestAnimationFrame(() => ring.classList.add("down"))
+    rings.set(event.pointerId, ring)
+  }, true)
+  addEventListener("pointermove", event => {
+    const ring = rings.get(event.pointerId)
+    ring && place(ring, event)
+  }, true)
+  const lift = event => {
+    const ring = rings.get(event.pointerId)
+    if (ring) {
+      rings.delete(event.pointerId)
+      ring.classList.add("up")
+      setTimeout(() => ring.remove(), 400)
+    }
+  }
+  addEventListener("pointerup", lift, true)
+  addEventListener("pointercancel", lift, true)
+  addEventListener("DOMContentLoaded", () => document.head.append(style))
+})
 const page = await context.newPage()
 const errors = []
 page.on("pageerror", error => errors.push(error.message))
@@ -237,11 +276,66 @@ for (const side of ["left", "right"]) {
   await shot(`diyas-${side}-turned`)
 }
 
+// Five akash kandils hung from the house: one in the middle over the door, a pair from
+// the porch roof and a pair from the wings, each pair coloured alike, zoomed out to see
+// them all
+await zoom(-5)
+await lookAt(640, 560)
+step("Five kandils, hung from the house")
+await tap({x: 52, y: rail.kandil})
+// Where each is held by the top of its string, and its paper and tails
+const kandils = [
+  {at: {x: 640, y: 490}, paper: 4, tails: 8},
+  ...mirrored([70], 520).map(at => ({at, paper: 1, tails: 7})),
+  ...mirrored([290], 495).map(at => ({at, paper: 3, tails: 5})),
+]
+for (const {at} of kandils) {
+  await put(0, at, 400)
+  await wait(800)
+}
+await wait(800)
+for (const {at, paper, tails} of kandils) {
+  await put(paper, by(at, 0, 17), 400)
+  await wait(400)
+  await put(tails, by(at, 0, 23), 400)
+  await wait(400)
+  await put(9, by(at, 0, 17), 400)
+  await wait(800)
+}
+await wait(1000)
+await shot("kandils")
+
+// A pair of ready-made rangolis, alike, on the porch floor either side of the fireworks
+// to come, each put down where the floor's tapped
+step("Two rangolis, one either side of the porch")
+await tap({x: 52, y: rail.rangoli})
+await wait(800)
+// Its bar's first slot, which shows the design picked, opens the panel to mix one
+await tap(slot(0))
+const designs = page.getByRole("dialog", {name: "Draw Rangoli"})
+await designs.waitFor({timeout: 5000})
+for (const name of ["centre flower", "centre yellow", "ring lotus", "ring pink", "border scallops", "border orange"]) {
+  await page.getByRole("button", {name, exact: true}).tap()
+  await wait(500)
+}
+await wait(800)
+await shot("rangoli-design")
+await page.getByRole("button", {name: "✓"}).tap()
+await designs.waitFor({state: "hidden", timeout: 5000})
+await wait(600)
+await lookAt(640, 620)
+for (const at of mirrored([360], 622)) {
+  await tap(await onScreen(at))
+  await wait(1500)
+}
+await wait(1000)
+await shot("rangoli")
+
 // Four of each firework in two rows across the porch, two of each either side of the
 // door, mirrored, then lit a kind at a time
 step("Fireworks, zoomed out a little: four of each, in two rows")
 await tap({x: 52, y: rail.fireworks})
-await zoom(-4)
+await zoom(1)
 await lookAt(640, 645)
 // In the bar's order: anar, laddi, chakri, sutli bomb and rocket, each from the door out
 const rows = {back: 610, front: 632}
@@ -291,9 +385,7 @@ for (const [i, rocket] of inTurn(fireworks.rocket).entries()) {
 }
 await wait(800)
 
-// Fairy lights across the front of each wing, and five kandils hung from the house: one
-// in the middle over the door, a pair from the porch roof and a pair from the wings,
-// each pair coloured alike
+// Fairy lights across the front of each wing
 step("Fairy lights, mixed, across the front of each wing, zoomed out a little more")
 // Moved before the tool's picked, as a press on the house would hang a string
 await zoom(-1)
@@ -307,33 +399,26 @@ await draw(line(1000, 800))
 await wait(2000)
 await shot("fairy-lights")
 
-step("Five kandils, hung from the house")
-await tap({x: 52, y: rail.kandil})
-// Where each is held by the top of its string, and its paper and tails
-const kandils = [
-  {at: {x: 640, y: 490}, paper: 4, tails: 8},
-  ...mirrored([70], 520).map(at => ({at, paper: 1, tails: 7})),
-  ...mirrored([290], 495).map(at => ({at, paper: 3, tails: 5})),
-]
-for (const {at} of kandils) {
-  await put(0, at, 400)
-  await wait(800)
-}
-await wait(800)
-for (const {at, paper, tails} of kandils) {
-  await put(paper, by(at, 0, 17), 400)
-  await wait(400)
-  await put(tails, by(at, 0, 23), 400)
-  await wait(400)
-  await put(9, by(at, 0, 17), 400)
-  await wait(800)
-}
-await wait(1000)
-await shot("kandils")
 
-step("The whole scene, with the bar hidden")
+step("The whole house, with the bar hidden")
 await page.keyboard.press("h")
 await wait(600)
+// Zoomed out a press at a time till the house, roof to ground, fits on screen
+const house = await page.evaluate(() => window.diwaliCamera.house())
+for (let presses = 0; presses < 10; presses++) {
+  const [topLeft, bottomRight] = await Promise.all([
+    onScreen({x: house.left, y: house.top}), onScreen({x: house.right, y: house.bottom}),
+  ])
+  if (bottomRight.x - topLeft.x <= screen.width * 0.9 && bottomRight.y - topLeft.y <= screen.height * 0.9) {
+    break
+  }
+  await zoom(-1)
+}
+await lookAt((house.left + house.right) / 2, (house.top + house.bottom) / 2)
+await wait(4000)
+await shot("house")
+
+step("The whole scene")
 for (let i = 0; i < 3; i++) {
   await tap(zoomOut)
 }
