@@ -113,7 +113,7 @@ const anar = {x: 250, y: 250}
 const chakri = {x: 620, y: 240}
 await drag(slot(0), anar)
 await drag(slot(2), chakri)
-await page.mouse.move(slot(5).x, slot(5).y)
+await page.mouse.move(slot(6).x, slot(6).y)
 await page.mouse.down()
 for (const at of [anar, chakri]) {
   await page.mouse.move(at.x, at.y - 4, {steps: 12})

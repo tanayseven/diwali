@@ -446,6 +446,16 @@ type RootTranslation = {
 			 */
 			stack: string
 		}
+		skyshot: {
+			/**
+			 * S​k​y​ ​S​h​o​t
+			 */
+			name: string
+			/**
+			 * A​ ​t​u​b​e​ ​t​h​a​t​ ​f​i​r​e​s​ ​a​ ​s​h​e​l​l​ ​h​i​g​h​ ​i​n​t​o​ ​t​h​e​ ​s​k​y​,​ ​w​h​e​r​e​ ​i​t​ ​b​u​r​s​t​s​.​ ​D​r​a​g​ ​o​n​e​ ​o​n​t​o​ ​t​h​e​ ​p​o​r​c​h
+			 */
+			stack: string
+		}
 		kandil: {
 			/**
 			 * A​k​a​s​h​ ​K​a​n​d​i​l
@@ -1028,6 +1038,16 @@ export type TranslationFunctions = {
 			name: () => LocalizedString
 			/**
 			 * A rocket on a stick, stood in an empty bottle. Drag one onto the porch
+			 */
+			stack: () => LocalizedString
+		}
+		skyshot: {
+			/**
+			 * Sky Shot
+			 */
+			name: () => LocalizedString
+			/**
+			 * A tube that fires a shell high into the sky, where it bursts. Drag one onto the porch
 			 */
 			stack: () => LocalizedString
 		}

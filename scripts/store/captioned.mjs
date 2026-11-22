@@ -20,7 +20,7 @@ const size = {width: 1920, height: 1080}
 // What each of the game's screenshots shows, in order
 const captions = [
   {title: "Light diyas on your porch", line: "Fill each with a wick and oil, and light it with a match"},
-  {title: "Set off Diwali fireworks", line: "Anars, chakris, laddis, sutli bombs and rockets"},
+  {title: "Set off Diwali fireworks", line: "Anars, chakris, laddis, sutli bombs, rockets and sky shots"},
   {title: "Hang twinkling fairy lights", line: "Strings that sway in the evening breeze"},
   {title: "Lay a rangoli", line: "Make your own design and put it down in coloured powder"},
   {title: "Craft akash kandils", line: "Paper, tails and a bulb, step by step"},

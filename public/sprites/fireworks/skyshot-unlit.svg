@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="480" viewBox="0 0 60 120">
+  <title>Sky Shot — Unlit</title>
+  <defs>
+    <linearGradient id="paper" x1="20" y1="0" x2="40" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A2A72"/>
+      <stop offset="0.3" stop-color="#1E6FD9"/>
+      <stop offset="0.45" stop-color="#5FB0FF"/>
+      <stop offset="0.7" stop-color="#1A5BC4"/>
+      <stop offset="1" stop-color="#071F5A"/>
+    </linearGradient>
+    <linearGradient id="round" x1="20" y1="0" x2="40" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000" stop-opacity="0.45"/>
+      <stop offset="0.3" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#fff" stop-opacity="0.18"/>
+      <stop offset="0.75" stop-color="#000" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+    </linearGradient>
+    <radialGradient id="burst" cx="30" cy="36" r="9" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF4C2" stop-opacity="0.9"/>
+      <stop offset="0.5" stop-color="#F5C542" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#F5C542" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="body-clip"><path d="M20 15V104A10 3 0 0 0 40 104V15Z"/></clipPath>
+    <filter id="blur" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="1.4"/></filter>
+  </defs>
+  <g id="skyshot">
+    <ellipse cx="30" cy="107" rx="14" ry="3.2" fill="#000" fill-opacity="0.6" filter="url(#blur)"/>
+    <g clip-path="url(#body-clip)">
+      <rect x="20" y="15" width="20" height="95" fill="url(#paper)"/>
+      <circle cx="30" cy="36" r="9" fill="url(#burst)"/>
+      <path d="M31.50 36.00L38.00 36.00M31.39 36.57L35.54 38.30M31.06 37.06L35.66 41.66M30.57 37.39L32.30 41.54M30.00 37.50L30.00 44.00M29.43 37.39L27.70 41.54M28.94 37.06L24.34 41.66M28.61 36.57L24.46 38.30M28.50 36.00L22.00 36.00M28.61 35.43L24.46 33.70M28.94 34.94L24.34 30.34M29.43 34.61L27.70 30.46M30.00 34.50L30.00 28.00M30.57 34.61L32.30 30.46M31.06 34.94L35.66 30.34M31.39 35.43L35.54 33.70" stroke="#F5C542" stroke-width="0.55" stroke-linecap="round"/>
+      <circle cx="35.00" cy="36.00" r="0.45" fill="#E9A6FF"/><circle cx="34.10" cy="41.17" r="0.45" fill="#B8D8FF"/><circle cx="28.14" cy="43.99" r="0.45" fill="#E9A6FF"/><circle cx="25.48" cy="38.14" r="0.45" fill="#B8D8FF"/><circle cx="24.08" cy="33.08" r="0.45" fill="#E9A6FF"/><circle cx="28.27" cy="27.98" r="0.45" fill="#B8D8FF"/><circle cx="33.17" cy="32.14" r="0.45" fill="#E9A6FF"/><circle cx="36.60" cy="36.11" r="0.45" fill="#B8D8FF"/><circle cx="34.99" cy="42.51" r="0.45" fill="#E9A6FF"/><circle cx="28.78" cy="40.85" r="0.45" fill="#B8D8FF"/><circle cx="23.99" cy="38.72" r="0.45" fill="#E9A6FF"/><circle cx="22.71" cy="32.25" r="0.45" fill="#B8D8FF"/>
+      <path d="M23 71Q24 61 31 61.5Q37 62.5 35 57.5Q33 54 28.5 56Q31 54 33.5 55.5Q38 58.5 35.5 63.5Q33 67 27.5 66Q31 68 33 70" stroke="#F4FAFF" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M21 75Q23.5 72.5 26 75T31 75T36 75T41 75" stroke="#F4FAFF" stroke-width="0.9" fill="none"/>
+      <path d="M21 78.5Q23.5 76 26 78.5T31 78.5T36 78.5T41 78.5" stroke="#CFE6FF" stroke-width="0.6" fill="none" stroke-opacity="0.8"/>
+      <rect x="20" y="96" width="20" height="1.2" fill="#F4FAFF" fill-opacity="0.85"/>
+      <rect x="20" y="98.6" width="20" height="0.6" fill="#F5C542"/>
+      <rect x="20" y="15" width="20" height="95" fill="url(#round)"/>
+
+    </g>
+    <path d="M19.6 12.6V17A10.4 3 0 0 0 40.4 17V12.6Z" fill="#A81E1E"/>
+    <path d="M19.6 12.6V17A10.4 3 0 0 0 40.4 17V12.6Z" fill="url(#round)"/>
+    <ellipse cx="30" cy="12.6" rx="10.4" ry="3" fill="#E53935"/>
+    <ellipse cx="28" cy="12.2" rx="5.5" ry="1.3" fill="#FF8A7A" fill-opacity="0.55"/>
+    <path d="M39.6 97Q45.5 97 47.2 90.5" stroke="#E6D6AC" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+    <path d="M39.6 97.5Q45.9 97.4 47.7 90.8" stroke="#A8966A" stroke-width="0.5" fill="none"/>
+    <path d="M47.2 90.5l-1.3 -1.8M47.2 90.5l0.3 -2.2M47.2 90.5l1.4 -1.4" stroke="#E6D6AC" stroke-width="0.6" stroke-linecap="round"/>
+  </g>
+</svg>
