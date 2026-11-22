@@ -184,6 +184,10 @@ const createKandils = (app: Application, background: Background, lighting: Light
   let target: Kandil | undefined
   let overBar = false
   let hudShown = false
+  // Whether the Craft Kandil tool's the one in use: only then can a kandil be picked up,
+  // moved or given what it needs, as a press on one with another tool, such as a drag
+  // across the sky to pan up to a rocket, passes through it
+  let active = false
   let time = 0
   // The kandil picked by a tap, to give what's tapped in the bar next
   let selected: Kandil | undefined
@@ -310,7 +314,7 @@ const createKandils = (app: Application, background: Background, lighting: Light
     addTooltip(kandilContainer, kandilTooltip(kandil))
     addHint(kandilContainer, kandilHint(kandil), bodyArea)
     kandilContainer.on("pointerdown", e => {
-      if (!drag) {
+      if (active && !drag) {
         e.stopPropagation()
         pressed = {kandil, at: e.global.clone()}
       }
@@ -1012,7 +1016,8 @@ const createKandils = (app: Application, background: Background, lighting: Light
     },
     // Whether it's the tool in use; when it isn't, no kandil's left picked, and the
     // showing of how to make one ends
-    setActive(active: boolean) {
+    setActive(isActive: boolean) {
+      active = isActive
       if (!active) {
         select(undefined)
         endDemo?.()
