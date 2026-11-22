@@ -119,6 +119,11 @@ const bn = {
 			lights: "{house} আলো ঝুলিয়েছে",
 			kandil: "{house} আকাশপ্রদীপ ঝুলিয়েছে",
 			rangoli: "{house} আলপনা এঁকেছে",
+			hit: "{house}-এর রকেট {target}-এর উপরে ফাটল",
+			hitYou: "{house}-এর রকেট আপনার বাড়ির উপরে ফাটল",
+			youHit: "আপনার রকেট {house}-এর উপরে ফাটল",
+			shielded: "{house}-এর আকাশপ্রদীপ আটকে দিল",
+			youShielded: "আপনার আকাশপ্রদীপ আটকে দিল",
 		},
 		challenge: {
 			kandil: "সবার আগে আকাশপ্রদীপ ঝোলান",

@@ -119,6 +119,11 @@ const asm = {
 			lights: "{house}এ চাকি ওলমাইছে",
 			kandil: "{house}এ আকাশবন্তি ওলমাইছে",
 			rangoli: "{house}এ ৰংগোলী আঁকিছে",
+			hit: "{house}ৰ ৰকেট {target}ৰ ওপৰত ফুটিল",
+			hitYou: "{house}ৰ ৰকেট আপোনাৰ ঘৰৰ ওপৰত ফুটিল",
+			youHit: "আপোনাৰ ৰকেট {house}ৰ ওপৰত ফুটিল",
+			shielded: "{house}ৰ আকাশবন্তিয়ে ৰক্ষা কৰিলে",
+			youShielded: "আপোনাৰ আকাশবন্তিয়ে ৰক্ষা কৰিলে",
 		},
 		challenge: {
 			kandil: "সকলোৰে আগতে আকাশবন্তি ওলমাওক",

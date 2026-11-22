@@ -119,6 +119,11 @@ const te = {
 			lights: "{house} దీపాల తోరణాలు వేలాడదీసింది",
 			kandil: "{house} ఆకాశదీపం వేలాడదీసింది",
 			rangoli: "{house} ముగ్గు వేసింది",
+			hit: "{house} రాకెట్ {target} పైన పేలింది",
+			hitYou: "{house} రాకెట్ మీ ఇంటి పైన పేలింది",
+			youHit: "మీ రాకెట్ {house} పైన పేలింది",
+			shielded: "{house} ఆకాశదీపం అడ్డుకుంది",
+			youShielded: "మీ ఆకాశదీపం అడ్డుకుంది",
 		},
 		challenge: {
 			kandil: "అందరికంటే ముందు ఆకాశదీపం వేలాడదీయండి",

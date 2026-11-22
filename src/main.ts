@@ -418,7 +418,7 @@ const main = async () => {
   if (mode === "tournament") {
     // A round against the neighbours, then another, which starts the game again, or free
     // play from where it got to, with the neighbours' houses finished off
-    void runTournamentRound(background, neighbours).then(outcome => {
+    void runTournamentRound(background, neighbours, fireworks).then(outcome => {
       if (outcome === "again") {
         try {
           sessionStorage.setItem(nextModeKey, "tournament")

@@ -119,6 +119,11 @@ const sat = {
 			lights: "{house} ᱫᱤᱭᱟ ᱠᱚ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",
 			kandil: "{house} ᱠᱚᱱᱰᱤᱞ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",
 			rangoli: "{house} ᱨᱚᱝᱜᱚᱞᱤ ᱚᱞ ᱠᱮᱫᱟ",
+			hit: "{house} ᱨᱮᱭᱟᱜ ᱨᱚᱠᱮᱴ {target} ᱪᱮᱛᱟᱱ ᱨᱮ ᱯᱚᱴᱠᱟ",
+			hitYou: "{house} ᱨᱮᱭᱟᱜ ᱨᱚᱠᱮᱴ ᱟᱢᱟᱜ ᱚᱲᱟᱜ ᱪᱮᱛᱟᱱ ᱨᱮ ᱯᱚᱴᱠᱟ",
+			youHit: "ᱟᱢᱟᱜ ᱨᱚᱠᱮᱴ {house} ᱪᱮᱛᱟᱱ ᱨᱮ ᱯᱚᱴᱠᱟ",
+			shielded: "{house} ᱨᱮᱭᱟᱜ ᱠᱚᱱᱰᱤᱞ ᱵᱟᱧᱪᱟᱣ ᱠᱮᱫᱟ",
+			youShielded: "ᱟᱢᱟᱜ ᱠᱚᱱᱰᱤᱞ ᱵᱟᱧᱪᱟᱣ ᱠᱮᱫᱟ",
 		},
 		challenge: {
 			kandil: "ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱟᱜᱮ ᱠᱚᱱᱰᱤᱞ ᱚᱞᱚᱝ ᱢᱮ",

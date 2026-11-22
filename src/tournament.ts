@@ -1,6 +1,9 @@
-import {Text} from "pixi.js"
+import {PointData, Text} from "pixi.js"
 import {fontFamily} from "./app"
 import type {Background} from "./background"
+import {aimToward} from "./fireworks"
+import {reduceFlashing} from "./flashing"
+import {onHappening} from "./happenings"
 import {LL} from "./locale"
 import type {Decoration} from "./neighbours"
 import {onProgress, Progress} from "./progress"
@@ -54,6 +57,19 @@ const popRise = 40
 const popSize = 26
 // Each thing a neighbour does, said under the pill for this long, in ms
 const feedShown = 3000
+// Firework duels: a rocket bursting over another house scores this for whoever set it off,
+// unless that house has a lit kandil to spare, which shields it, using it up, for this to
+// the house it shielded. Each neighbour sets off a rocket at a house next door every so
+// many seconds, at whoever just hit it, or else whichever of them is doing better, from
+// this far in along its porch towards it, and one bursting over the player's house
+// jolts the view a little
+const hitPoints = 25
+const shieldPoints = 10
+const duelEvery = {least: 14, most: 22}
+// And aims a little off, so now and then it bursts between houses, over nobody's
+const duelAimError = 0.07
+const duelFrom = 0.12
+const hitShake = 0.25
 // Over each house while the street's shown, its name and points, at this size on screen
 const labelSize = 22
 // Races open to every house, twice a round, at these shares of the way through it, each
@@ -503,7 +519,15 @@ const showResults = (contenders: Contender[]) => new Promise<Outcome>(resolve =>
 // player's house, scored by what they light, hang and draw, while each neighbour puts up
 // their own decorations at their own pace. Every house's points show at the end, with a
 // choice of another round or free play
-const runTournamentRound = async (background: Background, neighbours: Decoration[][]): Promise<Outcome> => {
+// What the round needs of the fireworks: to aim the player's rockets, and to put down and
+// light the neighbours'
+type Duelling = {
+  setAiming: (on: boolean) => void
+  placeForGuest: (kind: "rocket", at: PointData, aim?: number) => object
+  lightForGuest: (firework: object, at: PointData) => boolean
+}
+
+const runTournamentRound = async (background: Background, neighbours: Decoration[][], fireworks?: Duelling): Promise<Outcome> => {
   const contenders: Contender[] = background.houses.map(({name}, idx) => ({
     idx, name: LL.houses[name](), points: 0, player: idx === background.home(),
   }))
@@ -524,11 +548,41 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
     popOver(background, idx, challengePoints)
     hud.endChallenge(`${winner.player ? LL.tournament.challenge.youWon() : LL.tournament.challenge.won({house: winner.name})} +${challengePoints}`)
   }
+  // Each house's lit kandils not yet used to shield it, and who last hit it
+  const shields = contenders.map(() => 0)
+  const lastHitBy = contenders.map((): number | undefined => undefined)
+  const houseUnder = (x: number) => background.houses.findIndex(({left, width}) => x >= left && x <= left + width)
+  const stopDuels = onHappening(({kind, at, from}) => {
+    const target = houseUnder(at.x)
+    if (kind !== "burst" || from === undefined || from < 0 || target < 0 || target === from) {
+      return
+    }
+    const shooter = contenders[from]
+    const hit = contenders[target]
+    lastHitBy[target] = from
+    if (shields[target] > 0) {
+      shields[target]--
+      hit.points += shieldPoints
+      popOver(background, target, shieldPoints)
+      hud.say(`${hit.player ? LL.tournament.feed.youShielded() : LL.tournament.feed.shielded({house: hit.name})} +${shieldPoints}`)
+    } else {
+      shooter.points += hitPoints
+      popOver(background, from, hitPoints)
+      hud.say(`${shooter.player ? LL.tournament.feed.youHit({house: hit.name}) : (hit.player ? LL.tournament.feed.hitYou({house: shooter.name}) : LL.tournament.feed.hit({house: shooter.name, target: hit.name}))} +${hitPoints}`)
+      if (hit.player && !reduceFlashing()) {
+        background.shake(hitShake)
+      }
+    }
+  })
+  fireworks?.setAiming(true)
   // What the player's done so far, each counted up to its most
   const done = new Map<Progress, number>()
   const stopListening = onProgress(progress => {
     if (race && challengeFor[race.kind] === progress) {
       win(player.idx)
+    }
+    if (progress === "kandilLit") {
+      shields[player.idx]++
     }
     const scored = playerPoints[progress]
     const times = done.get(progress) ?? 0
@@ -586,10 +640,49 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
     planned.sort((a, b) => a.at - b.at)
   }
 
+  // When each neighbour next sets off a rocket at a house next door
+  const between = () => duelEvery.least + Math.random() * (duelEvery.most - duelEvery.least)
+  const nextDuel = new Map([...reactionOf.keys()].map(idx => [idx, between() * (0.5 + Math.random() * 0.5)]))
+  const duel = (idx: number) => {
+    const doors = [idx - 1, idx + 1].filter(other => other >= 0 && other < contenders.length)
+    const target = lastHitBy[idx] !== undefined && doors.includes(lastHitBy[idx]!)
+      ? lastHitBy[idx]!
+      : doors.sort((a, b) => contenders[b].points - contenders[a].points)[0]
+    if (target === undefined || !fireworks) {
+      return
+    }
+    lastHitBy[idx] = undefined
+    // On its porch, towards the house it's set off at, as far in as its floor goes
+    const {left, width, porch} = background.houses[idx]
+    const y = porch.reduce((sum, point) => sum + point.y, 0) / porch.length
+    const toward = target < idx ? duelFrom : 1 - duelFrom
+    let spot: PointData | undefined
+    for (let share = toward; share > 0.05 && share < 0.95; share += target < idx ? 0.04 : -0.04) {
+      const at = {x: left + width * share, y}
+      if (background.isOnPorchFloor(at)) {
+        spot = at
+        break
+      }
+    }
+    if (!spot) {
+      return
+    }
+    const {left: targetLeft, width: targetWidth} = background.houses[target]
+    const aim = aimToward(spot.x, targetLeft + targetWidth / 2) + (Math.random() * 2 - 1) * duelAimError
+    const rocket = fireworks.placeForGuest("rocket", spot, aim)
+    fireworks.lightForGuest(rocket, spot)
+  }
+
   const startedAt = performance.now()
   await new Promise<void>(resolve => {
     const tick = () => {
       const elapsed = (performance.now() - startedAt) / 1000
+      nextDuel.forEach((at, idx) => {
+        if (elapsed >= at && elapsed < roundSeconds - 2) {
+          duel(idx)
+          nextDuel.set(idx, elapsed + between())
+        }
+      })
       if (races.length > 0 && races[0].at <= elapsed) {
         open(races.shift()!.kind, elapsed)
       }
@@ -598,6 +691,9 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
         decoration.put()
         const points = neighbourPoints[decoration.kind]
         contenders[idx].points += points
+        if (decoration.kind === "kandil") {
+          shields[idx]++
+        }
         popOver(background, idx, points)
         hud.say(`${LL.tournament.feed[decoration.kind]({house: contenders[idx].name})} +${points}`)
         if (race?.kind === decoration.kind) {
@@ -622,6 +718,9 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
     tick()
   })
   stopListening()
+  // Rockets still in the air may yet burst, but count for nothing now
+  stopDuels()
+  fireworks?.setAiming(false)
   hud.remove()
   return showResults(contenders)
 }

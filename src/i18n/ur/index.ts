@@ -119,6 +119,11 @@ const ur = {
 			lights: "{house} نے روشنیاں لگائیں",
 			kandil: "{house} نے قندیل لٹکائی",
 			rangoli: "{house} نے رنگولی بنائی",
+			hit: "{house} کا راکٹ {target} کے اوپر پھٹا",
+			hitYou: "{house} کا راکٹ آپ کے گھر کے اوپر پھٹا",
+			youHit: "آپ کا راکٹ {house} کے اوپر پھٹا",
+			shielded: "{house} کی قندیل نے بچا لیا",
+			youShielded: "آپ کی قندیل نے بچا لیا",
 		},
 		challenge: {
 			kandil: "سب سے پہلے قندیل لٹکائیں",

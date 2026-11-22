@@ -396,6 +396,31 @@ type RootTranslation = {
 			 * @param {string} house
 			 */
 			rangoli: RequiredParams<'house'>
+			/**
+			 * {​h​o​u​s​e​}​'​s​ ​r​o​c​k​e​t​ ​b​u​r​s​t​ ​o​v​e​r​ ​{​t​a​r​g​e​t​}
+			 * @param {string} house
+			 * @param {string} target
+			 */
+			hit: RequiredParams<'house' | 'target'>
+			/**
+			 * {​h​o​u​s​e​}​'​s​ ​r​o​c​k​e​t​ ​b​u​r​s​t​ ​o​v​e​r​ ​y​o​u​r​ ​h​o​u​s​e
+			 * @param {string} house
+			 */
+			hitYou: RequiredParams<'house'>
+			/**
+			 * Y​o​u​r​ ​r​o​c​k​e​t​ ​b​u​r​s​t​ ​o​v​e​r​ ​{​h​o​u​s​e​}
+			 * @param {string} house
+			 */
+			youHit: RequiredParams<'house'>
+			/**
+			 * {​h​o​u​s​e​}​'​s​ ​k​a​n​d​i​l​ ​s​h​i​e​l​d​e​d​ ​i​t
+			 * @param {string} house
+			 */
+			shielded: RequiredParams<'house'>
+			/**
+			 * Y​o​u​r​ ​k​a​n​d​i​l​ ​s​h​i​e​l​d​e​d​ ​i​t
+			 */
+			youShielded: string
 		}
 		challenge: {
 			/**
@@ -1150,6 +1175,26 @@ export type TranslationFunctions = {
 			 * {house} drew a rangoli
 			 */
 			rangoli: (arg: { house: string }) => LocalizedString
+			/**
+			 * {house}'s rocket burst over {target}
+			 */
+			hit: (arg: { house: string, target: string }) => LocalizedString
+			/**
+			 * {house}'s rocket burst over your house
+			 */
+			hitYou: (arg: { house: string }) => LocalizedString
+			/**
+			 * Your rocket burst over {house}
+			 */
+			youHit: (arg: { house: string }) => LocalizedString
+			/**
+			 * {house}'s kandil shielded it
+			 */
+			shielded: (arg: { house: string }) => LocalizedString
+			/**
+			 * Your kandil shielded it
+			 */
+			youShielded: () => LocalizedString
 		}
 		challenge: {
 			/**

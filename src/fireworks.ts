@@ -313,6 +313,18 @@ const rocketThrust = 2000
 const rocketThrustFor = 0.6
 const rocketDrag = 0.5
 const rocketLean = 0.12
+// Aimed at a neighbour's house, in a tournament, a rocket's driven the way it's aimed
+// all the while its thrust lasts, rather than the way it's going, so it carries across:
+// about this far sideways for the sine of its lean, up to this lean, and bursts well
+// above the rooftops. Put down in the outer quarter of the player's porch, it's aimed at
+// the house next door that side
+const aimedReach = 790
+const steepestAim = 0.62
+const aimingShare = 0.25
+// The way an aimed rocket's path is shown, while it's dragged: a dot every so often,
+// in seconds of its flight, this big on screen, in pixels
+const aimDotEvery = 0.06
+const aimDotRadius = 3.5
 const rocketWobble = 0.03
 // It bursts once it's climbing slower than this, near the top of its climb, however
 // fast it's going sideways
@@ -539,6 +551,43 @@ type Flight = {
   vx: number
   vy: number
   thrustLeft: number
+  // Driven this way all the while, if it was aimed
+  aimed?: number
+}
+
+// The lean that carries a rocket from one point along the street to another
+const aimToward = (fromX: number, toX: number) =>
+  Math.sign(toX - fromX) * Math.asin(Math.min(Math.sin(steepestAim), Math.abs(toX - fromX) / aimedReach))
+
+// Where an aimed rocket goes, from its nozzle, till it bursts, to show the way it'll go
+const aimedPath = (from: PointData, lean: number) => {
+  const points: PointData[] = []
+  let x = from.x
+  let y = from.y
+  let vx = Math.sin(lean) * 40
+  let vy = -Math.cos(lean) * 40
+  let thrustLeft = rocketThrustFor
+  const dt = 1 / 120
+  let sinceDot = 0
+  for (let t = 0; t < 4; t += dt) {
+    const thrusting = thrustLeft > 0
+    thrustLeft -= dt
+    const push = thrusting ? rocketThrust : 0
+    const drag = Math.max(0, 1 - rocketDrag * dt)
+    vx = (vx + Math.sin(lean) * push * dt) * drag
+    vy = (vy - Math.cos(lean) * push * dt + gravity * dt) * drag
+    x += vx * dt
+    y += vy * dt
+    sinceDot += dt
+    if (sinceDot >= aimDotEvery) {
+      sinceDot = 0
+      points.push({x, y})
+    }
+    if (!thrusting && vy >= -rocketBurstSpeed) {
+      break
+    }
+  }
+  return points
 }
 
 type Placed = {
@@ -585,6 +634,8 @@ type Placed = {
   flight?: Flight
   // Whether the player lit it, rather than a guest, for the camera to follow it up
   byPlayer?: boolean
+  // A rocket aimed at a neighbour's house, by how far it leans
+  aim?: number
 }
 
 // A firework being dragged, from its stack or picked up from the scene, and where to
@@ -723,6 +774,37 @@ const createFireworks = (
   const shownShreds = createShownParticles(shredLayer)
   const shownSmoke = createShownParticles(smokeLayer)
   const shownSparks = createShownParticles(sparkLayer)
+  // Whether rockets put down at the porch's ends are aimed at the houses next door, as in
+  // a tournament, and the dots that show the way one dragged there will go
+  let aiming = false
+  const aimDots = new Graphics()
+  aimDots.eventMode = "none"
+  aimDots.zIndex = 10000
+  background.decorations.addChild(aimDots)
+  // Which house a point along the street is in front of, or -1 if none
+  const houseUnder = (x: number) => background.houses.findIndex(({left, width}) => x >= left && x <= left + width)
+  // The lean for a rocket put down here, if it's at either end of the player's porch, with
+  // a house next door that way
+  const aimFor = (at: PointData) => {
+    if (!aiming) {
+      return undefined
+    }
+    const home = background.home()
+    const {left, width} = background.houses[home]
+    const side = at.x < left + width * aimingShare ? -1 : at.x > left + width * (1 - aimingShare) ? 1 : 0
+    const next = background.houses[home + side]
+    return side !== 0 && next ? aimToward(at.x, next.left + next.width / 2) : undefined
+  }
+  const showAim = (at?: PointData) => {
+    aimDots.clear()
+    const lean = at && aimFor(at)
+    if (at && lean !== undefined) {
+      // The same size on screen, whatever the zoom
+      const radius = aimDotRadius / background.scale()
+      aimedPath({x: at.x, y: at.y - 40}, lean).forEach(({x, y}, idx, all) =>
+        aimDots.circle(x, y, radius).fill({color: 0xffd700, alpha: 0.45 + 0.55 * idx / all.length}))
+    }
+  }
   const glowLayer = new Container()
   glowLayer.eventMode = "none"
   const overlays = [smokeLayer, sparkLayer, glowLayer]
@@ -974,6 +1056,9 @@ const createFireworks = (
     firework.home = {x: at.x, y: at.y}
     firework.fixed = !background.isOnHomePorch(at)
     firework.placedAt = time
+    if (firework.kind === "rocket" && !firework.fixed) {
+      firework.aim = aimFor(at)
+    }
     background.decorations.addChild(sprite)
     glowLayer.addChild(firework.glow, firework.core)
     makePickable(firework)
@@ -1113,6 +1198,7 @@ const createFireworks = (
     touch.hide()
     const current = drag
     drag = undefined
+    showAim()
     setOverBar(false)
     current.sprite.removeFromParent()
     setOutline(current.sprite, "selected", false)
@@ -1177,7 +1263,10 @@ const createFireworks = (
       bins?.setTargeted(overBin)
       setOverBar(!spent && hudShown && bar.takesBack(at, finger, drag.pressedAt))
       // Faded while it's somewhere it can't be put down
-      drag.sprite.alpha = overBar || overBin || background.isOnHomePorch(background.toScene(at)) ? 1 : 0.4
+      const scene = background.toScene(at)
+      drag.sprite.alpha = overBar || overBin || background.isOnHomePorch(scene) ? 1 : 0.4
+      // An aimed rocket's way shown, from where it'd be put down
+      showAim(drag.firework.kind === "rocket" && !overBar && background.isOnHomePorch(scene) ? scene : undefined)
     } else {
       hand.move(finger, e)
     }
@@ -1647,8 +1736,11 @@ const createFireworks = (
     sprite.eventMode = "none"
     // In front of its bottle as it leaves
     sprite.zIndex = rocket.sprite.zIndex + 0.5
-    const lean = random(-rocketLean, rocketLean)
-    rocket.flight = {sprite, x: nozzle.x, y: nozzle.y, vx: Math.sin(lean) * 40, vy: -Math.cos(lean) * 40, thrustLeft: rocketThrustFor}
+    const lean = rocket.aim ?? random(-rocketLean, rocketLean)
+    rocket.flight = {
+      sprite, x: nozzle.x, y: nozzle.y, vx: Math.sin(lean) * 40, vy: -Math.cos(lean) * 40, thrustLeft: rocketThrustFor,
+      aimed: rocket.aim,
+    }
     sprite.position.copyFrom(nozzle)
     sprite.rotation = lean
     background.decorations.addChild(sprite)
@@ -1750,7 +1842,7 @@ const createFireworks = (
     flashFade = blastFade
     blastSounds[Math.floor(Math.random() * blastSounds.length)](...heardFrom(rocket.lightAt))
     haptics.rocketBurst()
-    happen("burst", rocket.lightAt)
+    happen("burst", rocket.lightAt, {from: houseUnder(rocket.home.x), kind: rocket.kind})
     rocket.sound?.stop()
     rocket.sound = undefined
     flight.sprite.destroy()
@@ -1894,7 +1986,7 @@ const createFireworks = (
       // then coasting, slowed by gravity and the air
       const thrusting = flight.thrustLeft > 0
       flight.thrustLeft -= dt
-      const heading = Math.atan2(flight.vx, -flight.vy) + Math.sin(time * 17 + rocket.home.x) * rocketWobble
+      const heading = (flight.aimed ?? Math.atan2(flight.vx, -flight.vy)) + Math.sin(time * 17 + rocket.home.x) * rocketWobble
       const push = thrusting ? rocketThrust : 0
       const drag = Math.max(0, 1 - rocketDrag * dt)
       flight.vx = (flight.vx + Math.sin(heading) * push * dt) * drag
@@ -2153,10 +2245,21 @@ const createFireworks = (
     // A guest puts down a firework they've brought, unlit, at a point in the scene. It's
     // the player's like any other from then on, to move, light, or put on the bar,
     // which it adds to. What's returned is for the guest to light it by
-    placeForGuest(kind: Kind, at: PointData): object {
+    placeForGuest(kind: Kind, at: PointData, aim?: number): object {
       const firework = createFirework(kind)
       placeFirework(firework, at)
+      if (aim !== undefined) {
+        firework.aim = aim
+      }
       return firework
+    },
+    // Rockets put down at the ends of the player's porch from now on aimed at the houses
+    // next door, or not
+    setAiming(on: boolean) {
+      aiming = on
+      if (!on) {
+        showAim()
+      }
     },
     // The player's fireworks left unlit on their porch at least so many seconds, where
     // they are, for their family to come and light
@@ -2241,5 +2344,5 @@ const createFireworks = (
   }
 }
 
-export {blastSoundUrls, createFireworks, fireworksAssets, mixColour, paint, toBgr}
+export {aimToward, blastSoundUrls, createFireworks, fireworksAssets, mixColour, paint, toBgr}
 export type {Kind as FireworkKind}

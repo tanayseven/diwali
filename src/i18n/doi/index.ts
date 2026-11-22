@@ -119,6 +119,11 @@ const doi = {
 			lights: "{house} नै बत्तियां लाइयां",
 			kandil: "{house} नै कंदील टंगी",
 			rangoli: "{house} नै रंगोली बनाई",
+			hit: "{house} दा रॉकेट {target} उप्पर फटेआ",
+			hitYou: "{house} दा रॉकेट तुंदे घरै उप्पर फटेआ",
+			youHit: "तुंदा रॉकेट {house} उप्पर फटेआ",
+			shielded: "{house} दी कंदील नै बचाई लेआ",
+			youShielded: "तुंदी कंदील नै बचाई लेआ",
 		},
 		challenge: {
 			kandil: "सारें शा पैह्लें कंदील टंगो",

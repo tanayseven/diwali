@@ -119,6 +119,11 @@ const or = {
 			lights: "{house} ଆଲୁଅ ଲଗାଇଲା",
 			kandil: "{house} ଆକାଶଦୀପ ଟାଙ୍ଗିଲା",
 			rangoli: "{house} ରଙ୍ଗୋଲି ଆଙ୍କିଲା",
+			hit: "{house}ର ରକେଟ {target} ଉପରେ ଫାଟିଲା",
+			hitYou: "{house}ର ରକେଟ ଆପଣଙ୍କ ଘର ଉପରେ ଫାଟିଲା",
+			youHit: "ଆପଣଙ୍କ ରକେଟ {house} ଉପରେ ଫାଟିଲା",
+			shielded: "{house}ର ଆକାଶଦୀପ ରକ୍ଷା କଲା",
+			youShielded: "ଆପଣଙ୍କ ଆକାଶଦୀପ ରକ୍ଷା କଲା",
 		},
 		challenge: {
 			kandil: "ସମସ୍ତଙ୍କ ଆଗରୁ ଆକାଶଦୀପ ଟାଙ୍ଗନ୍ତୁ",

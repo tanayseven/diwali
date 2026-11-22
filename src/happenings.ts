@@ -6,14 +6,18 @@ import type {PointData} from "pixi.js"
 type Happening = {
   kind: "fuse" | "show" | "bang" | "kandil" | "diya" | "rocket" | "burst"
   at: PointData
+  // For a burst, the house, by its place along the street, whose porch it went up from,
+  // and what burst
+  from?: number
+  firework?: string
 }
 
 type Listener = (happening: Happening) => void
 
 const listeners = new Set<Listener>()
 
-const happen = (kind: Happening["kind"], at: PointData) => {
-  const happening = {kind, at: {x: at.x, y: at.y}}
+const happen = (kind: Happening["kind"], at: PointData, about: {from?: number, kind?: string} = {}) => {
+  const happening: Happening = {kind, at: {x: at.x, y: at.y}, from: about.from, firework: about.kind}
   listeners.forEach(listener => listener(happening))
 }
 

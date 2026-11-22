@@ -119,6 +119,11 @@ const gu = {
 			lights: "{house} એ લાઇટ લગાવી",
 			kandil: "{house} એ કંદીલ લટકાવ્યું",
 			rangoli: "{house} એ રંગોળી બનાવી",
+			hit: "{house} નું રૉકેટ {target} ઉપર ફૂટ્યું",
+			hitYou: "{house} નું રૉકેટ તમારા ઘર ઉપર ફૂટ્યું",
+			youHit: "તમારું રૉકેટ {house} ઉપર ફૂટ્યું",
+			shielded: "{house} ના કંદીલે બચાવી લીધું",
+			youShielded: "તમારા કંદીલે બચાવી લીધું",
 		},
 		challenge: {
 			kandil: "સૌથી પહેલાં કંદીલ લટકાવો",

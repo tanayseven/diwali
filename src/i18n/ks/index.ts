@@ -119,6 +119,11 @@ const ks = {
 			lights: "{house} لۄگ گاش",
 			kandil: "{house} لۄگ قندیل",
 			rangoli: "{house} بنوٚو رنگولی",
+			hit: "{house} ہُند راکٹ پھٹ {target} پٮ۪ٹھ",
+			hitYou: "{house} ہُند راکٹ پھٹ توٚہی ہٕندِس گرس پٮ۪ٹھ",
+			youHit: "توٚہی ہُند راکٹ پھٹ {house} پٮ۪ٹھ",
+			shielded: "{house} چہِ قندیلہٕ بچوو",
+			youShielded: "توٚہی ہٕنزِ قندیلہٕ بچوو",
 		},
 		challenge: {
 			kandil: "گۄڈٕ قندیل لۄگِو",

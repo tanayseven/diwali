@@ -803,6 +803,55 @@ test("a street challenge in a tournament round is won by the first house to do i
   }
 })
 
+test("in a tournament round, a rocket put down at the end of the porch is aimed at the house next door, and bursting over it scores", async () => {
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-house", "deepaNiwas")
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour", "fireworks"]))
+  }, muted)
+  const round = await context.newPage()
+  round.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    // Zoomed all the way out, to see the whole of the porch, to its ends
+    await round.goto(`http://localhost:${port}/?guests=off&camera&round=40`)
+    await round.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await round.getByText(text).waitFor({timeout: 60000})
+      await round.waitForTimeout(900)
+      await round.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    const menu = round.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+    await menu.getByRole("button", {name: "Tournament"}).tap()
+    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.touchscreen.tap(52, rail.fireworks)
+    await round.waitForTimeout(800)
+    // Near the right-hand end of the porch, with Sai Krupa next door that side
+    const spot = await round.evaluate(() => {
+      const {left, right, bottom} = window.diwaliCamera.house()
+      return window.diwaliCamera.toScreen({x: left + (right - left) * 0.86, y: bottom - 40})
+    })
+    await round.mouse.move(slot(4).x, slot(4).y)
+    await round.mouse.down()
+    await round.mouse.move(spot.x, spot.y, {steps: 12})
+    await round.mouse.up()
+    await round.waitForTimeout(300)
+    await round.mouse.move(slot(6).x, slot(6).y)
+    await round.mouse.down()
+    await round.mouse.move(spot.x, spot.y - 4, {steps: 12})
+    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
+    await round.mouse.up()
+    // Its fuse burns down, it flies across and bursts over Sai Krupa
+    await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
+      .some(line => line.textContent === "Your rocket burst over Sai Krupa +25"), undefined, {timeout: 15000})
+    await round.waitForFunction(() => /You (40|50)/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 3000})
+  } finally {
+    await context.close()
+  }
+})
+
 // Last, as it starts the game again
 test("the language picked is used again next time, and the globe button picks another, which it starts again in", async () => {
   await page.reload()
