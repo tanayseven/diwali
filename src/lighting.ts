@@ -1,5 +1,5 @@
 import {Application, Assets, ColorMatrix, ColorMatrixFilter, Container, Graphics, PointData, RenderTexture, Sprite, Texture, UPDATE_PRIORITY} from "pixi.js"
-import {createBackground, groundBelow, sceneHeight, scenery} from "./background"
+import {createBackground, groundBelow, sceneHeight, scenery, skyAbove} from "./background"
 import {outlineAboveNight} from "./outline"
 
 type Background = ReturnType<typeof createBackground>
@@ -79,9 +79,12 @@ const createLighting = (app: Application, background: Background) => {
   shade.eventMode = "none"
   shade.visible = false
   shade.zIndex = sceneHeight + 1
-  // The ground carrying on below that is just as dark, and nothing there is lit
+  // The ground carrying on below that is just as dark, and nothing there is lit, as is
+  // the sky carrying on above the scene, seen when the whole street's shown
   const shadeAround = new Graphics()
     .rect(scenery.left, litDepth, scenery.right - scenery.left, sceneHeight + groundBelow - litDepth)
+    .fill(nightColour)
+    .rect(scenery.left, -skyAbove, scenery.right - scenery.left, skyAbove)
     .fill(nightColour)
   shadeAround.blendMode = "multiply"
   shadeAround.eventMode = "none"

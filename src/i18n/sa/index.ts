@@ -94,6 +94,12 @@ const sa = {
 		youWin: "भवान् विजितवान्!",
 		houseWins: "{house} विजयते!",
 		playAgain: "पुनः क्रीड",
+		street: "सम्पूर्णां वीथिं दर्शय",
+		feed: {
+			lights: "{house} दीपमालाः अलम्बयत्",
+			kandil: "{house} आकाशदीपम् अलम्बयत्",
+			rangoli: "{house} रङ्गवल्लीम् अलिखत्",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

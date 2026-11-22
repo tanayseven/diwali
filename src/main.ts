@@ -131,7 +131,7 @@ const main = async () => {
       ...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...kandilAssets,
       ...handAssets, ...tools.map(tool => tool.icon),
     ],
-    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg", freePlayUrl, trophyUrl],
+    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg", freePlayUrl, trophyUrl, "sprites/icons/street.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
@@ -247,8 +247,10 @@ const main = async () => {
   const available = tools.filter(tool => controls[tool.name] && loaded([tool.icon]))
   let selected = available[0].name
   // Only the picked tool's bar shows, unless the bars have been hidden with the eye
+  // and none while the whole street's shown, which the bar would cover
+  let streetShown = false
   const showBars = () => Object.entries(controls).forEach(([name, control]) =>
-    control.setHudShown(name === selected && hudToggle.isShown()))
+    control.setHudShown(name === selected && hudToggle.isShown() && !streetShown))
   const select = (tool: Tool, picked = true, introducing = true) => {
     selected = tool
     showBars()
@@ -319,6 +321,10 @@ const main = async () => {
   const zoomControls = createZoomControls(app, background, [camera])
   const rail = createSideRail(app, available, select)
   const hudToggle = createHudToggle(app, showBars)
+  background.onStreet(shown => {
+    streetShown = shown
+    showBars()
+  })
   app.stage.addChild(zoomControls.container, rail.container, hudToggle.container)
   screens.push(zoomControls, rail, hudToggle)
   // Above the rail and zoom buttons, so whatever's dragged from a bar is never hidden

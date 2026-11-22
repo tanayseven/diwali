@@ -94,6 +94,12 @@ const hiLatn = {
 		youWin: "Tum jeet gaye!",
 		houseWins: "{house} jeeta!",
 		playAgain: "Phir se khelo",
+		street: "Poori gali dikhao",
+		feed: {
+			lights: "{house} ne lights lagayi",
+			kandil: "{house} ne kandil taanga",
+			rangoli: "{house} ne rangoli banayi",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

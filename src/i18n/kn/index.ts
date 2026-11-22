@@ -94,6 +94,12 @@ const kn = {
 		youWin: "ನೀವು ಗೆದ್ದಿರಿ!",
 		houseWins: "{house} ಗೆದ್ದಿತು!",
 		playAgain: "ಮತ್ತೆ ಆಡಿ",
+		street: "ಇಡೀ ಬೀದಿಯನ್ನು ತೋರಿಸಿ",
+		feed: {
+			lights: "{house} ದೀಪಗಳನ್ನು ತೂಗುಹಾಕಿತು",
+			kandil: "{house} ಆಕಾಶಬುಟ್ಟಿ ತೂಗುಹಾಕಿತು",
+			rangoli: "{house} ರಂಗೋಲಿ ಹಾಕಿತು",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -94,6 +94,12 @@ const gu = {
 		youWin: "તમે જીત્યા!",
 		houseWins: "{house} જીત્યું!",
 		playAgain: "ફરી રમો",
+		street: "આખી શેરી બતાવો",
+		feed: {
+			lights: "{house} એ લાઇટ લગાવી",
+			kandil: "{house} એ કંદીલ લટકાવ્યું",
+			rangoli: "{house} એ રંગોળી બનાવી",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

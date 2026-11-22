@@ -94,6 +94,12 @@ const te = {
 		youWin: "మీరు గెలిచారు!",
 		houseWins: "{house} గెలిచింది!",
 		playAgain: "మళ్ళీ ఆడండి",
+		street: "మొత్తం వీధిని చూపించు",
+		feed: {
+			lights: "{house} దీపాల తోరణాలు వేలాడదీసింది",
+			kandil: "{house} ఆకాశదీపం వేలాడదీసింది",
+			rangoli: "{house} ముగ్గు వేసింది",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -94,6 +94,12 @@ const or = {
 		youWin: "ଆପଣ ଜିତିଲେ!",
 		houseWins: "{house} ଜିତିଲା!",
 		playAgain: "ପୁଣି ଖେଳନ୍ତୁ",
+		street: "ପୂରା ଗଳି ଦେଖାନ୍ତୁ",
+		feed: {
+			lights: "{house} ଆଲୁଅ ଲଗାଇଲା",
+			kandil: "{house} ଆକାଶଦୀପ ଟାଙ୍ଗିଲା",
+			rangoli: "{house} ରଙ୍ଗୋଲି ଆଙ୍କିଲା",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

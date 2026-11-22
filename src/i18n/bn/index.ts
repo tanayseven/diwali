@@ -94,6 +94,12 @@ const bn = {
 		youWin: "আপনি জিতেছেন!",
 		houseWins: "{house} জিতেছে!",
 		playAgain: "আবার খেলুন",
+		street: "পুরো রাস্তা দেখান",
+		feed: {
+			lights: "{house} আলো ঝুলিয়েছে",
+			kandil: "{house} আকাশপ্রদীপ ঝুলিয়েছে",
+			rangoli: "{house} আলপনা এঁকেছে",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -94,6 +94,12 @@ const asm = {
 		youWin: "আপুনি জিকিলে!",
 		houseWins: "{house} জিকিলে!",
 		playAgain: "পুনৰ খেলক",
+		street: "গোটেই পথটো দেখুৱাওক",
+		feed: {
+			lights: "{house}এ চাকি ওলমাইছে",
+			kandil: "{house}এ আকাশবন্তি ওলমাইছে",
+			rangoli: "{house}এ ৰংগোলী আঁকিছে",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

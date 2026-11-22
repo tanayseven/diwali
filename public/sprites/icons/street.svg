@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Three houses in a row on a street, the middle one the tallest -->
+  <path d="M2 30 12 22l10 8v22H2z" fill="#ffd700"/>
+  <path d="M22 26 32 14l10 12v26H22z" fill="#ffd700"/>
+  <path d="M42 30l10-8 10 8v22H42z" fill="#ffd700"/>
+  <path d="M9 40h6v12H9zM29 38h6v14h-6zM49 40h6v12h-6z" fill="#1a1a1a"/>
+  <path d="M2 55h60v3H2z" fill="#ffd700"/>
+</svg>

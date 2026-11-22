@@ -94,6 +94,12 @@ const ta = {
 		youWin: "நீங்கள் வென்றீர்கள்!",
 		houseWins: "{house} வென்றது!",
 		playAgain: "மீண்டும் விளையாடு",
+		street: "முழுத் தெருவையும் காட்டு",
+		feed: {
+			lights: "{house} விளக்குச் சரங்களைத் தொங்கவிட்டது",
+			kandil: "{house} கந்தீலைத் தொங்கவிட்டது",
+			rangoli: "{house} கோலம் போட்டது",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

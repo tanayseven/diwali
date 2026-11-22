@@ -1,3 +1,4 @@
+import {Text} from "pixi.js"
 import {fontFamily} from "./app"
 import type {Background} from "./background"
 import {LL} from "./locale"
@@ -44,9 +45,19 @@ const paceJitter = 0.15
 
 type Contender = {idx: number, name: string, points: number, player: boolean}
 
+// The button that shows the whole street, at the left of the round's pill
+const streetIconUrl = "sprites/icons/street.svg"
+// A "+N" rising from above a house as it scores, over this long, in ms, this far, in
+// pixels on screen, at this size, whatever the zoom
+const popDuration = 1200
+const popRise = 40
+const popSize = 26
+// Each thing a neighbour does, said under the pill for this long, in ms
+const feedShown = 3000
+
 // A pill at the top of the screen with the time left, the player's points, and who's
 // ahead of them, if anyone is
-const createRoundHud = () => {
+const createRoundHud = (background: Background) => {
   const hud = document.createElement("div")
   hud.setAttribute("role", "status")
   Object.assign(hud.style, {
@@ -68,13 +79,62 @@ const createRoundHud = () => {
     whiteSpace: "nowrap",
     pointerEvents: "none",
   })
+  // The whole street, shown and put away, the button lit while it's shown
+  const street = document.createElement("button")
+  street.type = "button"
+  street.setAttribute("aria-label", LL.tournament.street())
+  street.setAttribute("aria-pressed", "false")
+  Object.assign(street.style, {
+    pointerEvents: "auto",
+    width: "min(36px, 9vh)",
+    height: "min(36px, 9vh)",
+    marginLeft: "-8px",
+    padding: "4px",
+    borderRadius: "50%",
+    border: "2px solid transparent",
+    background: `url(${streetIconUrl}) center / 74% no-repeat`,
+    cursor: "pointer",
+  })
+  street.addEventListener("click", () => background.showStreet(!background.isStreetShown()))
+  const stopStreet = background.onStreet(shown => {
+    street.setAttribute("aria-pressed", String(shown))
+    street.style.borderColor = shown ? highlight : "transparent"
+  })
   const time = document.createElement("span")
   Object.assign(time.style, {color: highlight, fontVariantNumeric: "tabular-nums", minWidth: "2.6em"})
   const mine = document.createElement("span")
   const leader = document.createElement("span")
   Object.assign(leader.style, {opacity: "0.85"})
-  hud.append(time, mine, leader)
-  document.body.appendChild(hud)
+  hud.append(street, time, mine, leader)
+  // What a neighbour's just done, under the pill, fading after a while
+  const feed = document.createElement("div")
+  feed.setAttribute("aria-live", "polite")
+  Object.assign(feed.style, {
+    position: "fixed",
+    top: "calc(10px + min(36px, 9vh) + 22px)",
+    left: "50%",
+    transform: "translateX(-50%)",
+    zIndex: "2",
+    padding: "2px 12px",
+    borderRadius: "12px",
+    background: "rgba(26, 26, 26, 0.7)",
+    color: "#ffffff",
+    fontFamily,
+    fontSize: "min(16px, 4vh)",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    opacity: "0",
+    transition: "opacity 300ms ease-in-out",
+  })
+  let feedTimer: ReturnType<typeof setTimeout> | undefined
+  // S shows the whole street, or puts it away, as the button does
+  const onKey = (e: KeyboardEvent) => {
+    if ((e.key === "s" || e.key === "S") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      background.showStreet(!background.isStreetShown())
+    }
+  }
+  window.addEventListener("keydown", onKey)
+  document.body.append(hud, feed)
   return {
     show(secondsLeft: number, contenders: Contender[]) {
       const whole = Math.max(0, Math.ceil(secondsLeft))
@@ -84,8 +144,50 @@ const createRoundHud = () => {
       const best = [...contenders].filter(({player}) => !player).sort((a, b) => b.points - a.points)[0]
       leader.textContent = best && best.points > (player?.points ?? 0) ? `🏆 ${best.name} ${best.points}` : ""
     },
-    remove: () => hud.remove(),
+    say(line: string) {
+      feed.textContent = line
+      feed.style.opacity = "1"
+      clearTimeout(feedTimer)
+      feedTimer = setTimeout(() => feed.style.opacity = "0", feedShown)
+    },
+    remove() {
+      clearTimeout(feedTimer)
+      stopStreet()
+      window.removeEventListener("keydown", onKey)
+      // Back to the view before, once the round's done
+      background.showStreet(false)
+      hud.remove()
+      feed.remove()
+    },
   }
+}
+
+// A "+N" rising and fading from just above a house, the same size on screen whatever
+// the zoom, and above the night, so it's seen lit
+const popOver = (background: Background, idx: number, points: number) => {
+  const {left, top, width} = background.houses[idx]
+  const pop = new Text({
+    text: `+${points}`,
+    style: {fontFamily, fontSize: popSize, fill: 0xffd700, stroke: {color: 0x1a1a1a, width: 5}},
+    anchor: {x: 0.5, y: 1},
+  })
+  pop.eventMode = "none"
+  pop.zIndex = 10000
+  background.decorations.addChild(pop)
+  const startedAt = performance.now()
+  const step = () => {
+    const t = Math.min(1, (performance.now() - startedAt) / popDuration)
+    const scale = 1 / background.scale()
+    pop.scale.set(scale)
+    pop.position.set(left + width / 2, top - 8 * scale - popRise * scale * t)
+    pop.alpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4
+    if (t < 1) {
+      requestAnimationFrame(step)
+    } else {
+      pop.destroy()
+    }
+  }
+  step()
 }
 
 // "3", "2", "1", "Go!" in the middle of the screen, resolving as "Go!" shows
@@ -238,7 +340,7 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
     idx, name: LL.houses[name](), points: 0, player: idx === background.home(),
   }))
   const player = contenders.find(({player}) => player)!
-  const hud = createRoundHud()
+  const hud = createRoundHud(background)
   hud.show(roundSeconds, contenders)
   await countDown()
 
@@ -252,6 +354,7 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
     }
     done.set(progress, times + 1)
     player.points += scored.points
+    popOver(background, player.idx, scored.points)
   })
   // When each neighbour puts up each of its decorations, spread over its share of the
   // round, from when it starts. What it doesn't get to in time isn't put up
@@ -280,7 +383,10 @@ const runTournamentRound = async (background: Background, neighbours: Decoration
       while (planned.length > 0 && planned[0].at <= elapsed && elapsed < roundSeconds) {
         const {idx, decoration} = planned.shift()!
         decoration.put()
-        contenders[idx].points += neighbourPoints[decoration.kind]
+        const points = neighbourPoints[decoration.kind]
+        contenders[idx].points += points
+        popOver(background, idx, points)
+        hud.say(`${LL.tournament.feed[decoration.kind]({house: contenders[idx].name})} +${points}`)
       }
       hud.show(roundSeconds - elapsed, contenders)
       if (elapsed >= roundSeconds) {

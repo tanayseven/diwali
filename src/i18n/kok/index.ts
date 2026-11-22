@@ -94,6 +94,12 @@ const kok = {
 		youWin: "तुमी जिखले!",
 		houseWins: "{house} जिखलें!",
 		playAgain: "परत खेळात",
+		street: "पुराय रस्तो दाखयात",
+		feed: {
+			lights: "{house} न दिव्यांच्यो माळो लायल्यो",
+			kandil: "{house} न आकाशकंदील लायलो",
+			rangoli: "{house} न रांगोळी काडली",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

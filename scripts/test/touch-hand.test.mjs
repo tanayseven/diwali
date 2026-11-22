@@ -672,6 +672,59 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
   }
 })
 
+test("in a tournament round, the street button shows every house at once, a tap on a neighbour looks at it, and what it puts up is said", async () => {
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-house", "deepaNiwas")
+  }, muted)
+  const round = await context.newPage()
+  round.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=20&camera`)
+    await round.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await round.getByText(text).waitFor({timeout: 60000})
+      await round.waitForTimeout(900)
+      await round.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    const menu = round.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+    await menu.getByRole("button", {name: "Tournament"}).tap()
+    await round.getByText("Go!").waitFor({timeout: 10000})
+    const street = round.getByRole("button", {name: "Show the whole street"})
+    await street.tap()
+    await round.waitForTimeout(1500)
+    assert.equal(await street.getAttribute("aria-pressed"), "true")
+    // Every house, from side to side and roof to ground, on screen
+    const onScreen = await round.evaluate(() => window.diwaliCamera.houses().map(({left, top, right, bottom}) => {
+      const from = window.diwaliCamera.toScreen({x: left, y: top})
+      const to = window.diwaliCamera.toScreen({x: right, y: bottom})
+      return from.x >= 0 && from.y >= 0 && to.x <= innerWidth && to.y <= innerHeight
+    }))
+    assert.deepEqual(onScreen, [true, true, true, true, true, true])
+    // A neighbour's decorating is said under the round's pill, as it's done
+    await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
+      .some(line => / \+\d+$/.test(line.textContent ?? "")), undefined, {timeout: 15000})
+    // A tap on the house furthest right looks at it, out of the street
+    const last = await round.evaluate(() => {
+      const {left, right, bottom} = window.diwaliCamera.houses().at(-1)
+      return window.diwaliCamera.toScreen({x: (left + right) / 2, y: bottom - 60})
+    })
+    await round.touchscreen.tap(last.x, last.y)
+    await round.waitForTimeout(1500)
+    assert.equal(await street.getAttribute("aria-pressed"), "false")
+    const middle = await round.evaluate(() => {
+      const {left, right} = window.diwaliCamera.houses().at(-1)
+      return window.diwaliCamera.toScreen({x: (left + right) / 2, y: 0}).x
+    })
+    assert.ok(Math.abs(middle - screen.width / 2) < screen.width / 4, `the house furthest right is in the middle, at ${middle}`)
+  } finally {
+    await context.close()
+  }
+})
+
 // Last, as it starts the game again
 test("the language picked is used again next time, and the globe button picks another, which it starts again in", async () => {
   await page.reload()
