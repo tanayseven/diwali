@@ -272,10 +272,33 @@ type RootTranslation = {
 		 * C​o​m​p​e​t​e​ ​w​i​t​h​ ​t​h​e​ ​n​e​i​g​h​b​o​u​r​s​ ​f​o​r​ ​t​h​e​ ​b​e​s​t​ ​h​o​u​s​e
 		 */
 		tournamentAbout: string
+	}
+	tournament: {
 		/**
-		 * C​o​m​i​n​g​ ​s​o​o​n
+		 * Y​o​u
 		 */
-		comingSoon: string
+		you: string
+		/**
+		 * G​o​!
+		 */
+		go: string
+		/**
+		 * R​e​s​u​l​t​s
+		 */
+		results: string
+		/**
+		 * Y​o​u​ ​w​i​n​!
+		 */
+		youWin: string
+		/**
+		 * {​h​o​u​s​e​}​ ​w​i​n​s​!
+		 * @param {string} house
+		 */
+		houseWins: RequiredParams<'house'>
+		/**
+		 * P​l​a​y​ ​a​g​a​i​n
+		 */
+		playAgain: string
 	}
 	settings: {
 		/**
@@ -893,10 +916,32 @@ export type TranslationFunctions = {
 		 * Compete with the neighbours for the best house
 		 */
 		tournamentAbout: () => LocalizedString
+	}
+	tournament: {
 		/**
-		 * Coming soon
+		 * You
 		 */
-		comingSoon: () => LocalizedString
+		you: () => LocalizedString
+		/**
+		 * Go!
+		 */
+		go: () => LocalizedString
+		/**
+		 * Results
+		 */
+		results: () => LocalizedString
+		/**
+		 * You win!
+		 */
+		youWin: () => LocalizedString
+		/**
+		 * {house} wins!
+		 */
+		houseWins: (arg: { house: string }) => LocalizedString
+		/**
+		 * Play again
+		 */
+		playAgain: () => LocalizedString
 	}
 	settings: {
 		/**

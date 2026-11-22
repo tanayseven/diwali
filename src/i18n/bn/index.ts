@@ -86,7 +86,14 @@ const bn = {
 		freePlayAbout: "নিজের গতিতে আপনার বাড়ি সাজান",
 		tournament: "প্রতিযোগিতা",
 		tournamentAbout: "সবচেয়ে সুন্দর বাড়ির জন্য প্রতিবেশীদের সঙ্গে প্রতিযোগিতা করুন",
-		comingSoon: "শীঘ্রই আসছে",
+	},
+	tournament: {
+		you: "আপনি",
+		go: "শুরু!",
+		results: "ফলাফল",
+		youWin: "আপনি জিতেছেন!",
+		houseWins: "{house} জিতেছে!",
+		playAgain: "আবার খেলুন",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

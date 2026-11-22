@@ -86,7 +86,14 @@ const pa = {
 		freePlayAbout: "ਆਪਣੇ ਘਰ ਨੂੰ ਆਪਣੀ ਰਫ਼ਤਾਰ ਨਾਲ ਸਜਾਓ",
 		tournament: "ਮੁਕਾਬਲਾ",
 		tournamentAbout: "ਸਭ ਤੋਂ ਸੋਹਣੇ ਘਰ ਲਈ ਗੁਆਂਢੀਆਂ ਨਾਲ ਮੁਕਾਬਲਾ ਕਰੋ",
-		comingSoon: "ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ",
+	},
+	tournament: {
+		you: "ਤੁਸੀਂ",
+		go: "ਸ਼ੁਰੂ!",
+		results: "ਨਤੀਜੇ",
+		youWin: "ਤੁਸੀਂ ਜਿੱਤ ਗਏ!",
+		houseWins: "{house} ਜਿੱਤਿਆ!",
+		playAgain: "ਫਿਰ ਖੇਡੋ",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

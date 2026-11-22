@@ -86,7 +86,14 @@ const kok = {
 		freePlayAbout: "तुमचें घर तुमच्या वेगान सजयात",
 		tournament: "स्पर्धा",
 		tournamentAbout: "सगळ्यांत सोबीत घरा खातीर शेजाऱ्यां कडेन स्पर्धा करात",
-		comingSoon: "बेगीनूच येता",
+	},
+	tournament: {
+		you: "तुमी",
+		go: "सुरू!",
+		results: "निकाल",
+		youWin: "तुमी जिखले!",
+		houseWins: "{house} जिखलें!",
+		playAgain: "परत खेळात",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

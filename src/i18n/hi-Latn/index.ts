@@ -86,7 +86,14 @@ const hiLatn = {
 		freePlayAbout: "Apna ghar apni raftaar se sajao",
 		tournament: "Tournament",
 		tournamentAbout: "Sabse sundar ghar ke liye padosiyon se muqabla karo",
-		comingSoon: "Jald aa raha hai",
+	},
+	tournament: {
+		you: "Tum",
+		go: "Shuru!",
+		results: "Nateeje",
+		youWin: "Tum jeet gaye!",
+		houseWins: "{house} jeeta!",
+		playAgain: "Phir se khelo",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

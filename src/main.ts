@@ -16,17 +16,18 @@ import {createNameplates} from "./nameplates"
 import type {Lightable} from "./matchstick"
 import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
-import {freePlayUrl, showModeMenu, trophyUrl} from "./modeMenu"
+import {freePlayUrl, Mode, showModeMenu, trophyUrl} from "./modeMenu"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {forgetHouse, savedHouse, showHousePicker} from "./housePicker"
-import {decorateNeighbours} from "./neighbours"
+import {Decoration, decorateNeighbours, neighbourDecorations} from "./neighbours"
 import {createBins} from "./bins"
 import {houses as street} from "./background"
 import {createRoad} from "./road"
 import {createScreenshotButton} from "./screenshot"
 import {createSettings, isSettingsOpen, textButton} from "./settings"
 import {runTour} from "./tour"
+import {runTournamentRound} from "./tournament"
 import {createRating} from "./rating"
 import {RailItem, createSideRail} from "./sideRail"
 import {createSkyFireworks} from "./skyFireworks"
@@ -88,6 +89,18 @@ const introduceFor = 5000
 const toolNameShown = 1500
 // How long after a tool's picked the first time to show how it's used, once its bar's in
 const demonstrateAfter = 700
+// Set when another tournament round's asked for, which starts the game again, to go
+// straight to it rather than ask again from the menu
+const nextModeKey = "diwali-next-mode"
+const takeNextMode = (): Mode | undefined => {
+  try {
+    const next = sessionStorage.getItem(nextModeKey)
+    sessionStorage.removeItem(nextModeKey)
+    return next === "tournament" ? next : undefined
+  } catch {
+    return undefined
+  }
+}
 
 const main = async () => {
   const app = await createApp()
@@ -130,9 +143,9 @@ const main = async () => {
   await showSoundSplash()
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
-  // Free play, or a tournament against the neighbours, picked every time. Only free play
-  // can be picked for now: the tournament's shown as coming soon
-  await showModeMenu()
+  // Free play, or a tournament against the neighbours, picked every time, unless another
+  // round's been asked for
+  const mode = takeNextMode() ?? await showModeMenu()
   // The player's own house on the street, to decorate, picked the first time, and after
   // that, kept, until another's picked from the settings
   const homeName = savedHouse() ?? await showHousePicker()
@@ -197,8 +210,22 @@ const main = async () => {
   }
   const rangoli = createRangoli(app, background, lighting)
   controls.rangoli = rangoli
-  // Every other house on the street, decorated already by its family
-  decorateNeighbours(background, {lights, kandils, rangoli})
+  // Every other house on the street, decorated already by its family, or in a
+  // tournament, decorated by them as the round goes on, each thing only once
+  const neighbours: Decoration[][] = mode === "tournament"
+    ? neighbourDecorations(background, {lights, kandils, rangoli}).map(decorations => decorations.map(decoration => {
+      let put = false
+      return {...decoration, put: () => {
+        if (!put) {
+          put = true
+          decoration.put()
+        }
+      }}
+    }))
+    : []
+  if (mode !== "tournament") {
+    decorateNeighbours(background, {lights, kandils, rangoli})
+  }
   // Each house's name, over its door
   createNameplates(background, lighting)
   // A family out on each house's porch to celebrate, unless asked not to be, as the
@@ -359,10 +386,31 @@ const main = async () => {
   settings.addRow(LL.tour.title(), replay)
   // In the Android app, rating it in its store, from the settings, and now and then asked
   createRating(settings)
-  if (!introduced.has("zoom")) {
-    showZoomTutorialOnceSeen()
+  const startFreePlay = () => {
+    if (!introduced.has("zoom")) {
+      showZoomTutorialOnceSeen()
+    } else {
+      firstRun()
+    }
+  }
+  if (mode === "tournament") {
+    // A round against the neighbours, then another, which starts the game again, or free
+    // play from where it got to, with the neighbours' houses finished off
+    void runTournamentRound(background, neighbours).then(outcome => {
+      if (outcome === "again") {
+        try {
+          sessionStorage.setItem(nextModeKey, "tournament")
+        } catch {
+          // Asked again from the menu, then
+        }
+        window.location.reload()
+        return
+      }
+      neighbours.forEach(decorations => decorations.forEach(({put}) => put()))
+      startFreePlay()
+    })
   } else {
-    firstRun()
+    startFreePlay()
   }
 
   window.addEventListener("keydown", e => {

@@ -33,46 +33,60 @@ const seeded = (seed: number) => {
   }
 }
 
-// Every house but the player's, decorated already for Diwali, as the neighbours have
-// done theirs: a string of lights along each of its eaves, all of a colour or mixed, a
-// lit kandil or two hung from its longest, and a rangoli in the middle of its porch
-const decorateNeighbours = (background: Background, {lights, kandils, rangoli}: Decorators) => {
-  background.houses.forEach(({eaves, porch}, idx) => {
+// One thing put up on a neighbour's house: a string of lights, a kandil or a rangoli
+type Decoration = {kind: "lights" | "kandil" | "rangoli", put: () => void}
+
+// What each house but the player's is decorated with, in the order it's put up, by the
+// house's place on the street: a string of lights along each of its eaves, all of a
+// colour or mixed, a lit kandil or two hung from its longest, and a rangoli in the middle
+// of its porch. Nothing's put up until each is put
+const neighbourDecorations = (background: Background, {lights, kandils, rangoli}: Decorators) =>
+  background.houses.map(({eaves, porch}, idx) => {
+    const decorations: Decoration[] = []
     if (idx === background.home()) {
-      return
+      return decorations
     }
     const random = seeded(idx * 7919 + 17)
     const colour = Math.floor(random() * 100)
     eaves.forEach(([left, right]) => {
-      if (right.x - left.x >= shortestStrung) {
-        lights?.hangFixed(
+      if (lights && right.x - left.x >= shortestStrung) {
+        decorations.push({kind: "lights", put: () => lights.hangFixed(
           {x: left.x + strungIn, y: left.y + strungBelow},
           {x: right.x - strungIn, y: right.y + strungBelow},
           colour,
-        )
+        )})
       }
     })
     const longest = eaves.reduce<[PointData, PointData] | undefined>(
       (best, eave) => !best || eave[1].x - eave[0].x > best[1].x - best[0].x ? eave : best, undefined)
-    if (longest) {
+    if (longest && kandils) {
       const [left, right] = longest
       const length = right.x - left.x
       const paper = Math.floor(random() * 100)
       const tails = Math.floor(random() * 100)
       const along = length >= twoKandils ? [0.22, 0.78] : [0.5]
-      along.forEach((share, k) => kandils?.hangFixed(
-        {x: left.x + length * share, y: left.y},
-        kandilString.least + random() * (kandilString.most - kandilString.least),
-        paper + k,
-        tails + k,
-      ))
+      along.forEach((share, k) => {
+        const string = kandilString.least + random() * (kandilString.most - kandilString.least)
+        decorations.push({kind: "kandil", put: () => kandils.hangFixed(
+          {x: left.x + length * share, y: left.y}, string, paper + k, tails + k)})
+      })
     }
-    const middle = {
-      x: porch.reduce((sum, point) => sum + point.x, 0) / porch.length,
-      y: porch.reduce((sum, point) => sum + point.y, 0) / porch.length,
+    if (rangoli) {
+      const middle = {
+        x: porch.reduce((sum, point) => sum + point.x, 0) / porch.length,
+        y: porch.reduce((sum, point) => sum + point.y, 0) / porch.length,
+      }
+      // The house's random numbers go on into its design: all the others have been
+      // drawn by now, so it's the same design whenever it's put
+      decorations.push({kind: "rangoli", put: () => rangoli.putFixed(middle, random)})
     }
-    rangoli?.putFixed(middle, random)
+    return decorations
   })
-}
 
-export {decorateNeighbours}
+// Every house but the player's, decorated already for Diwali, as the neighbours have
+// done theirs
+const decorateNeighbours = (background: Background, decorators: Decorators) =>
+  neighbourDecorations(background, decorators).forEach(decorations => decorations.forEach(({put}) => put()))
+
+export {decorateNeighbours, neighbourDecorations}
+export type {Decoration}

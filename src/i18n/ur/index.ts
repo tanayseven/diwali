@@ -86,7 +86,14 @@ const ur = {
 		freePlayAbout: "اپنے گھر کو اپنی رفتار سے سجائیں",
 		tournament: "مقابلہ",
 		tournamentAbout: "سب سے خوبصورت گھر کے لیے پڑوسیوں سے مقابلہ کریں",
-		comingSoon: "جلد آ رہا ہے",
+	},
+	tournament: {
+		you: "آپ",
+		go: "شروع!",
+		results: "نتائج",
+		youWin: "آپ جیت گئے!",
+		houseWins: "{house} جیت گیا!",
+		playAgain: "دوبارہ کھیلیں",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

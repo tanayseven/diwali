@@ -86,7 +86,14 @@ const sd = {
 		freePlayAbout: "پنهنجي گهر کي پنهنجي رفتار سان سينگاريو",
 		tournament: "مقابلو",
 		tournamentAbout: "سڀ کان سهڻي گهر لاءِ پاڙيسرين سان مقابلو ڪريو",
-		comingSoon: "جلد اچي رهيو آهي",
+	},
+	tournament: {
+		you: "توهان",
+		go: "شروع!",
+		results: "نتيجا",
+		youWin: "توهان کٽي ويا!",
+		houseWins: "{house} کٽي ويو!",
+		playAgain: "ٻيهر کيڏو",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -86,7 +86,14 @@ const mni = {
 		freePlayAbout: "ꯅꯍꯥꯛꯀꯤ ꯌꯨꯝ ꯅꯍꯥꯛꯀꯤ ꯊꯧꯅꯥꯗ ꯁꯦꯃꯖꯤꯟꯕꯤꯌꯨ",
 		tournament: "ꯇꯨꯔꯅꯥꯃꯦꯟꯇ",
 		tournamentAbout: "ꯈ꯭ꯕꯥꯏꯗꯒꯤ ꯐꯖꯕ ꯌꯨꯝꯒꯤꯗꯃꯛ ꯌꯨꯝꯂꯣꯟꯅꯕꯁꯤꯡꯒ ꯂꯥꯟꯊꯦꯡꯅꯧ",
-		comingSoon: "ꯊꯨꯅꯥ ꯂꯥꯛꯀꯅꯤ",
+	},
+	tournament: {
+		you: "ꯅꯍꯥꯛ",
+		go: "ꯍꯧꯔꯁꯤ!",
+		results: "ꯃꯍꯩ",
+		youWin: "ꯅꯍꯥꯛ ꯃꯥꯏꯄꯥꯀꯦ!",
+		houseWins: "{house} ꯃꯥꯏꯄꯥꯀꯦ!",
+		playAgain: "ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯁꯥꯟꯅꯧ",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -86,7 +86,14 @@ const ml = {
 		freePlayAbout: "നിങ്ങളുടെ വേഗത്തിൽ വീട് അലങ്കരിക്കൂ",
 		tournament: "മത്സരം",
 		tournamentAbout: "ഏറ്റവും മനോഹരമായ വീടിനായി അയൽക്കാരുമായി മത്സരിക്കൂ",
-		comingSoon: "ഉടൻ വരുന്നു",
+	},
+	tournament: {
+		you: "നിങ്ങൾ",
+		go: "തുടങ്ങാം!",
+		results: "ഫലം",
+		youWin: "നിങ്ങൾ ജയിച്ചു!",
+		houseWins: "{house} ജയിച്ചു!",
+		playAgain: "വീണ്ടും കളിക്കൂ",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -86,7 +86,14 @@ const asm = {
 		freePlayAbout: "নিজৰ গতিত আপোনাৰ ঘৰ সজাওক",
 		tournament: "প্ৰতিযোগিতা",
 		tournamentAbout: "আটাইতকৈ ধুনীয়া ঘৰৰ বাবে ওচৰ-চুবুৰীয়াৰ সৈতে প্ৰতিযোগিতা কৰক",
-		comingSoon: "সোনকালে আহি আছে",
+	},
+	tournament: {
+		you: "আপুনি",
+		go: "আৰম্ভ!",
+		results: "ফলাফল",
+		youWin: "আপুনি জিকিলে!",
+		houseWins: "{house} জিকিলে!",
+		playAgain: "পুনৰ খেলক",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

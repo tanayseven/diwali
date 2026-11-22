@@ -86,7 +86,14 @@ const gu = {
 		freePlayAbout: "તમારું ઘર તમારી ગતિએ સજાવો",
 		tournament: "સ્પર્ધા",
 		tournamentAbout: "સૌથી સુંદર ઘર માટે પડોશીઓ સાથે સ્પર્ધા કરો",
-		comingSoon: "ટૂંક સમયમાં આવી રહ્યું છે",
+	},
+	tournament: {
+		you: "તમે",
+		go: "શરૂ!",
+		results: "પરિણામ",
+		youWin: "તમે જીત્યા!",
+		houseWins: "{house} જીત્યું!",
+		playAgain: "ફરી રમો",
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

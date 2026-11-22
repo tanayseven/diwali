@@ -519,12 +519,10 @@ test("the first visit picks a house, then the guided first run waits for each st
       await first.waitForTimeout(900)
       await first.touchscreen.tap(screen.width / 2, screen.height / 2)
     }
-    // Then free play or a tournament, the tournament shown behind the trophy but not yet
-    // to be picked
+    // Then free play or a tournament, the tournament shown behind the trophy
     const menu = first.getByRole("dialog", {name: "How will you celebrate?"})
     await menu.waitFor({timeout: 10000})
-    const tournament = menu.getByRole("button", {name: "Tournament, Coming soon"})
-    assert.ok(await tournament.isDisabled(), "the tournament can't be picked yet")
+    const tournament = menu.getByRole("button", {name: "Tournament"})
     assert.ok(await tournament.locator("img[src$='trophy.svg']").count() === 1, "the tournament's shown with the trophy")
     await freePlay(first)
     // Every house on the street to pick from, and the first picked, and remembered
@@ -615,6 +613,60 @@ test("in the Android app, a kandil lit in a later session is followed, after a p
     await asked.waitFor({state: "hidden", timeout: 3000})
     const saved = await app.evaluate(() => JSON.parse(localStorage.getItem("diwali-rating")))
     assert.deepEqual(saved, {sessions: 2, askFrom: 5, never: false}, "asked again three sessions on")
+  } finally {
+    await context.close()
+  }
+})
+
+test("a tournament round counts down, scores what's lit, ranks every house, and goes back to free play", async () => {
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-house", "deepaNiwas")
+  }, muted)
+  const round = await context.newPage()
+  round.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    // A round of a few seconds
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=12`)
+    await round.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await round.getByText(text).waitFor({timeout: 60000})
+      await round.waitForTimeout(900)
+      await round.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    const menu = round.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+    await menu.getByRole("button", {name: "Tournament"}).tap()
+    // The time left and the player's points, at the top
+    const hud = round.getByRole("status")
+    await hud.waitFor({timeout: 10000})
+    assert.match(await hud.innerText(), /You 0/)
+    // Once it's started, an anar put down and lit scores
+    await round.getByText("Go!").waitFor({timeout: 10000})
+    await round.touchscreen.tap(52, rail.fireworks)
+    await round.waitForTimeout(800)
+    await round.mouse.move(slot(0).x, slot(0).y)
+    await round.mouse.down()
+    await round.mouse.move(porch.x, porch.y, {steps: 12})
+    await round.mouse.up()
+    await round.waitForTimeout(300)
+    await round.mouse.move(slot(6).x, slot(6).y)
+    await round.mouse.down()
+    await round.mouse.move(porch.x, porch.y - 4, {steps: 12})
+    await round.waitForTimeout(2000)
+    await round.mouse.up()
+    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 5000})
+    // Then every house, ranked, with the player's among them
+    const results = round.getByRole("dialog", {name: "Results"})
+    await results.waitFor({timeout: 30000})
+    assert.equal(await results.getByRole("listitem").count(), 6)
+    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+15/)
+    assert.equal(await hud.count(), 0, "the round's time and points are gone")
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Results']")).opacity === "1")
+    await results.getByRole("button", {name: "Free play"}).tap()
+    await results.waitFor({state: "hidden", timeout: 5000})
   } finally {
     await context.close()
   }
