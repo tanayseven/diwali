@@ -206,14 +206,16 @@ const emberRate = 2.5
 const bounce = 0.25
 // Smoke billows up from the fountain and spreads out as it fades, lit warm by the
 // fire while it's close. A puff goes up as the fountain catches, and a wisp lingers
-// after it's burnt out
-const maxSmokeRate = 14 * quality.particleScale
-const smokeLife = 4.5
-const smokeAlpha = 0.3
+// after it's burnt out. Each puff grows from its smallest to its biggest over its
+// life, in scene units
+const maxSmokeRate = 24 * quality.particleScale
+const smokeLife = 6
+const smokeAlpha = 0.36
+const smokeSize = {from: 24, to: 120}
 const smokeTint = 0x7a7a84
 const litSmokeTint = 0xffb070
-const catchPuffs = 10
-const spentSmokeDuration = 3
+const catchPuffs = 16
+const spentSmokeDuration = 6
 
 // Each anar lights up the porch around it while it burns
 const lightColour = 0xffc27a
@@ -261,7 +263,7 @@ const blastFade = 16
 const blastSparks = 64
 const blastSpecks = 24
 const blastSparkSpeed = {min: 120, max: 320}
-const blastPuffs = 3
+const blastPuffs = 5
 
 // How far from a firework what it throws off can reach, in scene units: an anar's
 // fountain rises about 300 above it. One whose reach is all off screen throws nothing
@@ -296,7 +298,7 @@ const sutliSparks = 360
 const sutliSpecks = 90
 const sutliSparkSpeed = {min: 180, max: 560}
 const sutliShreds = {min: 70, max: 90}
-const sutliPuffs = 16
+const sutliPuffs = 26
 // Where it bursts from, in its drawing: the middle of its body
 const sutliHeart = {x: 60, y: 68}
 const sutliShredColours = [0x2f5a22, 0x4c7f36, 0x24481a, 0xc42320, 0xe9be1c, 0xd9c79a]
@@ -319,7 +321,7 @@ const rocketTrailRate = 800 * quality.particleScale
 const rocketTrailSpeed = {min: 60, max: 200}
 const rocketTrailSpread = 0.4
 const rocketCoastTrailRate = 80 * quality.particleScale
-const rocketSmokeRate = 30 * quality.particleScale
+const rocketSmokeRate = 45 * quality.particleScale
 const rocketSoundUrl = "audio/effects/rocket.mp3"
 const rocketStars = {min: 110, max: 150}
 const rocketStarSpeed = {min: 110, max: 220}
@@ -329,7 +331,7 @@ const rocketStarLife = {min: 1, max: 1.6}
 const rocketStarFall = 0.18
 const rocketStarSize = 1.8
 const rocketBurstSpecks = 40
-const rocketBurstPuffs = 6
+const rocketBurstPuffs = 10
 const rocketColours = [0xb48cff, 0xffc861, 0xff6a5a, 0x7dff9a, 0x76a8ff, 0xff7ad9]
 const rocketLightColour = 0xffd8a8
 const rocketLightRadius = {flying: 160, burst: 380}
@@ -354,7 +356,7 @@ const skyShotDrag = 0.35
 const skyShotBurstSpeed = 50
 const skyShotTrailRate = 260 * quality.particleScale
 const skyShotTrailSpeed = {min: 10, max: 50}
-const skyShotMuzzlePuffs = 14
+const skyShotMuzzlePuffs = 22
 // The gold stars fly out in every direction at much the same speed, as the shell's
 // burst is round: seen from the side, that's a round ball, thickest at its rim
 const skyShotStars = {min: 240, max: 300}
@@ -415,7 +417,7 @@ const skidLife = {min: 0.35, max: 1}
 const skidDrag = 1.6
 // Skidding sparks are drawn with longer streaks than flying ones
 const skidStreak = 1 / 70
-const chakriSmokeRate = 7 * quality.particleScale
+const chakriSmokeRate = 12 * quality.particleScale
 // Its hiss is heard while it spins, at its strength, so it dies away as it slows. The
 // recording runs 18 seconds, as long as the longest burn, and was made louder to match
 // the anar's
@@ -1194,7 +1196,7 @@ const createFireworks = (
   const smoulder = (firework: Placed, at: PointData, dt: number) => {
     const smouldering = clamp(1 - (time - firework.spentAt) / spentSmokeDuration)
     if (firework.state === "spent" && smouldering > 0) {
-      firework.smokeDebt += 3 * smouldering * dt
+      firework.smokeDebt += 5 * smouldering * dt
       while (firework.smokeDebt >= 1) {
         firework.smokeDebt--
         addSmoke(at.x + random(-1, 1), at.y - random(0, 4))
@@ -2088,7 +2090,7 @@ const createFireworks = (
       shownSmoke.show(particle)
       particle.x = puff.x
       particle.y = puff.y
-      particle.scaleX = particle.scaleY = lerp(20, 90, t) / smokeTexture.width
+      particle.scaleX = particle.scaleY = lerp(smokeSize.from, smokeSize.to, t) / smokeTexture.width
       // Lit by the nearest fire while it's close to it and burning bright
       const lit = placed.reduce((most, firework) => {
         const nearness = clamp(1 - Math.hypot(puff.x - firework.lightAt.x, puff.y - firework.lightAt.y) / 120)
