@@ -814,7 +814,7 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
     // Zoomed all the way out, to see the whole of the porch, to its ends
-    await round.goto(`http://localhost:${port}/?guests=off&camera&round=40`)
+    await round.goto(`http://localhost:${port}/?guests=off&camera&round=60`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
