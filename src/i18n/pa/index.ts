@@ -80,6 +80,14 @@ const pa = {
 		heading: "ਆਪਣਾ ਘਰ ਚੁਣੋ",
 		hint: "ਇਸ ਨੂੰ ਦੀਵਾਲੀ ਲਈ ਸਜਾਓ। ਤੁਹਾਡੇ ਗੁਆਂਢੀ ਆਪਣੇ ਘਰ ਪਹਿਲਾਂ ਹੀ ਸਜਾ ਚੁੱਕੇ ਹਨ, ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਪਰਿਵਾਰ ਬਾਹਰ ਜਸ਼ਨ ਮਨਾ ਰਹੇ ਹਨ।",
 	},
+	modeMenu: {
+		heading: "ਤੁਸੀਂ ਕਿਵੇਂ ਮਨਾਓਗੇ?",
+		freePlay: "ਖੁੱਲ੍ਹੀ ਖੇਡ",
+		freePlayAbout: "ਆਪਣੇ ਘਰ ਨੂੰ ਆਪਣੀ ਰਫ਼ਤਾਰ ਨਾਲ ਸਜਾਓ",
+		tournament: "ਮੁਕਾਬਲਾ",
+		tournamentAbout: "ਸਭ ਤੋਂ ਸੋਹਣੇ ਘਰ ਲਈ ਗੁਆਂਢੀਆਂ ਨਾਲ ਮੁਕਾਬਲਾ ਕਰੋ",
+		comingSoon: "ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ਸੈਟਿੰਗਾਂ",

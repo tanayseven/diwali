@@ -80,6 +80,14 @@ const mai = {
 		heading: "अपन घर चुनू",
 		hint: "एकरा दिवाली लेल सजाउ। अहाँक पड़ोसी अपन घर पहिनहि सजा लेने छथि, आ हुनक परिवार बाहर उत्सव मना रहल छथि।",
 	},
+	modeMenu: {
+		heading: "अहाँ कोना मनाएब?",
+		freePlay: "मुक्त खेल",
+		freePlayAbout: "अपन घर अपन गति सँ सजाउ",
+		tournament: "प्रतियोगिता",
+		tournamentAbout: "सभसँ सुन्नर घरक लेल पड़ोसी सभ सँ प्रतियोगिता करू",
+		comingSoon: "जल्दिये आबि रहल अछि",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

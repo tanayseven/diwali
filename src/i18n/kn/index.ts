@@ -80,6 +80,14 @@ const kn = {
 		heading: "ನಿಮ್ಮ ಮನೆಯನ್ನು ಆರಿಸಿ",
 		hint: "ದೀಪಾವಳಿಗೆ ಅದನ್ನು ಅಲಂಕರಿಸಿ. ನಿಮ್ಮ ನೆರೆಹೊರೆಯವರು ಈಗಾಗಲೇ ತಮ್ಮ ಮನೆಗಳನ್ನು ಅಲಂಕರಿಸಿದ್ದಾರೆ, ಮತ್ತು ಅವರ ಕುಟುಂಬಗಳು ಹೊರಗೆ ಹಬ್ಬ ಆಚರಿಸುತ್ತಿವೆ.",
 	},
+	modeMenu: {
+		heading: "ನೀವು ಹೇಗೆ ಆಚರಿಸುತ್ತೀರಿ?",
+		freePlay: "ಮುಕ್ತ ಆಟ",
+		freePlayAbout: "ನಿಮ್ಮ ಮನೆಯನ್ನು ನಿಮ್ಮದೇ ವೇಗದಲ್ಲಿ ಅಲಂಕರಿಸಿ",
+		tournament: "ಸ್ಪರ್ಧೆ",
+		tournamentAbout: "ಅತ್ಯಂತ ಸುಂದರ ಮನೆಗಾಗಿ ನೆರೆಹೊರೆಯವರೊಂದಿಗೆ ಸ್ಪರ್ಧಿಸಿ",
+		comingSoon: "ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",

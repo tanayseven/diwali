@@ -80,6 +80,14 @@ const doi = {
 		heading: "अपना घर चुनो",
 		hint: "इसगी दीवाली आस्तै सजाओ। तुंदे गुआंढियें अपने घर पैह्लें गै सजाई लैते न, ते उंदे टब्बर बाहर उत्सव मनाऽ करदे न।",
 	},
+	modeMenu: {
+		heading: "तुस कियां मनागे?",
+		freePlay: "खुल्ली खेढ",
+		freePlayAbout: "अपने घरै गी अपनी रफ्तारा कन्नै सजाओ",
+		tournament: "मुकाबला",
+		tournamentAbout: "सारें शा सोहने घरै आस्तै गुआंढियें कन्नै मुकाबला करो",
+		comingSoon: "जल्दी औआ करदा ऐ",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

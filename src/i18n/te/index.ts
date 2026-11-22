@@ -80,6 +80,14 @@ const te = {
 		heading: "మీ ఇల్లు ఎంచుకోండి",
 		hint: "దీపావళికి దాన్ని అలంకరించండి. మీ పొరుగువారు ఇప్పటికే తమ ఇళ్లను అలంకరించుకున్నారు, వారి కుటుంబాలు బయట సంబరాలు చేసుకుంటున్నాయి.",
 	},
+	modeMenu: {
+		heading: "మీరు ఎలా జరుపుకుంటారు?",
+		freePlay: "స్వేచ్ఛా ఆట",
+		freePlayAbout: "మీ ఇంటిని మీ వేగంలో అలంకరించండి",
+		tournament: "పోటీ",
+		tournamentAbout: "అత్యంత అందమైన ఇంటి కోసం పొరుగువారితో పోటీ పడండి",
+		comingSoon: "త్వరలో వస్తోంది",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "సెట్టింగ్‌లు",

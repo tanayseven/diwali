@@ -80,6 +80,14 @@ const ml = {
 		heading: "നിങ്ങളുടെ വീട് തിരഞ്ഞെടുക്കൂ",
 		hint: "ദീപാവലിക്കായി അത് അലങ്കരിക്കൂ. നിങ്ങളുടെ അയൽക്കാർ അവരുടെ വീടുകൾ നേരത്തേ അലങ്കരിച്ചുകഴിഞ്ഞു, അവരുടെ കുടുംബങ്ങൾ പുറത്ത് ആഘോഷിക്കുകയാണ്.",
 	},
+	modeMenu: {
+		heading: "നിങ്ങൾ എങ്ങനെ ആഘോഷിക്കും?",
+		freePlay: "സ്വതന്ത്ര കളി",
+		freePlayAbout: "നിങ്ങളുടെ വേഗത്തിൽ വീട് അലങ്കരിക്കൂ",
+		tournament: "മത്സരം",
+		tournamentAbout: "ഏറ്റവും മനോഹരമായ വീടിനായി അയൽക്കാരുമായി മത്സരിക്കൂ",
+		comingSoon: "ഉടൻ വരുന്നു",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ക്രമീകരണങ്ങൾ",

@@ -80,6 +80,14 @@ const hi = {
 		heading: "अपना घर चुनें",
 		hint: "इसे दिवाली के लिए सजाएँ। आपके पड़ोसी अपने घर पहले ही सजा चुके हैं, और उनके परिवार बाहर जश्न मना रहे हैं।",
 	},
+	modeMenu: {
+		heading: "आप कैसे मनाएँगे?",
+		freePlay: "मुक्त खेल",
+		freePlayAbout: "अपने घर को अपनी रफ़्तार से सजाएँ",
+		tournament: "टूर्नामेंट",
+		tournamentAbout: "सबसे सुंदर घर के लिए पड़ोसियों से मुक़ाबला करें",
+		comingSoon: "जल्द आ रहा है",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्स",

@@ -47,10 +47,22 @@ let browser
 let page
 let touchscreen
 
+// Free play, from the menu after the splashes, once it's faded in, as taps before then
+// are taken to be meant for the splash before
+const freePlay = async on => {
+  const menu = on.getByRole("dialog", {name: "How will you celebrate?"})
+  await menu.waitFor({timeout: 10000})
+  await on.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+  await menu.getByRole("button", {name: "Free play"}).tap()
+  await menu.waitFor({state: "hidden", timeout: 20000})
+}
+
 before(async () => {
   server = await createServer({root, server: {port, strictPort: true}, logLevel: "error"})
   await server.listen()
   browser = await chromium.launch({
+    // HEADFUL=1 shows the browser, to watch the tests play
+    headless: !process.env.HEADFUL,
     args: ["--mute-audio"],
     ...process.env.PLAYWRIGHT_CHROMIUM ? {executablePath: process.env.PLAYWRIGHT_CHROMIUM} : {},
   })
@@ -88,6 +100,7 @@ before(async () => {
     await page.waitForTimeout(900)
     await page.touchscreen.tap(screen.width / 2, screen.height / 2)
   }
+  await freePlay(page)
   await page.waitForTimeout(2000)
 })
 
@@ -506,6 +519,14 @@ test("the first visit picks a house, then the guided first run waits for each st
       await first.waitForTimeout(900)
       await first.touchscreen.tap(screen.width / 2, screen.height / 2)
     }
+    // Then free play or a tournament, the tournament shown behind the trophy but not yet
+    // to be picked
+    const menu = first.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    const tournament = menu.getByRole("button", {name: "Tournament, Coming soon"})
+    assert.ok(await tournament.isDisabled(), "the tournament can't be picked yet")
+    assert.ok(await tournament.locator("img[src$='trophy.svg']").count() === 1, "the tournament's shown with the trophy")
+    await freePlay(first)
     // Every house on the street to pick from, and the first picked, and remembered
     const picker = first.getByRole("dialog", {name: "Pick your house"})
     await picker.waitFor({timeout: 10000})
@@ -571,6 +592,7 @@ test("in the Android app, a kandil lit in a later session is followed, after a p
       await app.waitForTimeout(900)
       await app.touchscreen.tap(screen.width / 2, screen.height / 2)
     }
+    await freePlay(app)
     await app.waitForTimeout(1500)
     // Rated any time from the settings
     await app.getByRole("button", {name: "Settings"}).tap()
@@ -615,6 +637,7 @@ test("the language picked is used again next time, and the globe button picks an
     await page.waitForTimeout(900)
     await page.touchscreen.tap(screen.width / 2, screen.height / 2)
   }
+  await freePlay(page)
   const globe = page.getByRole("button", {name: "English", exact: true})
   await globe.waitFor({timeout: 10000})
   await globe.tap()

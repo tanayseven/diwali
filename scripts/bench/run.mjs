@@ -98,6 +98,10 @@ const enterScene = async page => {
   await page.waitForTimeout(500)
   await page.keyboard.press("Space")
   await page.waitForFunction(text => !document.body.innerText.includes(text), soundText, {timeout: 15000})
+  // Then free play, from the menu
+  await page.getByRole("button", {name: "Free play"}).waitFor({timeout: 15000})
+  await page.waitForTimeout(500)
+  await page.getByRole("button", {name: "Free play"}).click()
   // Settled into the scene, past building it and the first frames
   await page.waitForTimeout(5000)
 }

@@ -80,6 +80,14 @@ const or = {
 		heading: "ଆପଣଙ୍କ ଘର ବାଛନ୍ତୁ",
 		hint: "ଦୀପାବଳି ପାଇଁ ଏହାକୁ ସଜାନ୍ତୁ। ଆପଣଙ୍କ ପଡ଼ୋଶୀମାନେ ସେମାନଙ୍କ ଘର ଆଗରୁ ସଜାଇ ସାରିଛନ୍ତି, ଏବଂ ସେମାନଙ୍କ ପରିବାର ବାହାରେ ଉତ୍ସବ ପାଳନ କରୁଛନ୍ତି।",
 	},
+	modeMenu: {
+		heading: "ଆପଣ କିପରି ପାଳିବେ?",
+		freePlay: "ମୁକ୍ତ ଖେଳ",
+		freePlayAbout: "ନିଜ ଗତିରେ ଆପଣଙ୍କ ଘର ସଜାନ୍ତୁ",
+		tournament: "ପ୍ରତିଯୋଗିତା",
+		tournamentAbout: "ସବୁଠାରୁ ସୁନ୍ଦର ଘର ପାଇଁ ପଡ଼ୋଶୀଙ୍କ ସହ ପ୍ରତିଯୋଗିତା କରନ୍ତୁ",
+		comingSoon: "ଶୀଘ୍ର ଆସୁଛି",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "ସେଟିଂସ୍",

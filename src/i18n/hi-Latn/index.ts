@@ -80,6 +80,14 @@ const hiLatn = {
 		heading: "Apna ghar chuno",
 		hint: "Ise Diwali ke liye sajao. Tumhare padosi apne ghar pehle hi saja chuke hain, aur unke parivaar bahar jashn mana rahe hain.",
 	},
+	modeMenu: {
+		heading: "Tum kaise manaoge?",
+		freePlay: "Mukt khel",
+		freePlayAbout: "Apna ghar apni raftaar se sajao",
+		tournament: "Tournament",
+		tournamentAbout: "Sabse sundar ghar ke liye padosiyon se muqabla karo",
+		comingSoon: "Jald aa raha hai",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "Settings",

@@ -80,6 +80,14 @@ const bn = {
 		heading: "আপনার বাড়ি বেছে নিন",
 		hint: "দীপাবলির জন্য এটি সাজান। আপনার প্রতিবেশীরা তাঁদের বাড়ি আগেই সাজিয়ে ফেলেছেন, আর তাঁদের পরিবার বাইরে উৎসবে মেতেছে।",
 	},
+	modeMenu: {
+		heading: "আপনি কীভাবে উদযাপন করবেন?",
+		freePlay: "মুক্ত খেলা",
+		freePlayAbout: "নিজের গতিতে আপনার বাড়ি সাজান",
+		tournament: "প্রতিযোগিতা",
+		tournamentAbout: "সবচেয়ে সুন্দর বাড়ির জন্য প্রতিবেশীদের সঙ্গে প্রতিযোগিতা করুন",
+		comingSoon: "শীঘ্রই আসছে",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "সেটিংস",

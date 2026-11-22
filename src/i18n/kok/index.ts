@@ -80,6 +80,14 @@ const kok = {
 		heading: "तुमचें घर वेंचात",
 		hint: "दिवाळेखातीर तें सजयात. तुमच्या शेजाऱ्यांनी आपलीं घरां आदींच सजयल्यांत, आनी तांचीं कुटुंबां भायर उत्सव मनयतात.",
 	},
+	modeMenu: {
+		heading: "तुमी कसो मनयतले?",
+		freePlay: "मुक्त खेळ",
+		freePlayAbout: "तुमचें घर तुमच्या वेगान सजयात",
+		tournament: "स्पर्धा",
+		tournamentAbout: "सगळ्यांत सोबीत घरा खातीर शेजाऱ्यां कडेन स्पर्धा करात",
+		comingSoon: "बेगीनूच येता",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्ज",

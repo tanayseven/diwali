@@ -80,6 +80,14 @@ const mr = {
 		heading: "तुमचे घर निवडा",
 		hint: "दिवाळीसाठी ते सजवा. तुमच्या शेजाऱ्यांनी आपली घरे आधीच सजवली आहेत, आणि त्यांची कुटुंबे बाहेर उत्सव साजरा करत आहेत.",
 	},
+	modeMenu: {
+		heading: "तुम्ही कसा साजरा कराल?",
+		freePlay: "मुक्त खेळ",
+		freePlayAbout: "तुमचे घर तुमच्या वेगाने सजवा",
+		tournament: "स्पर्धा",
+		tournamentAbout: "सर्वात सुंदर घरासाठी शेजाऱ्यांशी स्पर्धा करा",
+		comingSoon: "लवकरच येत आहे",
+	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
 		open: "सेटिंग्ज",
