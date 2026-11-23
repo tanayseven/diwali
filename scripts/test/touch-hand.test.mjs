@@ -815,7 +815,7 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
     // Zoomed all the way out, to see the whole of the porch, to its ends
-    await round.goto(`http://localhost:${port}/?guests=off&camera&round=60`)
+    await round.goto(`http://localhost:${port}/?guests=off&camera&round=120`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
@@ -861,7 +861,9 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await round.waitForFunction(over => window.feedLines.some(line => over.includes(line)), over, {timeout: 30000})
     if (await round.evaluate(() => window.feedLines.includes("Your rocket burst over Sai Krupa +25"))) {
       // 15 for lighting it and 25 for the hit, or more, if a kandil's shielded a neighbour's since
-      await round.waitForFunction(() => Number(/You (\d+)/.exec(document.querySelector("[role=status]")?.textContent ?? "")?.[1]) >= 40,
+      // in the pill, or in the results, if the round's over by now on a slow machine
+      await round.waitForFunction(() => Number(/You (\d+)/.exec(document.querySelector("[role=status]")?.textContent ?? "")?.[1]
+        ?? /\(You\)\s*(\d+)/.exec(document.querySelector("[aria-label=Results]")?.textContent ?? "")?.[1]) >= 40,
         undefined, {timeout: 15000})
     }
   } finally {
