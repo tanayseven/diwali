@@ -120,6 +120,13 @@ const or = {
 			kandil: "{house} ଆକାଶଦୀପ ଟାଙ୍ଗିଲା",
 			rangoli: "{house} ରଙ୍ଗୋଲି ଆଙ୍କିଲା",
 		},
+		challenge: {
+			kandil: "ସମସ୍ତଙ୍କ ଆଗରୁ ଆକାଶଦୀପ ଟାଙ୍ଗନ୍ତୁ",
+			lights: "ସମସ୍ତଙ୍କ ଆଗରୁ ଆଲୁଅର ମାଳ ଟାଙ୍ଗନ୍ତୁ",
+			rangoli: "ସମସ୍ତଙ୍କ ଆଗରୁ ରଙ୍ଗୋଲି ଆଙ୍କନ୍ତୁ",
+			won: "{house} ଦୌଡ଼ ଜିତିଲା",
+			youWon: "ଆପଣ ଦୌଡ଼ ଜିତିଲେ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

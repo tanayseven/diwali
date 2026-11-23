@@ -120,6 +120,13 @@ const pa = {
 			kandil: "{house} ਨੇ ਕੰਦੀਲ ਟੰਗੀ",
 			rangoli: "{house} ਨੇ ਰੰਗੋਲੀ ਬਣਾਈ",
 		},
+		challenge: {
+			kandil: "ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਕੰਦੀਲ ਟੰਗੋ",
+			lights: "ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਲਾਈਟਾਂ ਦੀ ਲੜੀ ਲਗਾਓ",
+			rangoli: "ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਰੰਗੋਲੀ ਬਣਾਓ",
+			won: "{house} ਨੇ ਦੌੜ ਜਿੱਤੀ",
+			youWon: "ਤੁਸੀਂ ਦੌੜ ਜਿੱਤੀ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

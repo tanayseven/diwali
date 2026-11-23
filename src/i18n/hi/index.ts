@@ -120,6 +120,13 @@ const hi = {
 			kandil: "{house} ने कंदील टाँगा",
 			rangoli: "{house} ने रंगोली बनाई",
 		},
+		challenge: {
+			kandil: "सबसे पहले कंदील टाँगो",
+			lights: "सबसे पहले रोशनी की लड़ी लगाओ",
+			rangoli: "सबसे पहले रंगोली बनाओ",
+			won: "{house} ने होड़ जीती",
+			youWon: "आपने होड़ जीती!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

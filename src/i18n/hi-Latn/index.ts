@@ -120,6 +120,13 @@ const hiLatn = {
 			kandil: "{house} ne kandil taanga",
 			rangoli: "{house} ne rangoli banayi",
 		},
+		challenge: {
+			kandil: "Sabse pehle kandil taango",
+			lights: "Sabse pehle lights ki ladi lagao",
+			rangoli: "Sabse pehle rangoli banao",
+			won: "{house} ne race jeeti",
+			youWon: "Tumne race jeeti!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

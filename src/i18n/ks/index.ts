@@ -120,6 +120,13 @@ const ks = {
 			kandil: "{house} لۄگ قندیل",
 			rangoli: "{house} بنوٚو رنگولی",
 		},
+		challenge: {
+			kandil: "گۄڈٕ قندیل لۄگِو",
+			lights: "گۄڈٕ گاشہٕ لڑ لۄگِو",
+			rangoli: "گۄڈٕ رنگولی بنٲوِو",
+			won: "{house} ژیوٚن دوڑ",
+			youWon: "توٚہۍ ژیٚنِو دوڑ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

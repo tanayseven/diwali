@@ -120,6 +120,13 @@ const ml = {
 			kandil: "{house} നക്ഷത്രവിളക്ക് തൂക്കി",
 			rangoli: "{house} രംഗോലി വരച്ചു",
 		},
+		challenge: {
+			kandil: "ആദ്യം നക്ഷത്രവിളക്ക് തൂക്കൂ",
+			lights: "ആദ്യം വിളക്കുമാല തൂക്കൂ",
+			rangoli: "ആദ്യം രംഗോലി വരയ്ക്കൂ",
+			won: "{house} മത്സരം ജയിച്ചു",
+			youWon: "നിങ്ങൾ മത്സരം ജയിച്ചു!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

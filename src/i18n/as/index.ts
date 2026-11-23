@@ -120,6 +120,13 @@ const asm = {
 			kandil: "{house}এ আকাশবন্তি ওলমাইছে",
 			rangoli: "{house}এ ৰংগোলী আঁকিছে",
 		},
+		challenge: {
+			kandil: "সকলোৰে আগতে আকাশবন্তি ওলমাওক",
+			lights: "সকলোৰে আগতে চাকিৰ মালা ওলমাওক",
+			rangoli: "সকলোৰে আগতে ৰংগোলী আঁকক",
+			won: "{house}এ প্ৰতিযোগিতা জিকিলে",
+			youWon: "আপুনি প্ৰতিযোগিতা জিকিলে!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

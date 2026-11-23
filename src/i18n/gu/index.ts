@@ -120,6 +120,13 @@ const gu = {
 			kandil: "{house} એ કંદીલ લટકાવ્યું",
 			rangoli: "{house} એ રંગોળી બનાવી",
 		},
+		challenge: {
+			kandil: "સૌથી પહેલાં કંદીલ લટકાવો",
+			lights: "સૌથી પહેલાં લાઇટની સેર લગાવો",
+			rangoli: "સૌથી પહેલાં રંગોળી બનાવો",
+			won: "{house} એ રેસ જીતી",
+			youWon: "તમે રેસ જીતી!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

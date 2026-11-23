@@ -120,6 +120,13 @@ const mni = {
 			kandil: "{house} ꯀꯟꯗꯤꯜ ꯊꯥꯡꯒꯠꯂꯦ",
 			rangoli: "{house} ꯔꯉ꯭ꯒꯣꯂꯤ ꯌꯦꯛꯂꯦ",
 		},
+		challenge: {
+			kandil: "ꯑꯍꯥꯅꯕꯗ ꯀꯟꯗꯤꯜ ꯊꯥꯡꯒꯠꯄꯤꯌꯨ",
+			lights: "ꯑꯍꯥꯅꯕꯗ ꯃꯉꯥꯜ ꯊꯥꯡꯒꯠꯄꯤꯌꯨ",
+			rangoli: "ꯑꯍꯥꯅꯕꯗ ꯔꯉ꯭ꯒꯣꯂꯤ ꯌꯦꯛꯄꯤꯌꯨ",
+			won: "{house} ꯃꯥꯏꯄꯥꯀꯦ",
+			youWon: "ꯅꯍꯥꯛ ꯃꯥꯏꯄꯥꯀꯦ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -120,6 +120,13 @@ const ta = {
 			kandil: "{house} கந்தீலைத் தொங்கவிட்டது",
 			rangoli: "{house} கோலம் போட்டது",
 		},
+		challenge: {
+			kandil: "முதலில் கந்தீலைத் தொங்கவிடுங்கள்",
+			lights: "முதலில் விளக்குச் சரத்தைத் தொங்கவிடுங்கள்",
+			rangoli: "முதலில் கோலம் போடுங்கள்",
+			won: "{house} போட்டியில் வென்றது",
+			youWon: "நீங்கள் போட்டியில் வென்றீர்கள்!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {
