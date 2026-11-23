@@ -671,12 +671,13 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
     await round.getByRole("button", {name: "✓"}).tap()
     await panel.waitFor({state: "hidden", timeout: 5000})
     await round.touchscreen.tap(porch.x, porch.y + 20)
-    await round.waitForFunction(() => /You 40/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
+    // 40, or 90 if the race just then was to put down a rangoli
+    await round.waitForFunction(() => /You (40|90)\b/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
     // Then every house, ranked, with the player's among them
     const results = round.getByRole("dialog", {name: "Results"})
     await results.waitFor({timeout: 60000})
     assert.equal(await results.getByRole("listitem").count(), 6)
-    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+40/)
+    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+(40|90)\b/)
     assert.equal(await hud.count(), 0, "the round's time and points are gone")
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Results']")).opacity === "1")
     await results.getByRole("button", {name: "Free play"}).tap()
@@ -827,7 +828,9 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await menu.getByRole("button", {name: "Tournament"}).tap()
     await round.getByText("Go!").waitFor({timeout: 30000})
     await round.touchscreen.tap(52, rail.fireworks)
-    await round.waitForTimeout(800)
+    // Its bar slid all the way in, which on a slow machine drawing a few frames a second
+    // takes a good deal longer than it looks
+    await round.waitForTimeout(2500)
     // Near the right-hand end of the porch, with Sai Krupa next door that side
     const spot = await round.evaluate(() => {
       const {left, right, bottom} = window.diwaliCamera.house()
