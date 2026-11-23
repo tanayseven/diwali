@@ -102,6 +102,13 @@ const te = {
 			kandil: "{house} ఆకాశదీపం వేలాడదీసింది",
 			rangoli: "{house} ముగ్గు వేసింది",
 		},
+		challenge: {
+			kandil: "అందరికంటే ముందు ఆకాశదీపం వేలాడదీయండి",
+			lights: "అందరికంటే ముందు దీపాల తోరణం వేలాడదీయండి",
+			rangoli: "అందరికంటే ముందు ముగ్గు వేయండి",
+			won: "{house} పందెం గెలిచింది",
+			youWon: "మీరు పందెం గెలిచారు!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

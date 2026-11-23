@@ -102,6 +102,13 @@ const sat = {
 			kandil: "{house} ᱠᱚᱱᱰᱤᱞ ᱚᱞᱚᱝ ᱠᱮᱫᱟ",
 			rangoli: "{house} ᱨᱚᱝᱜᱚᱞᱤ ᱚᱞ ᱠᱮᱫᱟ",
 		},
+		challenge: {
+			kandil: "ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱟᱜᱮ ᱠᱚᱱᱰᱤᱞ ᱚᱞᱚᱝ ᱢᱮ",
+			lights: "ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱟᱜᱮ ᱫᱤᱭᱟ ᱟᱨᱤ ᱚᱞᱚᱝ ᱢᱮ",
+			rangoli: "ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱟᱜᱮ ᱨᱚᱝᱜᱚᱞᱤ ᱚᱞ ᱢᱮ",
+			won: "{house} ᱫᱟᱲ ᱡᱤᱛᱠᱟᱫᱟ",
+			youWon: "ᱟᱢ ᱫᱟᱲ ᱡᱤᱛᱠᱟᱫᱟᱢ!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

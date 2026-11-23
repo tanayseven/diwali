@@ -102,6 +102,13 @@ const sa = {
 			kandil: "{house} आकाशदीपम् अलम्बयत्",
 			rangoli: "{house} रङ्गवल्लीम् अलिखत्",
 		},
+		challenge: {
+			kandil: "प्रथमम् आकाशदीपम् अवलम्बय",
+			lights: "प्रथमं दीपमालाम् अवलम्बय",
+			rangoli: "प्रथमं रङ्गवल्लीं लिख",
+			won: "{house} स्पर्धाम् अजयत्",
+			youWon: "भवान् स्पर्धाम् अजयत्!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

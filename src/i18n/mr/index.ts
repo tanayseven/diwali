@@ -102,6 +102,13 @@ const mr = {
 			kandil: "{house} ने कंदील लावला",
 			rangoli: "{house} ने रांगोळी काढली",
 		},
+		challenge: {
+			kandil: "सर्वात आधी कंदील लावा",
+			lights: "सर्वात आधी दिव्यांची माळ लावा",
+			rangoli: "सर्वात आधी रांगोळी काढा",
+			won: "{house} ने शर्यत जिंकली",
+			youWon: "तुम्ही शर्यत जिंकलात!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

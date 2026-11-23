@@ -102,6 +102,13 @@ const ur = {
 			kandil: "{house} نے قندیل لٹکائی",
 			rangoli: "{house} نے رنگولی بنائی",
 		},
+		challenge: {
+			kandil: "سب سے پہلے قندیل لٹکائیں",
+			lights: "سب سے پہلے روشنیوں کی لڑی لگائیں",
+			rangoli: "سب سے پہلے رنگولی بنائیں",
+			won: "{house} نے دوڑ جیت لی",
+			youWon: "آپ نے دوڑ جیت لی!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

@@ -102,6 +102,13 @@ const doi = {
 			kandil: "{house} नै कंदील टंगी",
 			rangoli: "{house} नै रंगोली बनाई",
 		},
+		challenge: {
+			kandil: "सारें शा पैह्लें कंदील टंगो",
+			lights: "सारें शा पैह्लें बत्तियें दी लड़ी लाओ",
+			rangoli: "सारें शा पैह्लें रंगोली बनाओ",
+			won: "{house} नै दौड़ जित्ती",
+			youWon: "तुसें दौड़ जित्ती!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

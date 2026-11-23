@@ -102,6 +102,13 @@ const bn = {
 			kandil: "{house} আকাশপ্রদীপ ঝুলিয়েছে",
 			rangoli: "{house} আলপনা এঁকেছে",
 		},
+		challenge: {
+			kandil: "সবার আগে আকাশপ্রদীপ ঝোলান",
+			lights: "সবার আগে আলোর মালা ঝোলান",
+			rangoli: "সবার আগে আলপনা আঁকুন",
+			won: "{house} দৌড়ে জিতেছে",
+			youWon: "আপনি দৌড়ে জিতেছেন!",
+		},
 	},
 	// The settings panel, opened with the gear button in the top right corner
 	settings: {

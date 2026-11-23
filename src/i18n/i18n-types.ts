@@ -328,6 +328,29 @@ type RootTranslation = {
 			 */
 			rangoli: RequiredParams<'house'>
 		}
+		challenge: {
+			/**
+			 * F​i​r​s​t​ ​t​o​ ​h​a​n​g​ ​a​ ​k​a​n​d​i​l
+			 */
+			kandil: string
+			/**
+			 * F​i​r​s​t​ ​t​o​ ​h​a​n​g​ ​a​ ​s​t​r​i​n​g​ ​o​f​ ​l​i​g​h​t​s
+			 */
+			lights: string
+			/**
+			 * F​i​r​s​t​ ​t​o​ ​p​u​t​ ​d​o​w​n​ ​a​ ​r​a​n​g​o​l​i
+			 */
+			rangoli: string
+			/**
+			 * {​h​o​u​s​e​}​ ​w​o​n​ ​t​h​e​ ​r​a​c​e
+			 * @param {string} house
+			 */
+			won: RequiredParams<'house'>
+			/**
+			 * Y​o​u​ ​w​o​n​ ​t​h​e​ ​r​a​c​e​!
+			 */
+			youWon: string
+		}
 	}
 	settings: {
 		/**
@@ -996,6 +1019,28 @@ export type TranslationFunctions = {
 			 * {house} drew a rangoli
 			 */
 			rangoli: (arg: { house: string }) => LocalizedString
+		}
+		challenge: {
+			/**
+			 * First to hang a kandil
+			 */
+			kandil: () => LocalizedString
+			/**
+			 * First to hang a string of lights
+			 */
+			lights: () => LocalizedString
+			/**
+			 * First to put down a rangoli
+			 */
+			rangoli: () => LocalizedString
+			/**
+			 * {house} won the race
+			 */
+			won: (arg: { house: string }) => LocalizedString
+			/**
+			 * You won the race!
+			 */
+			youWon: () => LocalizedString
 		}
 	}
 	settings: {
