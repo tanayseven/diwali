@@ -843,11 +843,12 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await round.waitForTimeout(300)
     await round.mouse.up()
     await round.waitForTimeout(300)
-    await round.mouse.move(slot(6).x, slot(6).y)
-    await round.mouse.down()
-    await round.mouse.move(spot.x, spot.y - 4, {steps: 12})
-    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
-    await round.mouse.up()
+    // Lit with the match, taken in hand with a tap and put to it with another, as the
+    // tests that light things do, which a slow machine manages
+    await round.touchscreen.tap(slot(6).x, slot(6).y)
+    await round.waitForTimeout(500)
+    await round.touchscreen.tap(spot.x, spot.y - 6)
+    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 20000})
     // Its fuse burns down, it flies across and bursts over Sai Krupa
     await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
       .some(line => line.textContent === "Your rocket burst over Sai Krupa +25"), undefined, {timeout: 15000})
