@@ -119,6 +119,11 @@ const pa = {
 			lights: "{house} ਨੇ ਲਾਈਟਾਂ ਲਗਾਈਆਂ",
 			kandil: "{house} ਨੇ ਕੰਦੀਲ ਟੰਗੀ",
 			rangoli: "{house} ਨੇ ਰੰਗੋਲੀ ਬਣਾਈ",
+			hit: "{house} ਦਾ ਰਾਕੇਟ {target} ਉੱਤੇ ਫਟਿਆ",
+			hitYou: "{house} ਦਾ ਰਾਕੇਟ ਤੁਹਾਡੇ ਘਰ ਉੱਤੇ ਫਟਿਆ",
+			youHit: "ਤੁਹਾਡਾ ਰਾਕੇਟ {house} ਉੱਤੇ ਫਟਿਆ",
+			shielded: "{house} ਦੀ ਕੰਦੀਲ ਨੇ ਬਚਾ ਲਿਆ",
+			youShielded: "ਤੁਹਾਡੀ ਕੰਦੀਲ ਨੇ ਬਚਾ ਲਿਆ",
 		},
 		challenge: {
 			kandil: "ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਕੰਦੀਲ ਟੰਗੋ",

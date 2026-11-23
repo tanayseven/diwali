@@ -119,6 +119,11 @@ const mni = {
 			lights: "{house} ꯃꯉꯥꯜ ꯊꯥꯡꯒꯠꯂꯦ",
 			kandil: "{house} ꯀꯟꯗꯤꯜ ꯊꯥꯡꯒꯠꯂꯦ",
 			rangoli: "{house} ꯔꯉ꯭ꯒꯣꯂꯤ ꯌꯦꯛꯂꯦ",
+			hit: "{house} ꯒꯤ ꯔꯣꯀꯦꯠ {target} ꯒꯤ ꯃꯊꯛꯇ ꯄꯣꯛꯈ꯭ꯔꯦ",
+			hitYou: "{house} ꯒꯤ ꯔꯣꯀꯦꯠ ꯅꯍꯥꯛꯀꯤ ꯌꯨꯃꯒꯤ ꯃꯊꯛꯇ ꯄꯣꯛꯈ꯭ꯔꯦ",
+			youHit: "ꯅꯍꯥꯛꯀꯤ ꯔꯣꯀꯦꯠ {house} ꯒꯤ ꯃꯊꯛꯇ ꯄꯣꯛꯈ꯭ꯔꯦ",
+			shielded: "{house} ꯒꯤ ꯀꯟꯗꯤꯂꯅ ꯉꯥꯛꯊꯣꯀꯈ꯭ꯔꯦ",
+			youShielded: "ꯅꯍꯥꯛꯀꯤ ꯀꯟꯗꯤꯂꯅ ꯉꯥꯛꯊꯣꯀꯈ꯭ꯔꯦ",
 		},
 		challenge: {
 			kandil: "ꯑꯍꯥꯅꯕꯗ ꯀꯟꯗꯤꯜ ꯊꯥꯡꯒꯠꯄꯤꯌꯨ",

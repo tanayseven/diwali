@@ -119,6 +119,11 @@ const mai = {
 			lights: "{house} बत्ती लगौलक",
 			kandil: "{house} कंदील टांगलक",
 			rangoli: "{house} रंगोली बनौलक",
+			hit: "{house}क रॉकेट {target}क ऊपर फुटल",
+			hitYou: "{house}क रॉकेट अहाँक घरक ऊपर फुटल",
+			youHit: "अहाँक रॉकेट {house}क ऊपर फुटल",
+			shielded: "{house}क कंदील बचा लेलक",
+			youShielded: "अहाँक कंदील बचा लेलक",
 		},
 		challenge: {
 			kandil: "सभसँ पहिने कंदील टाँगू",

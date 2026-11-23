@@ -119,6 +119,11 @@ const hi = {
 			lights: "{house} ने रोशनी लगाई",
 			kandil: "{house} ने कंदील टाँगा",
 			rangoli: "{house} ने रंगोली बनाई",
+			hit: "{house} का रॉकेट {target} के ऊपर फटा",
+			hitYou: "{house} का रॉकेट आपके घर के ऊपर फटा",
+			youHit: "आपका रॉकेट {house} के ऊपर फटा",
+			shielded: "{house} के कंदील ने बचा लिया",
+			youShielded: "आपके कंदील ने बचा लिया",
 		},
 		challenge: {
 			kandil: "सबसे पहले कंदील टाँगो",

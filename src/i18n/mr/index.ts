@@ -119,6 +119,11 @@ const mr = {
 			lights: "{house} ने दिव्यांच्या माळा लावल्या",
 			kandil: "{house} ने कंदील लावला",
 			rangoli: "{house} ने रांगोळी काढली",
+			hit: "{house} चा रॉकेट {target} वर फुटला",
+			hitYou: "{house} चा रॉकेट तुमच्या घरावर फुटला",
+			youHit: "तुमचा रॉकेट {house} वर फुटला",
+			shielded: "{house} च्या कंदिलाने वाचवले",
+			youShielded: "तुमच्या कंदिलाने वाचवले",
 		},
 		challenge: {
 			kandil: "सर्वात आधी कंदील लावा",

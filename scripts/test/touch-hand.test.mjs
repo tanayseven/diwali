@@ -643,8 +643,9 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
   const round = await context.newPage()
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
-    // A short round, long enough to light an anar on a slow machine
-    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=30`)
+    // A round long enough to put down a rangoli in on a very slow machine, where the game
+    // runs a good deal slower than the clock
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=90`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
@@ -671,12 +672,13 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
     await round.getByRole("button", {name: "✓"}).tap()
     await panel.waitFor({state: "hidden", timeout: 5000})
     await round.touchscreen.tap(porch.x, porch.y + 20)
-    await round.waitForFunction(() => /You 40/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
+    // 40, or 90 if the race just then was to put down a rangoli
+    await round.waitForFunction(() => /You (40|90)\b/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 30000})
     // Then every house, ranked, with the player's among them
     const results = round.getByRole("dialog", {name: "Results"})
-    await results.waitFor({timeout: 60000})
+    await results.waitFor({timeout: 150000})
     assert.equal(await results.getByRole("listitem").count(), 6)
-    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+40/)
+    assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+(40|90)\b/)
     assert.equal(await hud.count(), 0, "the round's time and points are gone")
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='Results']")).opacity === "1")
     await results.getByRole("button", {name: "Free play"}).tap()
@@ -798,6 +800,73 @@ test("a street challenge in a tournament round is won by the first house to do i
     // Its points and the rangoli's both
     await round.waitForFunction(() => /You 90/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 3000})
     assert.equal(await race.count(), 1)
+  } finally {
+    await context.close()
+  }
+})
+
+test("in a tournament round, a rocket put down at the end of the porch is aimed at the house next door, and bursting over it scores", async () => {
+  const context = await browser.newContext(phone)
+  await context.addInitScript(settings => {
+    localStorage.setItem("diwali-audio", JSON.stringify(settings))
+    localStorage.setItem("diwali-house", "deepaNiwas")
+    localStorage.setItem("diwali-introduced-tools", JSON.stringify(["tour", "fireworks"]))
+  }, muted)
+  const round = await context.newPage()
+  round.on("pageerror", error => console.error("Page error:", error.message))
+  try {
+    // Zoomed all the way out, to see the whole of the porch, to its ends
+    await round.goto(`http://localhost:${port}/?guests=off&camera&round=120`)
+    await round.getByRole("button", {name: "English"}).tap()
+    for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
+      await round.getByText(text).waitFor({timeout: 60000})
+      await round.waitForTimeout(900)
+      await round.touchscreen.tap(screen.width / 2, screen.height / 2)
+    }
+    const menu = round.getByRole("dialog", {name: "How will you celebrate?"})
+    await menu.waitFor({timeout: 10000})
+    await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
+    await menu.getByRole("button", {name: "Tournament"}).tap()
+    await round.getByText("Go!").waitFor({timeout: 30000})
+    // Every line said under the round's pill, kept, as each is soon said over
+    await round.evaluate(() => {
+      window.feedLines = []
+      const feed = document.querySelector("[aria-live=polite]")
+      new MutationObserver(() => window.feedLines.push(feed.textContent)).observe(feed, {childList: true, characterData: true, subtree: true})
+    })
+    await round.touchscreen.tap(52, rail.fireworks)
+    // Its bar slid all the way in, which on a slow machine drawing a few frames a second
+    // takes a good deal longer than it looks
+    await round.waitForTimeout(2500)
+    // Near the right-hand end of the porch, with Sai Krupa next door that side
+    const spot = await round.evaluate(() => {
+      const {left, right, bottom} = window.diwaliCamera.house()
+      return window.diwaliCamera.toScreen({x: left + (right - left) * 0.86, y: bottom - 40})
+    })
+    await round.mouse.move(slot(4).x, slot(4).y)
+    await round.mouse.down()
+    await round.mouse.move(spot.x, spot.y, {steps: 12})
+    // Let go once it's got there, which can take a moment on a slow machine
+    await round.waitForTimeout(300)
+    await round.mouse.up()
+    await round.waitForTimeout(300)
+    // Lit with the match, taken in hand with a tap and put to it with another, as the
+    // tests that light things do, which a slow machine manages
+    await round.touchscreen.tap(slot(6).x, slot(6).y)
+    await round.waitForTimeout(500)
+    await round.touchscreen.tap(spot.x, spot.y - 6)
+    await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 20000})
+    // Its fuse burns down, it flies across and bursts over Sai Krupa: a hit, or, if Sai
+    // Krupa's hung a kandil by then, as it might have on a slow machine, shielded
+    const over = ["Your rocket burst over Sai Krupa +25", "Sai Krupa's kandil shielded it +10"]
+    await round.waitForFunction(over => window.feedLines.some(line => over.includes(line)), over, {timeout: 60000})
+    if (await round.evaluate(() => window.feedLines.includes("Your rocket burst over Sai Krupa +25"))) {
+      // 15 for lighting it and 25 for the hit, or more, if a kandil's shielded a neighbour's since
+      // in the pill, or in the results, if the round's over by now on a slow machine
+      await round.waitForFunction(() => Number(/You (\d+)/.exec(document.querySelector("[role=status]")?.textContent ?? "")?.[1]
+        ?? /\(You\)\s*(\d+)/.exec(document.querySelector("[aria-label=Results]")?.textContent ?? "")?.[1]) >= 40,
+        undefined, {timeout: 15000})
+    }
   } finally {
     await context.close()
   }

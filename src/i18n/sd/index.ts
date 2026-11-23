@@ -119,6 +119,11 @@ const sd = {
 			lights: "{house} بتيون لڳايون",
 			kandil: "{house} قنديل لٽڪائي",
 			rangoli: "{house} رنگولي ٺاهي",
+			hit: "{house} جو راڪيٽ {target} مٿان ڦاٽو",
+			hitYou: "{house} جو راڪيٽ توهان جي گهر مٿان ڦاٽو",
+			youHit: "توهان جو راڪيٽ {house} مٿان ڦاٽو",
+			shielded: "{house} جي قنديل بچائي ورتو",
+			youShielded: "توهان جي قنديل بچائي ورتو",
 		},
 		challenge: {
 			kandil: "سڀ کان پهرين قنديل لٽڪايو",

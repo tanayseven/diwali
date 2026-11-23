@@ -133,6 +133,11 @@ const en = {
 			lights: "{house:string} hung lights",
 			kandil: "{house:string} hung a kandil",
 			rangoli: "{house:string} drew a rangoli",
+			hit: "{house:string}'s rocket burst over {target:string}",
+			hitYou: "{house:string}'s rocket burst over your house",
+			youHit: "Your rocket burst over {house:string}",
+			shielded: "{house:string}'s kandil shielded it",
+			youShielded: "Your kandil shielded it",
 		},
 		challenge: {
 			kandil: "First to hang a kandil",

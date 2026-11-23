@@ -119,6 +119,11 @@ const kok = {
 			lights: "{house} न दिव्यांच्यो माळो लायल्यो",
 			kandil: "{house} न आकाशकंदील लायलो",
 			rangoli: "{house} न रांगोळी काडली",
+			hit: "{house} चो रॉकेट {target} वयर फुटलो",
+			hitYou: "{house} चो रॉकेट तुमच्या घरा वयर फुटलो",
+			youHit: "तुमचो रॉकेट {house} वयर फुटलो",
+			shielded: "{house} च्या आकाशकंदिलान राखलें",
+			youShielded: "तुमच्या आकाशकंदिलान राखलें",
 		},
 		challenge: {
 			kandil: "सगळ्यांत आदीं आकाशकंदील लायात",

@@ -119,6 +119,11 @@ const hiLatn = {
 			lights: "{house} ne lights lagayi",
 			kandil: "{house} ne kandil taanga",
 			rangoli: "{house} ne rangoli banayi",
+			hit: "{house} ka rocket {target} ke upar phata",
+			hitYou: "{house} ka rocket tumhare ghar ke upar phata",
+			youHit: "Tumhara rocket {house} ke upar phata",
+			shielded: "{house} ke kandil ne bacha liya",
+			youShielded: "Tumhare kandil ne bacha liya",
 		},
 		challenge: {
 			kandil: "Sabse pehle kandil taango",
