@@ -25,6 +25,10 @@
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
         <string>{{.Info.Copyright}}</string>
+        <key>NSCameraUsageDescription</key>
+        <string>To record a video greeting to send. It stays on this Mac until you save it.</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>To record your voice in a video greeting to send. It stays on this Mac until you save it.</string>
         {{if .Info.FileAssociations}}
         <key>CFBundleDocumentTypes</key>
         <array>

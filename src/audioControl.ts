@@ -180,8 +180,11 @@ const createAudioControl = () => {
     play()
   }))
 
+  // Paused while something else is listening, such as a video greeting being recorded,
+  // whatever the settings
+  let hushed = false
   const play = () => {
-    if (settings.muted || !settings.musicOn || document.hidden) {
+    if (settings.muted || !settings.musicOn || document.hidden || hushed) {
       return
     }
     // Browsers refuse to play before the person has interacted with the page
@@ -500,6 +503,16 @@ const createAudioControl = () => {
     setEffectsLevel(level: number) {
       settings.effects = level
       changed()
+    },
+    // The music paused while something's recorded, so it isn't heard in it, and played
+    // again after, if it's on
+    setHushed(on: boolean) {
+      hushed = on
+      if (on) {
+        pause()
+      } else {
+        play()
+      }
     },
     nextTrack() {
       pause()

@@ -1,10 +1,8 @@
-import {Capacitor} from "@capacitor/core"
-import {Directory, Filesystem} from "@capacitor/filesystem"
-import {Share} from "@capacitor/share"
 import {Application, Container, Graphics, Rectangle} from "pixi.js"
 import {fontFamily} from "./app"
 import {LL} from "./locale"
 import {withoutHints} from "./outline"
+import {shareFile} from "./share"
 import {wasLongPressed} from "./tooltip"
 
 const siteUrl = "https://diwali.tanay.tech"
@@ -49,68 +47,14 @@ const takePhoto = (app: Application, scene: Container) => {
     shot.toBlob(blob => blob ? resolve(blob) : reject(new Error("Couldn't make the photo")), "image/png"))
 }
 
-// The photo as base64, without the data URL's prefix, as the filesystem plugin takes it
-const toBase64 = (blob: Blob) => new Promise<string>((resolve, reject) => {
-  const reader = new FileReader()
-  reader.onload = () => resolve((reader.result as string).split(",")[1])
-  reader.onerror = () => reject(reader.error)
-  reader.readAsDataURL(blob)
+// Shares the photo to whichever app is picked, or saves it, as the device allows
+const sharePhoto = (blob: Blob) => shareFile({
+  blob,
+  fileName,
+  title: LL.title(),
+  text: LL.screenshot.shareText({url: siteUrl}),
+  kind: "photo",
 })
-
-// In the Android app the web view can't share files, so the photo's written to the app's
-// cache and handed to Android's share sheet
-const shareNatively = async (blob: Blob, title: string, text: string) => {
-  const {uri} = await Filesystem.writeFile({path: fileName, data: await toBase64(blob), directory: Directory.Cache})
-  try {
-    await Share.share({title, text, files: [uri], dialogTitle: title})
-  } catch (error) {
-    // Closing the share sheet without picking anything isn't a failure
-    if (!/cancel/i.test((error as Error).message)) {
-      throw error
-    }
-  }
-}
-
-// What the desktop app (desktop/app.go) offers the game, which Wails puts on the window
-type DesktopApp = {SavePhoto: (name: string, png: string) => Promise<string>}
-const desktopApp = () => (window as Window & {go?: {main?: {App?: DesktopApp}}}).go?.main?.App
-
-// Shares the photo to whichever app is picked, through Android's share sheet in the
-// app, or where the browser can share files, or else saves it as a download. In the
-// desktop app, whose web view can do neither, it's saved where it's picked in a save
-// dialog
-const sharePhoto = async (blob: Blob) => {
-  const title = LL.title()
-  const text = LL.screenshot.shareText({url: siteUrl})
-  if (Capacitor.isNativePlatform()) {
-    await shareNatively(blob, title, text)
-    return
-  }
-  const desktop = desktopApp()
-  if (desktop) {
-    await desktop.SavePhoto(fileName, await toBase64(blob))
-    return
-  }
-  const file = new File([blob], fileName, {type: "image/png"})
-  const data = {files: [file], title, text}
-  if (navigator.canShare?.(data)) {
-    try {
-      await navigator.share(data)
-      return
-    } catch (error) {
-      // Closing the share sheet without picking anything isn't a failure
-      if ((error as DOMException).name === "AbortError") {
-        return
-      }
-      console.error("Couldn't share the photo, so saving it instead", error)
-    }
-  }
-  const link = document.createElement("a")
-  link.href = URL.createObjectURL(blob)
-  link.download = fileName
-  link.click()
-  setTimeout(() => URL.revokeObjectURL(link.href), 1000)
-}
 
 const flash = () => {
   const cover = document.createElement("div")
@@ -176,4 +120,4 @@ const createScreenshotButton = (app: Application, scene: Container, radius: numb
   return button
 }
 
-export {createScreenshotButton}
+export {createScreenshotButton, siteUrl}

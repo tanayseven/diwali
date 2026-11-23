@@ -96,6 +96,27 @@ const en = {
 		freePlayAbout: "Decorate your house at your own pace",
 		tournament: "Tournament",
 		tournamentAbout: "Compete with the neighbours for the best house",
+		greeting: "Greeting",
+		greetingAbout: "Record a video greeting to send",
+	},
+	// Recording a video greeting, picked from the menu, to send someone
+	greeting: {
+		heading: "Send a Diwali greeting",
+		from: "Your name",
+		to: "Who it's for",
+		// Before recording, how long it's to be
+		hint: "Record {min} to {max} seconds",
+		record: "Record",
+		stop: "Stop",
+		again: "Record again",
+		send: "Send",
+		back: "Back",
+		noCamera: "Couldn't open the camera. Allow the camera and microphone to record a greeting.",
+		// Written over the video
+		wish: "Happy Diwali, {to}!",
+		signed: "With love, from {from}",
+		// Sent with the video when it's shared
+		shareText: "Happy Diwali, {to}! A Diwali greeting from {from}, made at {url}",
 	},
 	// A round of the tournament: the player, the countdown's last word, and the results
 	tournament: {

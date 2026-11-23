@@ -16,7 +16,8 @@ import {createNameplates} from "./nameplates"
 import type {Lightable} from "./matchstick"
 import {isLanguagePickerOpen, showLanguagePicker} from "./languagePicker"
 import {LL, loadLocale, preferredLocale, savedLocale} from "./locale"
-import {freePlayUrl, Mode, showModeMenu, trophyUrl} from "./modeMenu"
+import {showGreeting} from "./greeting"
+import {freePlayUrl, greetingUrl, Mode, showModeMenu, trophyUrl} from "./modeMenu"
 import {createPortraitWarning} from "./portraitWarning"
 import {createRangoli} from "./rangoli"
 import {forgetHouse, savedHouse, showHousePicker} from "./housePicker"
@@ -92,7 +93,9 @@ const demonstrateAfter = 700
 // Set when another tournament round's asked for, which starts the game again, to go
 // straight to it rather than ask again from the menu
 const nextModeKey = "diwali-next-mode"
-const takeNextMode = (): Mode | undefined => {
+// A game played in the scene, which a greeting, on a screen of its own, isn't
+type Game = Exclude<Mode, "greeting">
+const takeNextMode = (): Game | undefined => {
   try {
     const next = sessionStorage.getItem(nextModeKey)
     sessionStorage.removeItem(nextModeKey)
@@ -131,7 +134,7 @@ const main = async () => {
       ...backgroundAssets, ...fairyLightAssets, ...diyaAssets, ...fireworksAssets, ...kandilAssets,
       ...handAssets, ...tools.map(tool => tool.icon),
     ],
-    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg", freePlayUrl, trophyUrl, "sprites/icons/street.svg"],
+    images: [...diyaImages, "sprites/caution-mark.svg", "sprites/caution-flasher.svg", "sprites/headphones.svg", freePlayUrl, trophyUrl, greetingUrl, "sprites/icons/street.svg"],
     // Enough of the first track to start the music without a wait
     others: [{url: audio.firstTrack, load: audio.ready}],
   }, progress => loader.setProgress(progress))
@@ -144,8 +147,18 @@ const main = async () => {
   // Fading away as the scene comes in, without holding it up
   void footer.remove()
   // Free play, or a tournament against the neighbours, picked every time, unless another
-  // round's been asked for
-  const mode = takeNextMode() ?? await showModeMenu()
+  // round's been asked for. A video greeting's recorded and sent on a screen of its own,
+  // and then it's back to the menu
+  const pickGame = async (): Promise<Game> => {
+    for (;;) {
+      const picked = await showModeMenu()
+      if (picked !== "greeting") {
+        return picked
+      }
+      await showGreeting(audio)
+    }
+  }
+  const mode = takeNextMode() ?? await pickGame()
   // The player's own house on the street, to decorate, picked the first time, and after
   // that, kept, until another's picked from the settings
   const homeName = savedHouse() ?? await showHousePicker()

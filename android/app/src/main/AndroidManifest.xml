@@ -55,4 +55,15 @@
          go where it was let go, and each firework going off. A normal permission,
          granted without asking -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- To record a video greeting, with the front camera and the microphone. Asked for
+         the first time a greeting's opened, by Capacitor's web view as the page asks
+         for them, and only used while it's open. What's recorded stays on the device
+         until it's shared -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- Not needed to play, so devices without them can still install the game -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>

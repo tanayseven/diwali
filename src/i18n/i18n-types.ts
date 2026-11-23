@@ -272,6 +272,75 @@ type RootTranslation = {
 		 * C​o​m​p​e​t​e​ ​w​i​t​h​ ​t​h​e​ ​n​e​i​g​h​b​o​u​r​s​ ​f​o​r​ ​t​h​e​ ​b​e​s​t​ ​h​o​u​s​e
 		 */
 		tournamentAbout: string
+		/**
+		 * G​r​e​e​t​i​n​g
+		 */
+		greeting: string
+		/**
+		 * R​e​c​o​r​d​ ​a​ ​v​i​d​e​o​ ​g​r​e​e​t​i​n​g​ ​t​o​ ​s​e​n​d
+		 */
+		greetingAbout: string
+	}
+	greeting: {
+		/**
+		 * S​e​n​d​ ​a​ ​D​i​w​a​l​i​ ​g​r​e​e​t​i​n​g
+		 */
+		heading: string
+		/**
+		 * Y​o​u​r​ ​n​a​m​e
+		 */
+		from: string
+		/**
+		 * W​h​o​ ​i​t​'​s​ ​f​o​r
+		 */
+		to: string
+		/**
+		 * R​e​c​o​r​d​ ​{​m​i​n​}​ ​t​o​ ​{​m​a​x​}​ ​s​e​c​o​n​d​s
+		 * @param {unknown} max
+		 * @param {unknown} min
+		 */
+		hint: RequiredParams<'max' | 'min'>
+		/**
+		 * R​e​c​o​r​d
+		 */
+		record: string
+		/**
+		 * S​t​o​p
+		 */
+		stop: string
+		/**
+		 * R​e​c​o​r​d​ ​a​g​a​i​n
+		 */
+		again: string
+		/**
+		 * S​e​n​d
+		 */
+		send: string
+		/**
+		 * B​a​c​k
+		 */
+		back: string
+		/**
+		 * C​o​u​l​d​n​'​t​ ​o​p​e​n​ ​t​h​e​ ​c​a​m​e​r​a​.​ ​A​l​l​o​w​ ​t​h​e​ ​c​a​m​e​r​a​ ​a​n​d​ ​m​i​c​r​o​p​h​o​n​e​ ​t​o​ ​r​e​c​o​r​d​ ​a​ ​g​r​e​e​t​i​n​g​.
+		 */
+		noCamera: string
+		/**
+		 * H​a​p​p​y​ ​D​i​w​a​l​i​,​ ​{​t​o​}​!
+		 * @param {unknown} to
+		 */
+		wish: RequiredParams<'to'>
+		/**
+		 * W​i​t​h​ ​l​o​v​e​,​ ​f​r​o​m​ ​{​f​r​o​m​}
+		 * @param {unknown} from
+		 */
+		signed: RequiredParams<'from'>
+		/**
+		 * H​a​p​p​y​ ​D​i​w​a​l​i​,​ ​{​t​o​}​!​ ​A​ ​D​i​w​a​l​i​ ​g​r​e​e​t​i​n​g​ ​f​r​o​m​ ​{​f​r​o​m​}​,​ ​m​a​d​e​ ​a​t​ ​{​u​r​l​}
+		 * @param {unknown} from
+		 * @param {unknown} to
+		 * @param {unknown} url
+		 */
+		shareText: RequiredParams<'from' | 'to' | 'url'>
 	}
 	tournament: {
 		/**
@@ -968,6 +1037,68 @@ export type TranslationFunctions = {
 		 * Compete with the neighbours for the best house
 		 */
 		tournamentAbout: () => LocalizedString
+		/**
+		 * Greeting
+		 */
+		greeting: () => LocalizedString
+		/**
+		 * Record a video greeting to send
+		 */
+		greetingAbout: () => LocalizedString
+	}
+	greeting: {
+		/**
+		 * Send a Diwali greeting
+		 */
+		heading: () => LocalizedString
+		/**
+		 * Your name
+		 */
+		from: () => LocalizedString
+		/**
+		 * Who it's for
+		 */
+		to: () => LocalizedString
+		/**
+		 * Record {min} to {max} seconds
+		 */
+		hint: (arg: { max: unknown, min: unknown }) => LocalizedString
+		/**
+		 * Record
+		 */
+		record: () => LocalizedString
+		/**
+		 * Stop
+		 */
+		stop: () => LocalizedString
+		/**
+		 * Record again
+		 */
+		again: () => LocalizedString
+		/**
+		 * Send
+		 */
+		send: () => LocalizedString
+		/**
+		 * Back
+		 */
+		back: () => LocalizedString
+		/**
+		 * Couldn't open the camera. Allow the camera and microphone to record a greeting.
+		 */
+		noCamera: () => LocalizedString
+		/**
+		 * Happy Diwali, {to}!
+		 */
+		wish: (arg: { to: unknown }) => LocalizedString
+		/**
+		 * With love, from {from}
+		 */
+		signed: (arg: { from: unknown }) => LocalizedString
+		/**
+		 * Happy Diwali, {to}! A Diwali greeting from {from}, made at {url}
+		 */
+		shareText: (arg: { from: unknown, to: unknown, url: unknown }) => LocalizedString
 	}
 	tournament: {
 		/**
