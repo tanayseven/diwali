@@ -643,8 +643,9 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
   const round = await context.newPage()
   round.on("pageerror", error => console.error("Page error:", error.message))
   try {
-    // A short round, long enough to light an anar on a slow machine
-    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=30`)
+    // A round long enough to put down a rangoli in on a very slow machine, where the game
+    // runs a good deal slower than the clock
+    await round.goto(`http://localhost:${port}/?guests=off&start=porch&round=90`)
     await round.getByRole("button", {name: "English"}).tap()
     for (const text of ["flashing and twinkling lights", "stereo sound system"]) {
       await round.getByText(text).waitFor({timeout: 60000})
@@ -672,10 +673,10 @@ test("a tournament round counts down, scores what's put up, ranks every house, a
     await panel.waitFor({state: "hidden", timeout: 5000})
     await round.touchscreen.tap(porch.x, porch.y + 20)
     // 40, or 90 if the race just then was to put down a rangoli
-    await round.waitForFunction(() => /You (40|90)\b/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 15000})
+    await round.waitForFunction(() => /You (40|90)\b/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 30000})
     // Then every house, ranked, with the player's among them
     const results = round.getByRole("dialog", {name: "Results"})
-    await results.waitFor({timeout: 60000})
+    await results.waitFor({timeout: 150000})
     assert.equal(await results.getByRole("listitem").count(), 6)
     assert.match(await results.innerText(), /Deepa Niwas \(You\)\s+(40|90)\b/)
     assert.equal(await hud.count(), 0, "the round's time and points are gone")
@@ -858,7 +859,7 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     // Its fuse burns down, it flies across and bursts over Sai Krupa: a hit, or, if Sai
     // Krupa's hung a kandil by then, as it might have on a slow machine, shielded
     const over = ["Your rocket burst over Sai Krupa +25", "Sai Krupa's kandil shielded it +10"]
-    await round.waitForFunction(over => window.feedLines.some(line => over.includes(line)), over, {timeout: 30000})
+    await round.waitForFunction(over => window.feedLines.some(line => over.includes(line)), over, {timeout: 60000})
     if (await round.evaluate(() => window.feedLines.includes("Your rocket burst over Sai Krupa +25"))) {
       // 15 for lighting it and 25 for the hit, or more, if a kandil's shielded a neighbour's since
       // in the pill, or in the results, if the round's over by now on a slow machine
