@@ -827,6 +827,12 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await round.waitForFunction(() => getComputedStyle(document.querySelector("[aria-label='How will you celebrate?']")).opacity === "1")
     await menu.getByRole("button", {name: "Tournament"}).tap()
     await round.getByText("Go!").waitFor({timeout: 30000})
+    // Every line said under the round's pill, kept, as each is soon said over
+    await round.evaluate(() => {
+      window.feedLines = []
+      const feed = document.querySelector("[aria-live=polite]")
+      new MutationObserver(() => window.feedLines.push(feed.textContent)).observe(feed, {childList: true, characterData: true, subtree: true})
+    })
     await round.touchscreen.tap(52, rail.fireworks)
     // Its bar slid all the way in, which on a slow machine drawing a few frames a second
     // takes a good deal longer than it looks
@@ -849,12 +855,15 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     await round.waitForTimeout(500)
     await round.touchscreen.tap(spot.x, spot.y - 6)
     await round.waitForFunction(() => /You 15/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 20000})
-    // Its fuse burns down, it flies across and bursts over Sai Krupa
-    await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
-      .some(line => line.textContent === "Your rocket burst over Sai Krupa +25"), undefined, {timeout: 15000})
-    // 15 for lighting the rocket and 25 for the hit, or more, if a kandil's shielded a neighbour's since
-    await round.waitForFunction(() => Number(/You (\d+)/.exec(document.querySelector("[role=status]")?.textContent ?? "")?.[1]) >= 40,
-      undefined, {timeout: 15000})
+    // Its fuse burns down, it flies across and bursts over Sai Krupa: a hit, or, if Sai
+    // Krupa's hung a kandil by then, as it might have on a slow machine, shielded
+    const over = ["Your rocket burst over Sai Krupa +25", "Sai Krupa's kandil shielded it +10"]
+    await round.waitForFunction(over => window.feedLines.some(line => over.includes(line)), over, {timeout: 30000})
+    if (await round.evaluate(() => window.feedLines.includes("Your rocket burst over Sai Krupa +25"))) {
+      // 15 for lighting it and 25 for the hit, or more, if a kandil's shielded a neighbour's since
+      await round.waitForFunction(() => Number(/You (\d+)/.exec(document.querySelector("[role=status]")?.textContent ?? "")?.[1]) >= 40,
+        undefined, {timeout: 15000})
+    }
   } finally {
     await context.close()
   }
