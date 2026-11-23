@@ -848,7 +848,9 @@ test("in a tournament round, a rocket put down at the end of the porch is aimed 
     // Its fuse burns down, it flies across and bursts over Sai Krupa
     await round.waitForFunction(() => [...document.querySelectorAll("[aria-live=polite]")]
       .some(line => line.textContent === "Your rocket burst over Sai Krupa +25"), undefined, {timeout: 15000})
-    await round.waitForFunction(() => /You (40|50)/.test(document.querySelector("[role=status]")?.textContent ?? ""), undefined, {timeout: 3000})
+    // 15 for lighting the rocket and 25 for the hit, or more, if a kandil's shielded a neighbour's since
+    await round.waitForFunction(() => Number(/You (\d+)/.exec(document.querySelector("[role=status]")?.textContent ?? "")?.[1]) >= 40,
+      undefined, {timeout: 15000})
   } finally {
     await context.close()
   }
