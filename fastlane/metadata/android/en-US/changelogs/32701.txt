@@ -1,0 +1,5 @@
+• Give the round and duel tests room for a machine where the game runs far slower than the clock
+• Give the duel test a longer round, and read its score from the results if it's over by then
+• Keep every line the duel test's round says, and take a hit on Sai Krupa or its kandil shielding it
+• Light the duel test's rocket by tapping the match, then the rocket, as the other tests light things
+• Let the round test's score include a rangoli race won, and the duel test's bar slide all the way in
