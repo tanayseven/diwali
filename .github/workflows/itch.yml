@@ -1,4 +1,6 @@
 name: itch.io release
+# Named with its tag, which scripts/notify/notify.mjs reads it from
+run-name: itch.io release ${{ inputs.tag }}
 
 # Pushes a release to https://tanayseven.itch.io/diwali-celebration in every form itch.io
 # takes, with butler: the game to play in the browser, the desktop apps for Windows,

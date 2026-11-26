@@ -1,4 +1,6 @@
 name: Android build
+# Named with its tag, which scripts/notify/notify.mjs reads it from
+run-name: Android build ${{ inputs.tag || github.ref_name }}
 
 # When a release's date tag is pushed: YYYY.MM.DD, or YYYY.MM.DD.N for the Nth release
 # that day. The build itself rejects any other shape of tag. The nightly release tag
