@@ -1,0 +1,47 @@
+name: Notify
+
+# Posts to Discord, through the webhook in the CI_NOTIFY_WEBHOOK secret, when a run on
+# main or for a release finishes: the website deployed from a merge to main, and each
+# release, nightly or for a tag pushed or run by hand, with how it went on GitHub's
+# releases, Google Play, itch.io and the website. scripts/notify/notify.mjs works out what
+# happened, and scripts/notify/messages.mjs says it. GitHub only runs workflow_run from
+# the default branch's copy of this file
+on:
+  workflow_run:
+    workflows: [Deploy to S3, Nightly release tag, Android build, Desktop build, itch.io release]
+    types: [completed]
+
+permissions:
+  actions: read   # The run's jobs and steps
+  contents: read  # The tags, and the commits between them
+
+jobs:
+  notify:
+    runs-on: ubuntu-24.04
+    env:
+      # It's here, as a secret can't be tested in a step's if
+      CI_NOTIFY_WEBHOOK: ${{ secrets.CI_NOTIFY_WEBHOOK }}
+      # Every one of mise's protections, which it only takes from the environment
+      MISE_PARANOID: 1
+
+    steps:
+      - name: Without a webhook, there's nothing to do
+        if: env.CI_NOTIFY_WEBHOOK == ''
+        run: echo "No CI_NOTIFY_WEBHOOK in the secrets, so nothing's posted"
+
+      - name: Checkout code
+        if: env.CI_NOTIFY_WEBHOOK != ''
+        uses: actions/checkout@v7
+
+      # Node, as locked in mise.lock
+      - name: Setup tools with mise
+        if: env.CI_NOTIFY_WEBHOOK != ''
+        uses: jdx/mise-action@v5
+        with:
+          install_args: node
+
+      - name: Post about the run
+        if: env.CI_NOTIFY_WEBHOOK != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/notify/notify.mjs "${{ github.event.workflow_run.id }}"

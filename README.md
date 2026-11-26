@@ -278,3 +278,28 @@ $ git push origin $(date +%Y.%m.%d)
 The app's version name is the tag, and its version code is the number of days since 1 January 2026 times 100, plus the release's number that day (`2026.10.30.2` is `30202`), which keeps it far below Google Play's limit of 2,100,000,000, so every release installs over the one before. Tags of any other shape don't start the workflow.
 
 The Desktop build can also be run by hand from the Actions tab with a date tag, to build and release that tag's desktop apps again; without one, it builds the branch it's run on, versioned `dev`, and keeps the packages with the run to try them out.
+
+### Notifications
+
+The [Notify](.github/workflows/notify.yml) workflow posts to a Discord channel when a run on `main` or for a release finishes, through the webhook in the `CI_NOTIFY_WEBHOOK` secret; without it, nothing's posted. It posts:
+
+- **A deploy from `main`:** whether the website's up to date, with the commit merged, or the step it failed at.
+- **A release** (the nightly's, or the Android, desktop or itch.io workflow's for a tag pushed or run by hand): how it went on the GitHub release (each of Android, Windows, macOS and Linux), Google Play (internal and closed testing), itch.io and the website, each passed, failed (at which step), skipped (for want of its secret) or not run (as something before it failed), with the commits since the last release.
+
+A nightly with nothing new to release posts nothing. [`scripts/notify/notify.mjs`](scripts/notify/notify.mjs) works out what happened from the run's jobs and steps, by their names, and [`scripts/notify/messages.mjs`](scripts/notify/messages.mjs) has everything the messages say and how they look: the wording, emoji and colours, whether successes or a nightly with nothing new are posted, and who's mentioned when something fails. To see a change to it, post one of each kind of message, made up, to the channel:
+
+```sh
+$ CI_NOTIFY_WEBHOOK=https://discord.com/api/webhooks/... node scripts/notify/notify.mjs --preview
+```
+
+or print what it'd post about a real run, by its id, without posting:
+
+```sh
+$ GH_TOKEN=$(gh auth token) GITHUB_REPOSITORY=tanayseven/diwali node scripts/notify/notify.mjs --dry-run 45320407614
+```
+
+The webhook's set once, from where it's copied:
+
+```sh
+$ pbpaste | gh secret set CI_NOTIFY_WEBHOOK
+```

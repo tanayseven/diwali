@@ -1,4 +1,7 @@
 name: Desktop build
+# Named with its tag, which scripts/notify/notify.mjs reads it from, or else the branch
+# it's built from
+run-name: Desktop build ${{ inputs.tag || github.ref_name }}
 
 # The desktop apps for Linux, Windows and macOS, built with Wails around each system's
 # web view, packaged and attached to the release for a date tag: YYYY.MM.DD, or
