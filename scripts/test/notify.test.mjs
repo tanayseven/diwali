@@ -22,6 +22,8 @@ test("a release that went out everywhere says so, for every destination", () => 
   assert.equal(embed.title, "🚀 Release 2026.11.27 · all published")
   assert.match(embed.description, /3 commits since 2026\.11\.26/)
   assert.equal(embed.fields[0].value, "Android ✓ · Windows ✓ · macOS ✓ · Linux ✓")
+  // Play's tracks, as the step that releases on them names them
+  assert.equal(embed.fields[1].value, "internal testing ✓ · closed and open testing, and production for 20% of users ✓")
 })
 
 test("a release Play refused is partly published, with itch.io skipped for its missing key", () => {
@@ -31,7 +33,7 @@ test("a release Play refused is partly published, with itch.io skipped for its m
   const [embed] = render(summary).embeds
   assert.match(embed.title, /published with problems/)
   const play = embed.fields.find(({name}) => name.includes("Google Play"))
-  assert.equal(play.value, "Failed at: Release it on Google Play's closed testing")
+  assert.equal(play.value, "Failed at: Release it on Google Play's closed and open testing, and production for 20% of users")
   assert.match(embed.fields.find(({name}) => name.includes("itch.io")).value, /BUTLER_API_KEY/)
 })
 
