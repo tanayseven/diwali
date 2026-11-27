@@ -15,7 +15,7 @@ aws-cli = "2.38.5"
 # the system's web view, and nfpm, which packages the Linux one (desktop.yml)
 go = "1.27.4"
 "go:github.com/wailsapp/wails/v2/cmd/wails" = "2.17.0"
-"aqua:goreleaser/nfpm" = "2.48.0"
+"aqua:goreleaser/nfpm" = "2.49.0"
 # Sets up Google Play's publishing in Google Cloud: its API, and the service account
 # android.yml publishes with. mise has it only through a vfox plugin, which runs the
 # plugin's own code from its repository as it installs, outside the lockfile's checks
