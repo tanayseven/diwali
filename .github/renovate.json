@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "description": [
+    "New versions only once they've been out a week, as mise.toml's are (CLAUDE.md).",
+    "The Android build looks in google() and mavenCentral() for everything, so Renovate would too, and Maven Central rate-limits it.",
+    "Each library's looked up only where it's published: AndroidX and the Android Gradle plugin on Google's Maven, the rest on Maven Central."
+  ],
+  "minimumReleaseAge": "7 days",
+  "packageRules": [
+    {
+      "description": "AndroidX and the Android Gradle plugin are only on Google's Maven",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": ["androidx.**", "com.android.**", "com.google.android.**"],
+      "registryUrls": ["https://dl.google.com/android/maven2/"]
+    },
+    {
+      "description": "Everything else from Maven, such as junit, is on Maven Central",
+      "matchDatasources": ["maven"],
+      "matchPackageNames": ["!androidx.**", "!com.android.**", "!com.google.android.**"],
+      "registryUrls": ["https://repo.maven.apache.org/maven2/"]
+    }
+  ]
+}
