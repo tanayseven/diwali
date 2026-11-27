@@ -105,11 +105,15 @@ const targetsOf = jobs => {
     targets.push({key: "github", status: combine(parts.map(({status}) => status)), parts})
   }
 
-  // Google Play: published to internal testing, then released on closed testing
+  // Google Play: published to internal testing, then released on Play's other tracks, by a
+  // step named for them, "Release it on Google Play's …", which names that part too, so
+  // it's right whichever tracks it's released on
   if (android) {
     const internal = stepResult(android, /internal testing/i)
-    const closed = stepResult(android, /closed testing/i)
-    const playParts = [{name: "internal testing", ...internal}, {name: "closed testing", ...closed}]
+    const releaseStep = android.steps?.find(({name}) => /^release it on google play/i.test(name))
+    const tracks = releaseStep?.name.replace(/^release it on google play'?s?\s*/i, "") || "other tracks"
+    const released = stepResult(android, /^release it on google play/i)
+    const playParts = [{name: "internal testing", ...internal}, {name: tracks, ...released}]
     let status = combine(playParts.map(part => part.status))
     // Not reached because the build before it failed, rather than failing itself
     if (status === "blocked" || (status === "failure" && !playParts.some(part => part.status === "failure"))) {

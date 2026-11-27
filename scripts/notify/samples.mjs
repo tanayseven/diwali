@@ -33,7 +33,7 @@ const androidSteps = [
   "Checkout the tag", "Setup tools with mise", "Install dependencies", "Build the APK",
   "Build the app bundle for Google Play", "Attach the APK and the app bundle to a release for the tag",
   "Write the notes for Google Play", "Publish the app bundle to Google Play's internal testing",
-  "Release it on Google Play's closed testing",
+  "Release it on Google Play's closed and open testing, and production for 20% of users",
 ]
 const buildSteps = ["Checkout the tag, or the branch it's run on", "Setup tools with mise", "Install dependencies", "Build and package the app", "Keep the packages for the release"]
 const releaseSteps = ["Gather every platform's packages", "Attach the packages to a release for the tag"]
@@ -63,7 +63,7 @@ export const samples = {
     ...release,
     run: run("Nightly release tag", "failure"),
     jobs: nightly({
-      android: {"Release it on Google Play's closed testing": "failure"},
+      android: {"Release it on Google Play's closed and open testing, and production for 20% of users": "failure"},
       itch: {"Without an itch.io API key, there's nothing to do": "success", ...Object.fromEntries(itchSteps.slice(1).map(step => [step, "skipped"]))},
     }),
   },
