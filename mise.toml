@@ -4,7 +4,7 @@
 # README) and commit both files
 [tools]
 # Capacitor 7 is the newest that runs on Node 20
-node = "20.18.0"
+node = "20.20.2"
 # For Gradle's Android build
 java = "temurin-21.0.13+9.0.LTS"
 # Attaches the APK to a GitHub release (android.yml)
