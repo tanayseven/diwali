@@ -20,7 +20,7 @@ go = "1.27.4"
 # android.yml publishes with. mise has it only through a vfox plugin, which runs the
 # plugin's own code from its repository as it installs, outside the lockfile's checks
 # It runs on Python, which its archives don't include
-python = "3.13.18"
+python = "3.15.2"
 gcloud = "591.0.0"
 
 # This project's tools come only from mise.lock: the versions, URLs and checksums
