@@ -86,7 +86,7 @@ checksum = "sha256:178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1
 url = "https://dl.google.com/go/go1.27.4.windows-amd64.zip"
 
 [[tools."go:github.com/wailsapp/wails/v2/cmd/wails"]]
-version = "2.17.0"
+version = "2.17.1"
 backend = "go:github.com/wailsapp/wails/v2/cmd/wails"
 
 [[tools.java]]
