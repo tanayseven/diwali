@@ -1,0 +1,4 @@
+• Update dependency go to v1.27.4 (#71)
+• Update capacitor monorepo to v7.6.11 (#70)
+• Add renovate.json (#68)
+• Post to Discord as each deploy from main and each release finishes
