@@ -10,7 +10,7 @@ java = "temurin-21.0.13+9.0.LTS"
 # Attaches the APK to a GitHub release (android.yml)
 gh = "2.103.2"
 # Copies the build to S3 (deploy.yml)
-aws-cli = "2.38.5"
+aws-cli = "2.41.2"
 # The desktop apps for Windows, macOS and Linux: Go, Wails, which builds them around
 # the system's web view, and nfpm, which packages the Linux one (desktop.yml)
 go = "1.27.4"
