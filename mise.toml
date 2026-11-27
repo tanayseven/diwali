@@ -8,7 +8,7 @@ node = "20.18.0"
 # For Gradle's Android build
 java = "temurin-21.0.13+9.0.LTS"
 # Attaches the APK to a GitHub release (android.yml)
-gh = "2.103.2"
+gh = "2.105.0"
 # Copies the build to S3 (deploy.yml)
 aws-cli = "2.38.5"
 # The desktop apps for Windows, macOS and Linux: Go, Wails, which builds them around
