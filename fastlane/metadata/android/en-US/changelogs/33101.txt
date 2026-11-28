@@ -1,0 +1,3 @@
+• Update dependency typescript to v5.9.3 (#91)
+• Update dependency aws-cli to v2.41.2 (#85)
+• Look up each Android library only where it's published, so Maven Central stops rate-limiting Renovate
